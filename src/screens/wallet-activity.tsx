@@ -27,7 +27,7 @@ export function WalletActivityScreen() {
   return (
     <WalletShell title={copy.wallet.activity}>
       <div className="mx-auto w-full max-w-xl px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold">{copy.wallet.activity}</h1>
+        <h1 className="font-display text-xl font-semibold">{copy.wallet.activity}</h1>
         {txs.length === 0 ? (
           <p className="mt-16 text-center text-sm text-muted">{copy.wallet.historyEmpty}</p>
         ) : (

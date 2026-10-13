@@ -6,7 +6,7 @@ export function SecurityScreen() {
   return (
     <MarketingShell>
       <div className="mx-auto max-w-3xl px-4 py-16">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">{site.securityPageTitle}</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{site.securityPageTitle}</h1>
         <p className="mt-3 text-muted">{site.securityPageSub}</p>
         <div className="mt-10 space-y-4">
           {[

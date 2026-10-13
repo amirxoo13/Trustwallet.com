@@ -23,7 +23,7 @@ export function LandingScreen() {
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pt-16 pb-20 lg:grid-cols-[1.05fr_0.95fr] lg:pt-24">
           <div className="stagger-in">
             <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">{site.heroKicker}</p>
-            <h1 className="mt-4 font-display text-4xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
+            <h1 className="mt-4 font-display text-3xl leading-[1.08] font-semibold tracking-tight sm:text-5xl">
               {site.heroTitleA}
               <span className="mt-1 block text-muted">{site.heroTitleB}</span>
             </h1>

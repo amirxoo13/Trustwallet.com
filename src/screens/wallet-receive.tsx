@@ -41,7 +41,7 @@ export function WalletReceiveScreen() {
   return (
     <WalletShell title={copy.wallet.receive}>
       <div className="mx-auto w-full max-w-md px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold">{copy.wallet.receive}</h1>
+        <h1 className="font-display text-xl font-semibold">{copy.wallet.receive}</h1>
         <label className="mt-6 block">
           <span className="text-xs font-medium text-muted">Network</span>
           <select

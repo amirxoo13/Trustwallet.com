@@ -72,7 +72,7 @@ function Spark({ points, up }: { points: number[]; up: boolean }) {
     })
     .join(" ");
   return (
-    <svg viewBox="0 0 64 32" className="h-8 w-16" aria-hidden>
+    <svg viewBox="0 0 64 32" className="h-7 w-12 shrink-0" aria-hidden>
       <path d={d} fill="none" stroke={up ? "#3dd68c" : "#ef5b6a"} strokeWidth="2" strokeLinejoin="round" />
     </svg>
   );
@@ -167,7 +167,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
   const networkLabel = NETWORKS.find((n) => n.id === network)?.label ?? "Network";
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 pt-4 pb-40">
+    <div className="mx-auto w-full max-w-md overflow-x-clip px-4 pt-3 pb-36">
       <div className="flex items-center justify-between">
         <div className="size-11" />
         <h1 className="font-display text-xl font-semibold">Markets</h1>
@@ -227,7 +227,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
       </div>
 
       <h2 className="mt-6 text-lg font-semibold">Top traded (24h)</h2>
-      <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
+      <div className="scroll-x mt-3 flex gap-3 pb-1">
         {(top.data ?? []).slice(0, 8).map((coin) => {
           const up = coin.change24h >= 0;
           return (
@@ -235,7 +235,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
               key={coin.id}
               type="button"
               onClick={() => openCoin(coin.id)}
-              className="w-40 shrink-0 rounded-2xl bg-card p-4 text-left"
+              className="w-36 shrink-0 rounded-2xl bg-card p-3 text-left"
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="truncate text-sm">{coin.name}</span>
@@ -250,7 +250,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
       </div>
       {top.isError ? <p className="mt-2 text-sm text-danger">Live prices are unavailable right now.</p> : null}
 
-      <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+      <div className="scroll-x mt-4 flex gap-2 pb-1">
         <button
           type="button"
           aria-label="Favorites"
@@ -281,7 +281,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
         ))}
       </div>
 
-      <div className="relative mt-3 flex gap-2">
+      <div className="relative mt-3 flex max-w-full flex-wrap gap-2">
         <button
           type="button"
           onClick={() => setMenu((m) => (m === "network" ? null : "network"))}
@@ -361,7 +361,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
               const up = change >= 0;
               const volume = windowKey === "7d" ? item.volume7d : windowKey === "1h" ? item.volume24h : item.volume24h;
               return (
-                <div key={item.id} className="flex items-center gap-3 border-b border-border py-3">
+                <div key={item.id} className="flex min-w-0 items-center gap-2 border-b border-border py-2.5">
                   <button type="button" aria-label="Star" onClick={() => toggleStar(item.id)} className="text-muted">
                     <Star className={cn("size-4", stars.includes(item.id) && "fill-current text-foreground")} />
                   </button>
@@ -397,22 +397,22 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
             const change = changeOf(coin, windowKey);
             const up = change >= 0;
             return (
-              <div key={coin.id} className="flex items-center gap-3 border-b border-border py-3">
-                <button type="button" onClick={() => openCoin(coin.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                  <CoinIcon id={coin.id} symbol={coin.symbol} image={coin.image} size={40} />
+              <div key={coin.id} className="flex min-w-0 items-center gap-2 border-b border-border py-2.5">
+                <button type="button" onClick={() => openCoin(coin.id)} className="flex min-w-0 flex-1 items-center gap-2 text-left">
+                  <CoinIcon id={coin.id} symbol={coin.symbol} image={coin.image} size={36} />
                   <span className="min-w-0">
-                    <span className="block font-semibold">{coin.symbol}</span>
-                    <span className="block truncate text-xs text-muted">
+                    <span className="block truncate text-sm font-semibold">{coin.symbol}</span>
+                    <span className="block truncate text-[11px] text-muted">
                       {formatUsd(coin.marketCap)} MCap · {formatUsd(coin.volume24h)} Vol
                     </span>
                   </span>
                 </button>
                 <Spark points={coin.sparkline} up={up} />
-                <button type="button" onClick={() => openCoin(coin.id)} className="w-24 text-right">
-                  <span className="block font-semibold tabular">{formatUsd(coin.price, true)}</span>
-                  <span className={cn("text-sm tabular", up ? "text-success" : "text-danger")}>{formatPct(change)}</span>
+                <button type="button" onClick={() => openCoin(coin.id)} className="w-[4.5rem] shrink-0 overflow-hidden text-right">
+                  <span className="block truncate text-sm font-semibold tabular">{formatUsd(coin.price, true)}</span>
+                  <span className={cn("block truncate text-xs tabular", up ? "text-success" : "text-danger")}>{formatPct(change)}</span>
                 </button>
-                <button type="button" aria-label={`Star ${coin.symbol}`} onClick={() => toggleStar(coin.id)} className="text-muted">
+                <button type="button" aria-label={`Star ${coin.symbol}`} onClick={() => toggleStar(coin.id)} className="shrink-0 text-muted">
                   <Star className={cn("size-4", stars.includes(coin.id) && "fill-current text-foreground")} />
                 </button>
               </div>
@@ -421,11 +421,11 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
         </div>
       )}
 
-      <div className="fixed inset-x-0 bottom-24 z-30 px-4 md:bottom-6">
+      <div className="fixed inset-x-0 bottom-[4.75rem] z-30 px-4 md:bottom-6">
         <button
           type="button"
           onClick={onSwap}
-          className="mx-auto block h-14 w-full max-w-md rounded-full bg-[#5b4dff] text-base font-semibold text-white"
+          className="mx-auto block h-12 w-full max-w-md rounded-full bg-[#5b4dff] text-sm font-semibold text-white"
         >
           Swap
         </button>

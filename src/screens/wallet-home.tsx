@@ -146,7 +146,7 @@ export function WalletHomeScreen() {
 
   return (
     <WalletShell home>
-      <div className="mx-auto w-full max-w-md px-5 pt-3 pb-4">
+      <div className="mx-auto w-full max-w-md px-4 pt-3 pb-4">
         <div className="flex items-center justify-between gap-3">
           <div className="relative min-w-0">
             <button
@@ -202,14 +202,14 @@ export function WalletHomeScreen() {
             <Link
               to="/wallet/activity"
               aria-label={copy.wallet.activity}
-              className="flex size-12 items-center justify-center rounded-full bg-card-elevated shadow-border"
+              className="flex size-11 items-center justify-center rounded-full bg-card-elevated shadow-border"
             >
               <History className="size-5" strokeWidth={1.75} />
             </Link>
             <Link
               to="/wallet/receive"
               aria-label={site.actionReceive}
-              className="flex size-12 items-center justify-center rounded-full bg-card-elevated shadow-border"
+              className="flex size-11 items-center justify-center rounded-full bg-card-elevated shadow-border"
             >
               <Scan className="size-5" strokeWidth={1.75} />
             </Link>
@@ -237,23 +237,23 @@ export function WalletHomeScreen() {
           </div>
         ) : null}
 
-        <p className="mt-5 text-5xl leading-none font-bold tracking-tight tabular">
+        <p className="mt-5 max-w-full overflow-hidden text-[clamp(1.7rem,8vw,2.6rem)] leading-none font-bold tracking-tight text-ellipsis tabular">
           {hide ? "••••••" : q.isLoading && total === 0 ? "—" : formatUsdFull(total)}
         </p>
-        <p className="mt-3 text-base text-muted tabular">{hide ? "" : formatHeaderMove(changeUsd, changePct)}</p>
+        <p className="mt-2 max-w-full truncate text-sm text-muted tabular">{hide ? "" : formatHeaderMove(changeUsd, changePct)}</p>
 
-        <div className="mt-6 grid grid-cols-4 gap-3">
+        <div className="mt-5 grid grid-cols-4 gap-2">
           {actions.map((a) => (
-            <Link key={a.to} to={a.to} className="flex flex-col items-center gap-2.5">
+            <Link key={a.to} to={a.to} className="flex min-w-0 flex-col items-center gap-2">
               <span
                 className={cn(
-                  "flex aspect-square w-full items-center justify-center rounded-xl",
+                  "flex aspect-square w-full max-w-16 items-center justify-center rounded-xl",
                   a.hot ? "bg-primary text-primary-fg" : "bg-card-elevated text-foreground",
                 )}
               >
-                <a.icon className="size-6" strokeWidth={2.15} />
+                <a.icon className="size-5" strokeWidth={2.15} />
               </span>
-              <span className="text-sm font-medium">{a.label}</span>
+              <span className="max-w-full truncate text-xs font-medium">{a.label}</span>
             </Link>
           ))}
         </div>
@@ -288,17 +288,17 @@ export function WalletHomeScreen() {
                   key={r.id}
                   to="/wallet/asset/$id"
                   params={{ id: r.id }}
-                  className="flex items-center gap-4 py-1.5"
+                  className="flex min-w-0 items-center gap-3 py-1.5"
                 >
-                  <CoinIcon id={r.id} symbol={r.meta!.symbol} image={r.image} size={44} />
+                  <CoinIcon id={r.id} symbol={r.meta!.symbol} image={r.image} size={40} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold">{rowTitle(r.id, r.meta!.name)}</p>
-                    <p className="text-sm text-muted tabular">
+                    <p className="truncate text-sm font-semibold">{rowTitle(r.id, r.meta!.name)}</p>
+                    <p className="truncate text-xs text-muted tabular">
                       {hide ? "••" : formatAmount(r.amount)} {r.meta!.symbol}
                     </p>
                   </div>
-                  <div className="text-end">
-                    <p className="font-semibold tabular">{hide ? "••" : formatUsdFull(r.usd)}</p>
+                  <div className="shrink-0 text-end">
+                    <p className="text-sm font-semibold tabular">{hide ? "••" : formatUsdFull(r.usd)}</p>
                     <p
                       className={cn(
                         "text-sm tabular",

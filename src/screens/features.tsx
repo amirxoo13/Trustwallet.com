@@ -18,7 +18,7 @@ export function FeaturesScreen() {
   return (
     <MarketingShell>
       <div className="mx-auto max-w-6xl px-4 py-16">
-        <h1 className="font-display text-4xl font-semibold tracking-tight">{featuresTitle}</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight">{featuresTitle}</h1>
         <p className="mt-3 max-w-xl text-muted">{featuresSub}</p>
         <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => (

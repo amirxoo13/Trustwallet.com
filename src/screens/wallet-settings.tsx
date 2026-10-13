@@ -21,7 +21,7 @@ export function WalletSettingsScreen() {
   return (
     <WalletShell title={copy.wallet.settings}>
       <div className="mx-auto w-full max-w-lg px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold">{copy.wallet.settings}</h1>
+        <h1 className="font-display text-xl font-semibold">{copy.wallet.settings}</h1>
 
         <section className="mt-8">
           <h2 className="text-sm font-medium text-muted">Install app</h2>

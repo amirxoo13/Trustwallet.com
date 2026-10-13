@@ -65,7 +65,7 @@ export function WalletAssetScreen({ id }: { id: string }) {
               <p className="text-sm text-muted">{market.symbol}</p>
             </div>
           </div>
-          <p className="mt-6 font-display text-3xl font-semibold tabular">{formatUsdFull(market.price)}</p>
+          <p className="mt-5 max-w-full overflow-hidden font-display text-[clamp(1.5rem,7vw,1.75rem)] font-semibold text-ellipsis tabular">{formatUsdFull(market.price)}</p>
           <p className={cn("mt-1 text-sm tabular", up ? "text-success" : "text-danger")}>{formatPct(market.change24h)}</p>
           <div className="mt-6">
             {chart.isLoading ? (
@@ -107,7 +107,7 @@ export function WalletAssetScreen({ id }: { id: string }) {
             <p className="text-sm text-muted">{coin.chainName}</p>
           </div>
         </div>
-        <p className="mt-6 font-display text-3xl font-semibold tabular">{price ? formatUsdFull(price) : "—"}</p>
+        <p className="mt-5 max-w-full overflow-hidden font-display text-[clamp(1.5rem,7vw,1.75rem)] font-semibold text-ellipsis tabular">{price ? formatUsdFull(price) : "—"}</p>
         <p className={cn("mt-1 text-sm tabular", up ? "text-success" : "text-danger")}>
           {formatPct(market?.change24h ?? 0)}
         </p>

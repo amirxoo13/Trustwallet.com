@@ -129,7 +129,7 @@ export function WalletShell({
           </button>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col pb-28 md:pb-0">
+        <div className="flex min-w-0 flex-1 flex-col pb-24 md:pb-0">
           {!home && title ? (
             <div className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
               <div className="flex min-w-0 flex-1 items-center gap-1">
@@ -149,8 +149,8 @@ export function WalletShell({
         </div>
       </div>
 
-      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex items-center justify-center gap-3 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
-        <div className="pointer-events-auto flex h-16 w-full max-w-xs items-center justify-around rounded-full bg-card/95 px-2 shadow-border backdrop-blur-xl">
+      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex items-center justify-center gap-2 px-3 pb-[max(0.6rem,env(safe-area-inset-bottom))] md:hidden">
+        <div className="pointer-events-auto flex h-14 min-w-0 flex-1 max-w-xs items-center justify-around rounded-full bg-card/95 px-1 shadow-border backdrop-blur-xl">
           {dock.map((item) => {
             const active = item.match(path);
             return (
@@ -159,16 +159,16 @@ export function WalletShell({
                 to={item.to}
                 aria-label={item.label}
                 className={cn(
-                  "flex h-12 w-14 items-center justify-center rounded-full text-muted",
+                  "flex h-11 w-12 items-center justify-center rounded-full text-muted",
                   active && "bg-foreground/10 text-foreground",
                 )}
               >
                 {item.kind === "home" ? (
                   <HomeMark solid={active} />
                 ) : item.kind === "chart" ? (
-                  <TrendingUp className="size-6" strokeWidth={1.75} />
+                  <TrendingUp className="size-5" strokeWidth={1.75} />
                 ) : (
-                  <InfinityIcon className="size-6" strokeWidth={1.75} />
+                  <InfinityIcon className="size-5" strokeWidth={1.75} />
                 )}
               </Link>
             );
@@ -178,9 +178,9 @@ export function WalletShell({
           type="button"
           onClick={openSearch}
           aria-label={copy.wallet.search}
-          className="pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full bg-card/95 text-foreground shadow-border backdrop-blur-xl"
+          className="pointer-events-auto flex size-14 shrink-0 items-center justify-center rounded-full bg-card/95 text-foreground shadow-border backdrop-blur-xl"
         >
-          <Search className="size-6" strokeWidth={1.75} />
+          <Search className="size-5" strokeWidth={1.75} />
         </button>
       </nav>
     </div>
@@ -188,9 +188,9 @@ export function WalletShell({
 }
 
 function HomeMark({ solid }: { solid: boolean }) {
-  if (!solid) return <Home className="size-6" strokeWidth={1.75} />;
+  if (!solid) return <Home className="size-5" strokeWidth={1.75} />;
   return (
-    <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
+    <svg viewBox="0 0 24 24" className="size-5" aria-hidden>
       <path
         fill="currentColor"
         d="M12 3.15 3.4 10.1c-.25.2-.4.5-.4.82V20a1.6 1.6 0 0 0 1.6 1.6h4.7v-6.1h5.4v6.1h4.7A1.6 1.6 0 0 0 21 20v-9.08c0-.32-.15-.62-.4-.82L12 3.15Z"

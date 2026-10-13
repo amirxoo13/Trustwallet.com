@@ -176,7 +176,7 @@ export function WalletSendScreen() {
         </DialogContent>
       </Dialog>
       <div className="mx-auto w-full max-w-md px-4 py-8">
-        <h1 className="font-display text-2xl font-semibold">{copy.wallet.send}</h1>
+        <h1 className="font-display text-xl font-semibold">{copy.wallet.send}</h1>
 
         {step === "form" ? (
           <div className="mt-6 flex flex-col gap-5">

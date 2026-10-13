@@ -29,7 +29,7 @@ function Spark({ points, up }: { points: number[]; up: boolean }) {
     .join(" ");
   const color = up ? "#3dcf8e" : "#ef5b6a";
   return (
-    <svg viewBox="0 0 64 32" className="h-8 w-16" aria-hidden>
+    <svg viewBox="0 0 64 32" className="h-7 w-12 shrink-0" aria-hidden>
       <path d={`${d} L64 32 L0 32 Z`} fill={color} opacity="0.18" />
       <path d={d} fill="none" stroke={color} strokeWidth="2" />
     </svg>
@@ -38,7 +38,7 @@ function Spark({ points, up }: { points: number[]; up: boolean }) {
 
 function InfinityMark() {
   return (
-    <svg viewBox="0 0 88 48" className="h-14 w-24" aria-hidden>
+    <svg viewBox="0 0 88 48" className="h-11 w-16 shrink-0" aria-hidden>
       <defs>
         <linearGradient id="perp-inf" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#8ec5ff" />
@@ -157,7 +157,7 @@ export function PerpsScreen() {
 
   return (
     <WalletShell home>
-      <div className="mx-auto w-full max-w-md px-4 pt-4 pb-40">
+      <div className="mx-auto w-full max-w-md overflow-x-clip px-4 pt-3 pb-36">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <button type="button" aria-label="History" onClick={() => setView(view === "history" ? "list" : "history")} className="flex size-11 items-center justify-center rounded-full bg-card">
@@ -238,13 +238,13 @@ export function PerpsScreen() {
 
         {view === "list" ? (
           <>
-            <div className="mt-8 flex items-start justify-between gap-3">
-              <h2 className="max-w-[14rem] font-display text-3xl font-semibold leading-tight">
+            <div className="mt-6 flex min-w-0 items-start justify-between gap-3">
+              <h2 className="min-w-0 flex-1 font-display text-2xl font-semibold leading-tight">
                 {balance > 0 ? `${formatUsdFull(balance)} free margin` : "Deposit to fund your first position"}
               </h2>
               <InfinityMark />
             </div>
-            <button type="button" onClick={() => { setDepositOpen(true); setAmount(""); setError(""); }} className="mt-5 h-14 w-full rounded-full bg-[#5b4dff] text-base font-semibold text-white">
+            <button type="button" onClick={() => { setDepositOpen(true); setAmount(""); setError(""); }} className="mt-4 h-12 w-full rounded-full bg-[#5b4dff] text-sm font-semibold text-white">
               Deposit
             </button>
 
@@ -272,20 +272,20 @@ export function PerpsScreen() {
                       key={m.coin}
                       type="button"
                       onClick={() => setSelected((cur) => (cur === m.coin ? null : m.coin))}
-                      className={cn("flex w-full items-center gap-3 border-b border-border py-3 text-left", selected === m.coin && "bg-card/60")}
+                      className={cn("flex w-full min-w-0 items-center gap-2 border-b border-border py-2.5 text-left", selected === m.coin && "bg-card/60")}
                     >
-                      <CoinIcon symbol={m.symbol} size={40} />
+                      <CoinIcon symbol={m.symbol} size={36} />
                       <span className="min-w-0 flex-1">
-                        <span className="flex items-center gap-2">
-                          <span className="font-semibold">{m.symbol}</span>
-                          <span className="rounded-full bg-card px-2 py-0.5 text-xs text-muted">{m.maxLeverage}x</span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="truncate text-sm font-semibold">{m.symbol}</span>
+                          <span className="shrink-0 rounded-full bg-card px-1.5 py-0.5 text-[11px] text-muted">{m.maxLeverage}x</span>
                         </span>
-                        <span className="block text-xs text-muted">{formatUsd(m.volume)} Vol</span>
+                        <span className="block truncate text-[11px] text-muted">{formatUsd(m.volume)} Vol</span>
                       </span>
                       <Spark points={m.spark.length ? m.spark : [m.mark, price]} up={up} />
-                      <span className="w-24 text-right">
-                        <span className="block font-semibold tabular">{formatUsd(price, true)}</span>
-                        <span className={cn("text-sm tabular", up ? "text-success" : "text-danger")}>{formatPct(pct)}</span>
+                      <span className="w-[4.5rem] shrink-0 overflow-hidden text-right">
+                        <span className="block truncate text-sm font-semibold tabular">{formatUsd(price, true)}</span>
+                        <span className={cn("block truncate text-xs tabular", up ? "text-success" : "text-danger")}>{formatPct(pct)}</span>
                       </span>
                     </button>
                   );
@@ -297,11 +297,11 @@ export function PerpsScreen() {
         ) : null}
 
         {selected && view === "list" && !ticket ? (
-          <div className="fixed inset-x-0 bottom-24 z-30 flex gap-3 px-4 md:bottom-6">
-            <button type="button" onClick={() => start("long")} className="h-14 flex-1 rounded-full bg-[#3dcf8e] text-base font-semibold text-[#062116]">
+          <div className="fixed inset-x-0 bottom-[4.75rem] z-30 flex gap-2 px-4 md:bottom-6">
+            <button type="button" onClick={() => start("long")} className="h-12 flex-1 rounded-full bg-[#3dcf8e] text-sm font-semibold text-[#062116]">
               Long ↗
             </button>
-            <button type="button" onClick={() => start("short")} className="h-14 flex-1 rounded-full bg-[#ef5b6a] text-base font-semibold text-white">
+            <button type="button" onClick={() => start("short")} className="h-12 flex-1 rounded-full bg-[#ef5b6a] text-sm font-semibold text-white">
               Short ↘
             </button>
           </div>

@@ -100,8 +100,8 @@ export function WalletProfileScreen() {
     <WalletShell title={copy.profile.title}>
       <form onSubmit={onSubmit} className="mx-auto w-full max-w-lg px-4 py-8">
         <div className="flex items-start justify-between gap-3">
-          <div>
-            <h1 className="font-display text-2xl font-semibold">{copy.profile.title}</h1>
+          <div className="min-w-0">
+            <h1 className="font-display text-xl font-semibold">{copy.profile.title}</h1>
             <p className="mt-1 text-sm text-muted">{copy.profile.sub}</p>
           </div>
           <Button

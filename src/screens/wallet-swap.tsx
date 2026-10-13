@@ -115,13 +115,13 @@ export function WalletSwapScreen() {
         <button type="button" onClick={() => setView("markets")} className="text-sm text-muted">
           Markets
         </button>
-        <h1 className="font-display text-2xl font-semibold">{copy.wallet.swap}</h1>
+        <h1 className="font-display text-xl font-semibold">{copy.wallet.swap}</h1>
         {step === "form" ? (
           <div className="mt-6">
             <div className="rounded-xl bg-card p-4 shadow-border">
-              <div className="flex items-center justify-between text-xs text-muted">
-                <span>{copy.wallet.youPay}</span>
-                <button type="button" className="text-primary" onClick={() => setAmount(String(avail))}>
+              <div className="flex items-center justify-between gap-2 text-xs text-muted">
+                <span className="shrink-0">{copy.wallet.youPay}</span>
+                <button type="button" className="min-w-0 truncate text-primary" onClick={() => setAmount(String(avail))}>
                   {copy.wallet.max} {formatAmount(avail)} {from?.symbol}
                 </button>
               </div>
@@ -179,9 +179,9 @@ export function WalletSwapScreen() {
             </div>
 
             <dl className="mt-5 space-y-2 text-sm">
-              <div className="flex justify-between text-muted">
-                <dt>{copy.wallet.rate}</dt>
-                <dd className="tabular text-foreground">
+              <div className="flex min-w-0 items-start justify-between gap-3 text-muted">
+                <dt className="shrink-0">{copy.wallet.rate}</dt>
+                <dd className="min-w-0 text-right break-all tabular text-foreground">
                   1 {from?.symbol} ≈ {rate ? formatAmount(rate, 6) : "—"} {to?.symbol}
                 </dd>
               </div>
