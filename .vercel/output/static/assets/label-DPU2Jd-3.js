@@ -1,1 +1,0 @@
-import{I as e,M as t,N as n}from"./store-BvwOQfJW.js";import{r}from"./logo-DbJXffvn.js";var i=e(n(),1),a=t(),o=i.forwardRef(({className:e,...t},n)=>(0,a.jsx)(`label`,{ref:n,className:r(`text-xs font-medium tracking-wide text-muted`,e),...t}));o.displayName=`Label`;export{o as t};

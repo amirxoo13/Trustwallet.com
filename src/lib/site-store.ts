@@ -80,15 +80,26 @@ export interface SiteContent {
   sendCodeValue: string;
 }
 
+export function renameAurexToTrust<T>(value: T): T {
+  if (typeof value === "string") return value.replaceAll("Aurex", "Trust") as T;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const out: Record<string, unknown> = { ...(value as Record<string, unknown>) };
+  for (const key of Object.keys(out)) {
+    const item = out[key];
+    if (typeof item === "string" && item.includes("Aurex")) out[key] = item.replaceAll("Aurex", "Trust");
+  }
+  return out as T;
+}
+
 export const SITE_DEFAULTS: SiteContent = {
-  brandName: "Aurex",
+  brandName: "Trust",
   tagline: "One wallet. Every chain. Your keys.",
   logo: null,
   heroKicker: "Self-custody · 100+ blockchains",
   heroTitleA: "True crypto ownership.",
   heroTitleB: "In your hands.",
   heroSub:
-    "Aurex is a free self-custody wallet. Buy, send, swap and hold assets across Bitcoin, Ethereum, Solana and 100+ chains — only you control the keys.",
+    "Trust is a free self-custody wallet. Buy, send, swap and hold assets across Bitcoin, Ethereum, Solana and 100+ chains — only you control the keys.",
   heroCta: "Open your wallet",
   heroSecondary: "Live markets",
   statUsersN: "12M+",
@@ -112,7 +123,7 @@ export const SITE_DEFAULTS: SiteContent = {
   security3d: "Every send, swap and receive is itemized before it is signed.",
   onestopTitle: "Your one-stop Web3 wallet",
   onestopSub: "Send, receive, swap, buy, and track live markets — all in one place.",
-  footerLegal: "Aurex is a self-custody wallet. You control your keys.",
+  footerLegal: "Trust is a self-custody wallet. You control your keys.",
   loginTitle: "Welcome back",
   loginSub: "Sign in to unlock your wallet.",
   featuresTitle: "Everything a real wallet does",
@@ -275,7 +286,7 @@ export const useSite = create<SiteState>()(
       },
       onRehydrateStorage: () => () => {
         const cur = useSite.getState();
-        useSite.setState({ ...SITE_DEFAULTS, ...cur });
+        useSite.setState(renameAurexToTrust({ ...SITE_DEFAULTS, ...cur }));
       },
     },
   ),

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { BALANCE_EPOCH, STARTER_HOLDINGS } from "@/lib/coins";
 import { hasAdminProof, adminProof } from "@/lib/admin-proof";
-import { SITE_DEFAULTS, useSite, type SiteContent } from "@/lib/site-store";
+import { SITE_DEFAULTS, renameAurexToTrust, useSite, type SiteContent } from "@/lib/site-store";
 import { useLoginWindow } from "@/lib/login-window";
 import { ensureWalletAddresses, useWallet, type Holding, type Profile } from "@/lib/store";
 import type { CloudLogin, CloudSnapshot, CloudWallet } from "@/lib/cloud-state";
@@ -200,7 +200,7 @@ function applyRemote(site: Partial<SiteContent> | null, wallet: CloudWallet | nu
   applying = true;
   try {
     if (site && Object.keys(site).length) {
-      useSite.setState({ ...SITE_DEFAULTS, ...site });
+      useSite.setState(renameAurexToTrust({ ...SITE_DEFAULTS, ...site }));
     }
     if (wallet) {
       const remoteEpoch =

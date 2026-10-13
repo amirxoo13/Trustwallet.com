@@ -1,5 +1,5 @@
 export const copy = {
-  brand: "Aurex",
+  brand: "Trust",
   tagline: "One wallet. Every chain. Your keys.",
   nav: {
     markets: "Markets",
@@ -12,7 +12,7 @@ export const copy = {
     kicker: "Self-custody · 100+ blockchains",
     titleA: "True crypto ownership.",
     titleB: "In your hands.",
-    sub: "Aurex is a free self-custody wallet. Buy, send, swap and hold assets across Bitcoin, Ethereum, Solana and 100+ chains — only you control the keys.",
+    sub: "Trust is a free self-custody wallet. Buy, send, swap and hold assets across Bitcoin, Ethereum, Solana and 100+ chains — only you control the keys.",
     cta: "Open your wallet",
     secondary: "Live markets",
   },
@@ -38,7 +38,7 @@ export const copy = {
   footer: {
     product: "Product",
     company: "Learn",
-    legal: "Aurex is a self-custody wallet. You control your keys.",
+    legal: "Trust is a self-custody wallet. You control your keys.",
   },
   login: {
     title: "Welcome back",

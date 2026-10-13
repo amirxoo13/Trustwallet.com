@@ -25,7 +25,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background">
         <LogoMark size={40} />
-        <p className="text-sm text-muted">Aurex</p>
+        <p className="text-sm text-muted">Trust</p>
       </div>
     );
   }

@@ -8,7 +8,7 @@ import { PwaRegister } from "@/components/pwa-register";
 import { BrandHead } from "@/components/brand-head";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Aurex";
+const APP_NAME = "Trust";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -19,7 +19,7 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: APP_NAME },
-      { name: "description", content: "Aurex — one wallet, every chain, your keys." },
+      { name: "description", content: "Trust — one wallet, every chain, your keys." },
       { name: "theme-color", content: "#07080A" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },

@@ -1,1 +1,0 @@
-import{M as e}from"./store-BvwOQfJW.js";import{t}from"./i18n-B29XUYRE.js";import{t as n}from"./wallet-shell-CdbGOSmn.js";import{t as r}from"./markets-DTBngDL8.js";var i=e();function a(){return(0,i.jsx)(n,{title:t().wallet.markets,children:(0,i.jsx)(r,{embedded:!0})})}export{a as component};

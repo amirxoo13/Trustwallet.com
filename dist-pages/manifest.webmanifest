@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Aurex",
-  "short_name": "Aurex",
+  "name": "Trust",
+  "short_name": "Trust",
   "description": "Self-custody crypto wallet. Send, receive, and swap on 100+ chains.",
   "start_url": "./",
   "scope": "./",
