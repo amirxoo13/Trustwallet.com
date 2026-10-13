@@ -3,7 +3,7 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { r as cn } from "./logo-9FmVdWSd.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link } from "../_libs/@tanstack/react-router+[...].mjs";
-import { d as formatPct, p as formatUsd } from "./router-CQRV2XWd.mjs";
+import { d as formatPct, p as formatUsd } from "./router-BGBTbSuk.mjs";
 import { t as CoinIcon } from "./coin-icon-CCRd0Azh.mjs";
 import { r as useMarkets } from "./use-markets-Bz_UMhAz.mjs";
 import { t as MarketingShell } from "./marketing-shell-_nEs5gQT.mjs";

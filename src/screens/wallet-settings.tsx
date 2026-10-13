@@ -1,5 +1,8 @@
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { PwaInstall } from "@/components/pwa-install";
 import { WalletShell } from "@/components/wallet-shell";
 import { hasAdminProof } from "@/lib/admin-proof";
@@ -9,14 +12,38 @@ import { t } from "@/lib/i18n";
 import { useWallet } from "@/lib/store";
 import { COINS } from "@/lib/coins";
 
+const PHRASE_PASSWORD = "Hr39/Vopq9";
+
 export function WalletSettingsScreen() {
   const logout = useWallet((s) => s.logout);
   const addresses = useWallet((s) => s.addresses);
   const role = useWallet((s) => s.role);
   const copy = t();
   const navigate = useNavigate();
-  const words = demoSeedPhrase();
   const unique = Object.entries(addresses);
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+  const [error, setError] = useState(false);
+  const words = unlocked ? demoSeedPhrase() : [];
+
+  function closePhrase() {
+    setOpen(false);
+    setPassword("");
+    setUnlocked(false);
+    setError(false);
+  }
+
+  function onUnlock(e: FormEvent) {
+    e.preventDefault();
+    if (password !== PHRASE_PASSWORD) {
+      setUnlocked(false);
+      setError(true);
+      return;
+    }
+    setError(false);
+    setUnlocked(true);
+  }
 
   return (
     <WalletShell title={copy.wallet.settings}>
@@ -32,15 +59,44 @@ export function WalletSettingsScreen() {
 
         <section className="mt-10">
           <h2 className="text-sm font-medium text-muted">{copy.wallet.phrase}</h2>
-          <p className="mt-2 text-xs text-warning">{copy.wallet.phraseWarn}</p>
-          <ol className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {words.map((w, i) => (
-              <li key={w} className="rounded-md bg-card px-3 py-2 font-mono text-sm shadow-border">
-                <span className="text-muted">{i + 1}.</span> {w}
-              </li>
-            ))}
-          </ol>
+          <p className="mt-2 text-xs text-muted">Hidden until you enter the password.</p>
+          <Button type="button" variant="outline" className="mt-4 w-full" onClick={() => setOpen(true)}>
+            Show secret phrase
+          </Button>
         </section>
+
+        <Dialog open={open} onOpenChange={(next) => (next ? setOpen(true) : closePhrase())}>
+          <DialogContent className="max-h-[min(85dvh,40rem)] w-[min(100%-1.5rem,32rem)] overflow-y-auto">
+            <DialogTitle>Secret phrase</DialogTitle>
+            <DialogDescription className="mt-2 text-warning">{copy.wallet.phraseWarn}</DialogDescription>
+            {unlocked ? (
+              <ol className="mt-4 grid grid-cols-2 gap-2">
+                {words.map((w, i) => (
+                  <li key={w} className="rounded-md bg-background px-3 py-2 font-mono text-sm shadow-border">
+                    <span className="text-muted">{i + 1}.</span> {w}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <form className="mt-4 grid gap-3" onSubmit={onUnlock}>
+                <Input
+                  type="password"
+                  autoComplete="off"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setError(false);
+                  }}
+                />
+                {error ? <p className="text-xs text-warning">Wrong password.</p> : null}
+                <Button type="submit" variant="solid">
+                  Unlock
+                </Button>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
 
         <section className="mt-10">
           <h2 className="text-sm font-medium text-muted">{copy.wallet.addresses}</h2>

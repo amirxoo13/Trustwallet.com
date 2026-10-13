@@ -6,7 +6,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { N as Check, k as Copy } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-CVGFt8iw.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-import { b as useWallet } from "./router-CQRV2XWd.mjs";
+import { b as useWallet } from "./router-BGBTbSuk.mjs";
 import { t as Button } from "./button-fib134dJ.mjs";
 import { t as CoinIcon } from "./coin-icon-CCRd0Azh.mjs";
 import { t as require_lib } from "../_libs/qrcode.mjs";

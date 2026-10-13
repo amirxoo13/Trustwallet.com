@@ -5,7 +5,7 @@ import { n as LogoWord, r as cn } from "./logo-9FmVdWSd.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link, p as useRouterState } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as X, v as Menu } from "../_libs/lucide-react.mjs";
-import { b as useWallet, h as hasAdminProof, y as useSite } from "./router-CQRV2XWd.mjs";
+import { b as useWallet, h as hasAdminProof, y as useSite } from "./router-BGBTbSuk.mjs";
 import { t as Button } from "./button-fib134dJ.mjs";
 import { t as PageBack } from "./page-back-DZtJ1t5X.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/marketing-shell-_nEs5gQT.js

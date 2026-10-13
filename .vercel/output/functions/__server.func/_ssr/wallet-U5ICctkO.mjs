@@ -8,7 +8,7 @@ import { b as Link, x as useNavigate } from "../_libs/@tanstack/react-router+[..
 import { B as ArrowDown, D as DollarSign, E as EyeOff, I as ArrowUpRight, T as Eye, _ as Plus, c as SlidersHorizontal, d as Settings, g as RefreshCw, j as ChevronRight, n as Wallet, p as Scan, r as UserRound, s as Sparkles, w as History, x as Info, y as LogOut } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-CVGFt8iw.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { b as useWallet, d as formatPct, h as hasAdminProof, l as formatAmount, m as formatUsdFull, p as formatUsd, y as useSite } from "./router-CQRV2XWd.mjs";
+import { b as useWallet, d as formatPct, h as hasAdminProof, l as formatAmount, m as formatUsdFull, p as formatUsd, y as useSite } from "./router-BGBTbSuk.mjs";
 import { t as CoinIcon } from "./coin-icon-CCRd0Azh.mjs";
 import { n as useMarketMap, r as useMarkets } from "./use-markets-Bz_UMhAz.mjs";
 import { t as loadPerpMarkets } from "./perps-feed-DonpCXk-.mjs";
