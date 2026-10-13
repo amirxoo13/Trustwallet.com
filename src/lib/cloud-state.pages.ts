@@ -29,6 +29,6 @@ export async function loadAppStateMeta(): Promise<{ empty: boolean; updatedAt: s
   return { empty: true, updatedAt: null };
 }
 
-export async function saveAppState(): Promise<{ ok: true; updatedAt: string | null }> {
-  return { ok: true, updatedAt: null };
+export async function saveAppState(): Promise<{ ok: true; updatedAt: string | null; wallet: null }> {
+  return { ok: true, updatedAt: null, wallet: null };
 }

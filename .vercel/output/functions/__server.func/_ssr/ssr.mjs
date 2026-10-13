@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-OQ_1csLb.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-DYmBZk2e.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -127,15 +127,15 @@ async function getStartManifest(matchedRoutes) {
 var manifest = {
 	"9fcca3163816af2ce2dafcfcf836be156d292364a4cbfec3b98eb73d828abcbc": {
 		functionName: "loadAppState_createServerFn_handler",
-		importer: () => import("./cloud-state-eRU73MVN.mjs")
+		importer: () => import("./cloud-state-CxzhN-Z3.mjs")
 	},
 	"aba863cbc688183602b1be638b3b33024a9854be43db61e6965193981c2ea8a8": {
 		functionName: "loadAppStateMeta_createServerFn_handler",
-		importer: () => import("./cloud-state-eRU73MVN.mjs")
+		importer: () => import("./cloud-state-CxzhN-Z3.mjs")
 	},
 	"f6c8836b3c3e7799e8b55ef81110225243a1e240e9bae5adbdadee48470f5e6c": {
 		functionName: "saveAppState_createServerFn_handler",
-		importer: () => import("./cloud-state-eRU73MVN.mjs")
+		importer: () => import("./cloud-state-CxzhN-Z3.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1540,7 +1540,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-TfXv9I9g.mjs").then((n) => n.t),
+		import("./router--2gKI9Rj.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

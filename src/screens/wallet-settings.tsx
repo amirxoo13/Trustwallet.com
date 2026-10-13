@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { PwaInstall } from "@/components/pwa-install";
 import { WalletShell } from "@/components/wallet-shell";
+import { hasAdminProof } from "@/lib/admin-proof";
 import { demoSeedPhrase } from "@/lib/addresses";
 import { shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
@@ -56,7 +57,7 @@ export function WalletSettingsScreen() {
           </div>
         </section>
 
-        {role === "admin" ? (
+        {role === "admin" && hasAdminProof() ? (
           <Link
             to="/studio"
             className="mt-10 flex h-12 items-center justify-center rounded-md bg-card text-sm shadow-border"

@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { LogoMark } from "@/components/logo";
+import { hasAdminProof } from "@/lib/admin-proof";
 import { useWallet } from "@/lib/store";
 
 export function AdminGate({ children }: { children: ReactNode }) {
@@ -15,12 +16,12 @@ export function AdminGate({ children }: { children: ReactNode }) {
       void navigate({ to: "/login" });
       return;
     }
-    if (role !== "admin") {
+    if (role !== "admin" || !hasAdminProof()) {
       void navigate({ to: "/wallet" });
     }
   }, [hydrated, authenticated, role, navigate]);
 
-  if (!hydrated || !authenticated || role !== "admin") {
+  if (!hydrated || !authenticated || role !== "admin" || !hasAdminProof()) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background">
         <LogoMark size={40} />

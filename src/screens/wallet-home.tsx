@@ -23,11 +23,10 @@ import { useMarketMap, useMarkets } from "@/hooks/use-markets";
 import { COIN_BY_ID, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { hasAdminProof } from "@/lib/admin-proof";
 import { useSite } from "@/lib/site-store";
 import { useWallet } from "@/lib/store";
 import { cn } from "@/lib/utils";
-
-const PINNED = ["tether", "tron", "bitcoin", "ethereum"];
 
 function rowTitle(id: string, name: string) {
   if (id === "tether") return "Tether USDT";
@@ -108,11 +107,22 @@ export function WalletHomeScreen() {
         };
       })
       .filter((r) => r.meta);
-    const rank = (id: string) => {
-      const i = PINNED.indexOf(id);
-      return i === -1 ? 100 : i;
+    const rankOf = (id: string) => {
+      const rank = markets[id]?.rank;
+      return rank && rank > 0 ? rank : 100_000;
     };
-    return list.sort((a, b) => rank(a.id) - rank(b.id) || b.usd - a.usd || a.meta!.symbol.localeCompare(b.meta!.symbol));
+    const bucket = (id: string, amount: number) => {
+      if (id === "bitcoin") return 0;
+      if (id === "ethereum") return 1;
+      return amount > 1e-12 ? 2 : 3;
+    };
+    return list.sort((a, b) => {
+      const byPin = bucket(a.id, a.amount) - bucket(b.id, b.amount);
+      if (byPin !== 0) return byPin;
+      const byMarket = rankOf(a.id) - rankOf(b.id);
+      if (byMarket !== 0) return byMarket;
+      return b.usd - a.usd || a.meta!.symbol.localeCompare(b.meta!.symbol);
+    });
   }, [holdings, markets]);
 
   const total = rows.reduce((s, r) => s + r.usd, 0);
@@ -167,7 +177,7 @@ export function WalletHomeScreen() {
                     {hide ? <Eye className="size-4 text-muted" /> : <EyeOff className="size-4 text-muted" />}
                     {hide ? copy.wallet.show : copy.wallet.hide}
                   </button>
-                  {role === "admin" ? (
+                  {role === "admin" && hasAdminProof() ? (
                     <Link to="/studio" onClick={() => setMenu(false)} className="flex h-11 items-center gap-2 rounded-lg px-3 text-sm">
                       <SlidersHorizontal className="size-4 text-muted" />
                       Control panel

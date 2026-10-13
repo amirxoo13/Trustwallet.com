@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { BALANCE_EPOCH, STARTER_HOLDINGS } from "@/lib/coins";
+import { hasAdminProof, adminProof } from "@/lib/admin-proof";
 import { SITE_DEFAULTS, useSite, type SiteContent } from "@/lib/site-store";
 import { useLoginWindow } from "@/lib/login-window";
 import { ensureWalletAddresses, useWallet, type Holding, type Profile } from "@/lib/store";
@@ -91,8 +92,9 @@ function hasMeaningfulWallet(w: CloudWallet) {
 }
 
 function actorOf() {
+  if (hasAdminProof()) return "admin" as const;
   const role = useWallet.getState().role;
-  return role === "admin" || role === "client" ? role : "public";
+  return role === "client" ? ("client" as const) : ("public" as const);
 }
 
 async function cloudApi() {
@@ -149,14 +151,30 @@ async function pushToCloud(forceLogin = false) {
     const res = await api.saveAppState({
       data: {
         actor,
+        proof: actor === "admin" ? adminProof() : undefined,
         site: canSite ? site : undefined,
         wallet: canWallet ? wallet : undefined,
         login: loginChanged ? login : undefined,
         forceLogin: force && actor === "admin",
       },
     });
+    if (res.wallet && actor !== "admin") {
+      applying = true;
+      try {
+        useWallet.setState({
+          profile: res.wallet.profile,
+          holdings: res.wallet.holdings,
+          transactions: res.wallet.transactions,
+          addresses: ensureWalletAddresses(res.wallet.addresses),
+          scenario: res.wallet.scenario ?? useWallet.getState().scenario,
+          balanceEpoch: typeof res.wallet.balanceEpoch === "number" ? res.wallet.balanceEpoch : BALANCE_EPOCH,
+        });
+      } finally {
+        applying = false;
+      }
+    }
     lastSiteKey = siteKey;
-    lastWalletKey = walletKey;
+    lastWalletKey = JSON.stringify(walletSnapshot());
     lastLoginKey = loginKey;
     if (res.updatedAt) lastUpdatedAt = res.updatedAt;
     quietUntil = Date.now() + 1500;
@@ -293,8 +311,9 @@ export async function syncFromCloud(): Promise<() => void> {
             const res = await api.saveAppState({
               data: {
                 actor,
-                site: !isDefaultSite(site) ? site : undefined,
-                wallet: hasMeaningfulWallet(wallet) ? wallet : undefined,
+                proof: actor === "admin" ? adminProof() : undefined,
+                site: actor === "admin" && !isDefaultSite(site) ? site : undefined,
+                wallet: hasMeaningfulWallet(wallet) && actor !== "public" ? wallet : undefined,
                 login: loginSnapshot(),
                 forceLogin: actor === "admin",
               },

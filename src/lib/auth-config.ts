@@ -15,7 +15,6 @@ export type UserRole = "admin" | "client";
 export type ScenarioCode = "T20" | "F20" | "K20";
 
 export const SCENARIO_CODES: ScenarioCode[] = ["T20", "F20", "K20"];
-export const LOGIN_WINDOW_MS = 3 * 60 * 1000;
 
 export function isAdminEmail(email: string) {
   return email.trim().toLowerCase() === ADMIN_ACCOUNT.email.toLowerCase();

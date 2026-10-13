@@ -3,6 +3,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { LogoWord } from "@/components/logo";
+import { hasAdminProof } from "@/lib/admin-proof";
 import { useSite } from "@/lib/site-store";
 import { useWallet } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -42,7 +43,7 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
-          {hydrated && authenticated && role === "admin" ? (
+          {hydrated && authenticated && role === "admin" && hasAdminProof() ? (
             <Link to="/studio" className="hidden h-9 items-center rounded-full px-3 text-xs text-muted shadow-border sm:inline-flex">
               Panel
             </Link>
@@ -75,7 +76,7 @@ export function SiteHeader() {
                 {l.label}
               </Link>
             ))}
-            {hydrated && authenticated && role === "admin" ? (
+            {hydrated && authenticated && role === "admin" && hasAdminProof() ? (
               <Link to="/studio" onClick={() => setOpen(false)} className="rounded-md px-3 py-3 text-sm text-foreground">
                 Control panel
               </Link>

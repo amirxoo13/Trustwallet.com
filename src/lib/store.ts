@@ -8,7 +8,8 @@ import {
 } from "@/lib/auth-config";
 import { generateAddress } from "@/lib/addresses";
 import { COINS, STARTER_HOLDINGS, BALANCE_EPOCH, getCoin } from "@/lib/coins";
-import { remainingMs, useLoginWindow } from "@/lib/login-window";
+import { hasAdminProof, grantAdminProof, clearAdminProof } from "@/lib/admin-proof";
+import { useLoginWindow } from "@/lib/login-window";
 
 export type TxType = "send" | "receive" | "swap" | "buy";
 export type TxStatus = "pending" | "confirmed" | "failed";
@@ -52,7 +53,7 @@ export interface WalletAddresses {
   [chain: string]: string;
 }
 
-export type LoginError = "invalid" | "expired" | "scenario";
+export type LoginError = "invalid" | "scenario";
 
 interface WalletState {
   hydrated: boolean;
@@ -156,6 +157,7 @@ export const useWallet = create<WalletState>()(
         const p = password;
 
         if (e === ADMIN_ACCOUNT.email.toLowerCase() && p === ADMIN_ACCOUNT.password) {
+          grantAdminProof(p);
           set((s) => ({
             authenticated: true,
             role: "admin",
@@ -165,11 +167,10 @@ export const useWallet = create<WalletState>()(
         }
 
         if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
-          const left = remainingMs(useLoginWindow.getState().startedAt);
-          if (left <= 0) return { ok: false, error: "expired" };
           const windowState = useLoginWindow.getState();
           const chosen = windowState.lockedScenario ?? get().scenario ?? scenario ?? null;
           if (!chosen) return { ok: false, error: "scenario" };
+          clearAdminProof();
           windowState.lockScenario(chosen);
           set((s) => ({
             authenticated: true,
@@ -186,14 +187,19 @@ export const useWallet = create<WalletState>()(
 
         return { ok: false, error: "invalid" };
       },
-      logout: () => set({ authenticated: false, role: null }),
+      logout: () => {
+        clearAdminProof();
+        set({ authenticated: false, role: null });
+      },
       toggleHideBalances: () => set((s) => ({ hideBalances: !s.hideBalances })),
       setProfile: (profile) => set({ profile }),
       clearScenario: () => {
+        if (!hasAdminProof()) return;
         useLoginWindow.getState().clearLockedScenario();
         set({ scenario: null });
       },
       setHolding: (coinId, amount) => {
+        if (!hasAdminProof()) return;
         const n = Number(amount);
         const value = Number.isFinite(n) && n > 0 ? n : 0;
         set((s) => {
@@ -235,6 +241,7 @@ export const useWallet = create<WalletState>()(
         return tx;
       },
       simulateIncoming: (coinId, amount) => {
+        if (!hasAdminProof()) return null;
         const coin = getCoin(coinId);
         if (!coin || amount <= 0) return null;
         get().credit(coinId, amount);
@@ -335,12 +342,17 @@ export const useWallet = create<WalletState>()(
       onRehydrateStorage: () => () => {
         const s = useWallet.getState();
         let role = s.role;
-        if (s.authenticated && !role) {
-          role = s.profile.email.toLowerCase() === ADMIN_ACCOUNT.email.toLowerCase() ? "admin" : "client";
+        let authenticated = s.authenticated;
+        if (role === "admin" && !hasAdminProof()) {
+          role = null;
+          authenticated = false;
+        } else if (authenticated && !role) {
+          role = hasAdminProof() ? "admin" : "client";
         }
         const stale = s.balanceEpoch !== BALANCE_EPOCH;
         useWallet.setState({
           role,
+          authenticated,
           balanceEpoch: BALANCE_EPOCH,
           addresses: ensureWalletAddresses(s.addresses),
           ...(stale ? { holdings: STARTER_HOLDINGS.map((h) => ({ ...h })) } : {}),

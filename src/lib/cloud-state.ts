@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getSql } from "@/lib/db";
 import { BALANCE_EPOCH, STARTER_HOLDINGS } from "@/lib/coins";
-import type { ScenarioCode } from "@/lib/auth-config";
+import { ADMIN_ACCOUNT, type ScenarioCode } from "@/lib/auth-config";
 import type { Holding, Profile, Transaction, WalletAddresses } from "@/lib/store";
 import type { SiteContent } from "@/lib/site-store";
 
@@ -52,10 +52,6 @@ function stamp(v: string | Date | null | undefined): string | null {
   if (v instanceof Date) return Number.isNaN(v.getTime()) ? null : v.toISOString();
   const s = String(v);
   return s || null;
-}
-
-function isEmptyJson(raw: string | null | undefined) {
-  return !raw || raw === "{}" || Object.keys(parseObj(raw)).length === 0;
 }
 
 function fail(e: unknown): never {
@@ -134,11 +130,154 @@ export const loadAppState = createServerFn({ method: "POST" }).handler(async ():
 
 const saveInput = z.object({
   actor: z.enum(["admin", "client", "public"]),
+  proof: z.string().max(200).optional(),
   site: z.unknown().optional(),
   wallet: z.unknown().optional(),
   login: z.unknown().optional(),
   forceLogin: z.boolean().optional(),
 });
+
+function provenAdmin(proof: unknown) {
+  return typeof proof === "string" && proof === ADMIN_ACCOUNT.password;
+}
+
+const emptyProfile = (): Profile => ({
+  firstName: "",
+  lastName: "",
+  email: "",
+  address: "",
+  phone: "",
+  nationalId: "",
+  licensePhoto: null,
+});
+
+function asRecord(v: unknown): Record<string, unknown> | null {
+  return v !== null && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null;
+}
+
+function readProfile(raw: unknown, prev: Profile): Profile {
+  const src = asRecord(raw);
+  if (!src) return prev;
+  const text = (key: keyof Profile, max: number) =>
+    typeof src[key] === "string" ? (src[key] as string).slice(0, max) : prev[key];
+  const photo = src.licensePhoto;
+  return {
+    firstName: text("firstName", 120) as string,
+    lastName: text("lastName", 120) as string,
+    email: text("email", 200) as string,
+    address: text("address", 400) as string,
+    phone: text("phone", 40) as string,
+    nationalId: text("nationalId", 40) as string,
+    licensePhoto: typeof photo === "string" ? photo.slice(0, 1_800_000) : photo === null ? null : prev.licensePhoto,
+  };
+}
+
+function readHoldings(raw: unknown): Holding[] | null {
+  if (!Array.isArray(raw)) return null;
+  const out: Holding[] = [];
+  for (const item of raw) {
+    const row = asRecord(item);
+    if (!row || typeof row.id !== "string") continue;
+    const amount = typeof row.amount === "number" ? row.amount : Number(row.amount);
+    if (!Number.isFinite(amount)) continue;
+    out.push({ id: row.id.slice(0, 80), amount: Math.min(1e15, Math.max(0, amount)) });
+  }
+  return out;
+}
+
+function readTx(raw: unknown): Transaction | null {
+  const row = asRecord(raw);
+  if (!row) return null;
+  const type = row.type;
+  if (type !== "send" && type !== "swap" && type !== "buy" && type !== "receive") return null;
+  if (typeof row.id !== "string" || typeof row.coinId !== "string") return null;
+  const amount = typeof row.amount === "number" ? row.amount : Number(row.amount);
+  if (!Number.isFinite(amount) || amount < 0 || amount > 1e15) return null;
+  const fee = typeof row.fee === "number" && Number.isFinite(row.fee) ? Math.max(0, row.fee) : 0;
+  const toAmount = typeof row.toAmount === "number" && Number.isFinite(row.toAmount) ? Math.max(0, row.toAmount) : undefined;
+  const timestamp = typeof row.timestamp === "number" && Number.isFinite(row.timestamp) ? row.timestamp : Date.now();
+  return {
+    id: row.id.slice(0, 80),
+    hash: typeof row.hash === "string" ? row.hash.slice(0, 80) : "",
+    type,
+    status: row.status === "pending" || row.status === "failed" ? row.status : "confirmed",
+    timestamp,
+    symbol: typeof row.symbol === "string" ? row.symbol.slice(0, 16) : "",
+    coinId: row.coinId.slice(0, 80),
+    amount,
+    usdValue: typeof row.usdValue === "number" && Number.isFinite(row.usdValue) ? row.usdValue : 0,
+    fromAddress: typeof row.fromAddress === "string" ? row.fromAddress.slice(0, 160) : undefined,
+    toAddress: typeof row.toAddress === "string" ? row.toAddress.slice(0, 160) : undefined,
+    toSymbol: typeof row.toSymbol === "string" ? row.toSymbol.slice(0, 16) : undefined,
+    toCoinId: typeof row.toCoinId === "string" ? row.toCoinId.slice(0, 80) : undefined,
+    toAmount,
+    fee,
+    feeSymbol: typeof row.feeSymbol === "string" ? row.feeSymbol.slice(0, 16) : "",
+    note: typeof row.note === "string" ? row.note.slice(0, 200) : undefined,
+  };
+}
+
+function addHolding(holdings: Holding[], id: string, delta: number): Holding[] {
+  const next = holdings.map((h) => ({ ...h }));
+  const i = next.findIndex((h) => h.id === id);
+  const cur = i >= 0 ? next[i].amount : 0;
+  const amount = Math.min(1e15, Math.max(0, cur + delta));
+  if (i >= 0) next[i] = { id, amount };
+  else next.push({ id, amount });
+  return next;
+}
+
+function applyClientTx(holdings: Holding[], tx: Transaction): Holding[] {
+  if (tx.type === "send") {
+    const fee = !tx.feeSymbol || tx.feeSymbol === tx.symbol ? tx.fee : 0;
+    return addHolding(holdings, tx.coinId, -(tx.amount + fee));
+  }
+  if (tx.type === "swap") {
+    const debited = addHolding(holdings, tx.coinId, -tx.amount);
+    return tx.toCoinId && tx.toAmount ? addHolding(debited, tx.toCoinId, tx.toAmount) : debited;
+  }
+  if (tx.type === "buy") return addHolding(holdings, tx.coinId, tx.amount);
+  return holdings;
+}
+
+function baseHoldings(stored: Record<string, unknown>): Holding[] {
+  if (stored.balanceEpoch === BALANCE_EPOCH) {
+    const parsed = readHoldings(stored.holdings);
+    if (parsed && parsed.length) return parsed;
+  }
+  return STARTER_HOLDINGS.map((h) => ({ ...h }));
+}
+
+/** Client may update their profile and apply send/swap/buy. They cannot rewrite balances or site content. */
+function mergeClientWallet(storedRaw: string, incoming: unknown): CloudWallet {
+  const stored = parseObj(storedRaw);
+  const next = asRecord(incoming);
+  const prevProfile = readProfile(stored.profile, emptyProfile());
+  const profile = readProfile(next?.profile, prevProfile);
+  let holdings = baseHoldings(stored);
+  const prevTxs = Array.isArray(stored.transactions)
+    ? stored.transactions.map(readTx).filter((t): t is Transaction => Boolean(t))
+    : [];
+  const known = new Set(prevTxs.map((t) => t.id));
+  const fresh = (Array.isArray(next?.transactions) ? next.transactions : [])
+    .map(readTx)
+    .filter((t): t is Transaction => Boolean(t))
+    .filter((t) => !known.has(t.id) && (t.type === "send" || t.type === "swap" || t.type === "buy"))
+    .slice(0, 30)
+    .sort((a, b) => a.timestamp - b.timestamp);
+  for (const tx of fresh) holdings = applyClientTx(holdings, tx);
+  const transactions = [...fresh, ...prevTxs].sort((a, b) => b.timestamp - a.timestamp).slice(0, 200);
+  const prevAddresses = asRecord(stored.addresses) ?? {};
+  const incomingAddresses = asRecord(next?.addresses) ?? {};
+  const addresses: WalletAddresses = {};
+  const source = Object.keys(prevAddresses).length ? prevAddresses : incomingAddresses;
+  for (const [chain, addr] of Object.entries(source)) {
+    if (typeof addr === "string" && addr.length > 0 && addr.length < 200) addresses[chain.slice(0, 40)] = addr;
+  }
+  const scenario =
+    stored.scenario === "T20" || stored.scenario === "F20" || stored.scenario === "K20" ? stored.scenario : null;
+  return { profile, holdings, transactions, addresses, scenario, balanceEpoch: BALANCE_EPOCH };
+}
 
 export const loadAppStateMeta = createServerFn({ method: "POST" }).handler(
   async (): Promise<{ empty: boolean; updatedAt: string | null }> => {
@@ -158,44 +297,56 @@ export const loadAppStateMeta = createServerFn({ method: "POST" }).handler(
 
 export const saveAppState = createServerFn({ method: "POST" })
   .validator(saveInput)
-  .handler(async ({ data }): Promise<{ ok: true; updatedAt: string | null }> => {
+  .handler(async ({ data }): Promise<{ ok: true; updatedAt: string | null; wallet: CloudWallet | null }> => {
     try {
       const row = await readRow();
       let siteJson = row.site_json;
       let walletJson = row.wallet_json;
       let loginJson = row.login_json;
-      const vacant = isEmptyJson(row.site_json) && isEmptyJson(row.wallet_json);
+      const admin = provenAdmin(data.proof);
+      let changed = false;
+      let merged: CloudWallet | null = null;
 
-      if (data.site != null) {
-        if (data.actor !== "admin" && !vacant) throw new Error("forbidden");
+      if (data.site != null && admin) {
         siteJson = JSON.stringify(data.site);
+        changed = true;
       }
-      if (data.wallet != null) {
-        if (data.actor !== "admin" && data.actor !== "client" && !vacant) throw new Error("forbidden");
+      if (data.wallet != null && admin) {
         walletJson = JSON.stringify(data.wallet);
+        changed = true;
+      } else if (data.wallet != null && data.actor === "client") {
+        merged = mergeClientWallet(row.wallet_json, data.wallet);
+        const next = JSON.stringify(merged);
+        if (next !== walletJson) {
+          walletJson = next;
+          changed = true;
+        }
       }
       if (data.login != null) {
         const incoming = data.login as CloudLogin;
         const prev = parseObj(loginJson) as CloudLogin;
-        if (data.actor === "admin" && data.forceLogin) {
-          loginJson = JSON.stringify({
-            startedAt: incoming.startedAt ?? null,
-            lockedScenario: incoming.lockedScenario ?? null,
-          });
-        } else {
-          loginJson = JSON.stringify({
-            startedAt: prev.startedAt ?? incoming.startedAt ?? null,
-            lockedScenario: prev.lockedScenario ?? incoming.lockedScenario ?? null,
-          });
+        const nextLogin =
+          admin && data.forceLogin
+            ? { startedAt: incoming.startedAt ?? null, lockedScenario: incoming.lockedScenario ?? null }
+            : {
+                startedAt: prev.startedAt ?? incoming.startedAt ?? null,
+                lockedScenario: prev.lockedScenario ?? incoming.lockedScenario ?? null,
+              };
+        const nextJson = JSON.stringify(nextLogin);
+        if (nextJson !== loginJson) {
+          loginJson = nextJson;
+          changed = true;
         }
       }
+
+      if (!changed) return { ok: true, updatedAt: stamp(row.updated_at), wallet: merged };
 
       const sql = await getSql();
       const updated = await sql.query<{ updated_at: string | Date | null }>(
         "update app_state set site_json = $1, wallet_json = $2, login_json = $3, updated_at = now() where id = $4 returning updated_at",
         [siteJson, walletJson, loginJson, ROW_ID],
       );
-      return { ok: true, updatedAt: stamp(updated[0]?.updated_at) };
+      return { ok: true, updatedAt: stamp(updated[0]?.updated_at), wallet: merged };
     } catch (e) {
       fail(e);
     }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { hasAdminProof } from "@/lib/admin-proof";
 
 export interface SiteContent {
   brandName: string;
@@ -248,8 +249,14 @@ export const useSite = create<SiteState>()(
     (set) => ({
       ...SITE_DEFAULTS,
       hydrated: false,
-      patch: (partial) => set(partial),
-      reset: () => set({ ...SITE_DEFAULTS }),
+      patch: (partial) => {
+        if (!hasAdminProof()) return;
+        set(partial);
+      },
+      reset: () => {
+        if (!hasAdminProof()) return;
+        set({ ...SITE_DEFAULTS });
+      },
     }),
     {
       name: "aurex-site-en",

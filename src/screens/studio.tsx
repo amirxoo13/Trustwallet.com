@@ -12,7 +12,6 @@ import { readImageFile } from "@/lib/image-file";
 import { SITE_TEXT_FIELDS, useSite, type SiteContent } from "@/lib/site-store";
 import { holdingAmount, useWallet, type Profile } from "@/lib/store";
 import { CLIENT_ACCOUNT } from "@/lib/auth-config";
-import { formatCountdown, remainingMs, useLoginWindow } from "@/lib/login-window";
 import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
 
 type Tab = "brand" | "pages" | "images" | "profile" | "balances" | "notices";
@@ -346,7 +345,6 @@ export function StudioScreen() {
 
             {tab === "notices" ? (
               <div className="mt-8 grid gap-8">
-                <LoginWindowAdmin />
                 <TextGroup group="Send notices" fields={SITE_TEXT_FIELDS} site={site} set={set} />
                 <TextGroup group="Send confirmation" fields={SITE_TEXT_FIELDS} site={site} set={set} />
                 <p className="text-xs text-muted">
@@ -371,38 +369,6 @@ export function StudioScreen() {
         )}
       </div>
     </div>
-  );
-}
-
-function LoginWindowAdmin() {
-  const startedAt = useLoginWindow((s) => s.startedAt);
-  const reset = useLoginWindow((s) => s.reset);
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, []);
-  const left = remainingMs(startedAt, now);
-  return (
-    <section className="rounded-xl bg-card p-4 shadow-border">
-      <h2 className="font-display text-lg font-semibold">Client login timer</h2>
-      <p className="mt-1 text-sm text-muted">
-        The client has 3 minutes on the login screen. After 00:00 they cannot sign in until you reset.
-      </p>
-      <p className="mt-4 font-mono text-3xl tabular">{formatCountdown(left)}</p>
-      <Button
-        type="button"
-        variant="solid"
-        className="mt-4"
-        onClick={() => {
-          reset();
-          saveCloudNow(true);
-          toast.success("Login timer restarted (3:00)");
-        }}
-      >
-        Reset timer to 3:00
-      </Button>
-    </section>
   );
 }
 

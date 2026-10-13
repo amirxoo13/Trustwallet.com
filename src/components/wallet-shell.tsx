@@ -16,6 +16,7 @@ import {
 import { LogoMark } from "@/components/logo";
 import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
+import { hasAdminProof } from "@/lib/admin-proof";
 import { useWallet } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -95,7 +96,7 @@ export function WalletShell({
               );
             })}
           </nav>
-          {role === "admin" ? (
+          {role === "admin" && hasAdminProof() ? (
             <Link
               to="/studio"
               className={cn(
@@ -138,7 +139,7 @@ export function WalletShell({
                 </button>
                 <p className="truncate font-display text-sm font-semibold">{title}</p>
               </div>
-              {role === "admin" ? (
+              {role === "admin" && hasAdminProof() ? (
                 <Link to="/studio" className="inline-flex size-11 items-center justify-center rounded-md text-muted" aria-label="Control panel">
                   <SlidersHorizontal className="size-5" />
                 </Link>
