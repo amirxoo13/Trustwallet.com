@@ -131,7 +131,7 @@ export function WalletShell({
 
         <div className="flex min-w-0 flex-1 flex-col pb-24 md:pb-0">
           {!home && title ? (
-            <div className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
+            <div className="sticky top-[var(--safe-top)] z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/95 px-4 backdrop-blur-md">
               <div className="flex min-w-0 flex-1 items-center gap-1">
                 <button type="button" onClick={goBack} className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-muted" aria-label="Back">
                   <ArrowLeft className="size-5" />

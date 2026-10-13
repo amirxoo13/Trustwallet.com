@@ -5,7 +5,7 @@ import { r as cn } from "./logo-onkM7cXt.mjs";
 import { x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { M as ChevronDown, P as ChartColumn, f as Search, h as Rocket, o as Star } from "../_libs/lucide-react.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { d as formatPct, p as formatUsd } from "./router-CBKnuIek.mjs";
+import { d as formatPct, p as formatUsd } from "./router-DwIgdOrv.mjs";
 import { t as CoinIcon } from "./coin-icon-BJEiOmq2.mjs";
 import { a as fetchSearchMarkets, o as fetchTopTraded, s as fetchTrendingMarkets, t as fetchCategoryMarkets } from "./prices-CmqijxtN.mjs";
 import { n as createServerFn } from "./ssr.mjs";

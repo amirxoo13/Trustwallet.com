@@ -1,1 +1,0 @@
-import{R as e}from"./store-9ZbJeKcM.js";import{t}from"./swap-markets-DRyAiV45.js";import{t as n}from"./wallet-shell-p-mgL4rB.js";import{T as r}from"./index-BF8vAnYn.js";var i=e();function a(){let e=r();return(0,i.jsx)(n,{home:!0,children:(0,i.jsx)(t,{onSwap:()=>void e({to:`/wallet/swap`})})})}export{a as component};

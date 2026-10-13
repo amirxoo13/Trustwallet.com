@@ -170,7 +170,7 @@ export function StudioScreen() {
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border bg-background/90 px-4 backdrop-blur-md">
+      <header className="sticky top-[var(--safe-top)] z-20 flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <PageBack to="/wallet" />
           <LogoWord />

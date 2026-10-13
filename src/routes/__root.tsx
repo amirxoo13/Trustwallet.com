@@ -60,6 +60,7 @@ function RootDocument() {
             <Toaster
               theme="dark"
               position="top-center"
+              offset={{ top: "calc(var(--safe-top) + 12px)" }}
               toastOptions={{
                 style: {
                   background: "#181b22",

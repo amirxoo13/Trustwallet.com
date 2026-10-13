@@ -41,6 +41,19 @@
 }
 
 @layer base {
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @supports (-webkit-touch-callout: none) {
+    @media (max-width: 900px) {
+      :root {
+        --safe-top: max(env(safe-area-inset-top, 0px), 59px);
+      }
+    }
+  }
+
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -67,6 +80,19 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-tap-highlight-color: transparent;
+    padding-top: var(--safe-top);
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 60;
+    height: var(--safe-top);
+    background: var(--color-background);
+    pointer-events: none;
   }
 
   h1,

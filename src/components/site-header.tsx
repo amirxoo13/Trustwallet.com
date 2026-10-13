@@ -23,7 +23,7 @@ export function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-[var(--safe-top)] z-40 border-b border-border bg-background/95 backdrop-blur-md">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:h-16 sm:px-4">
         <Link to="/" className="min-w-0">
           <LogoWord className="truncate" />
