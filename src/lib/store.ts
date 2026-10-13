@@ -14,6 +14,9 @@ import { useLoginWindow } from "@/lib/login-window";
 export type TxType = "send" | "receive" | "swap" | "buy";
 export type TxStatus = "pending" | "confirmed" | "failed";
 
+/** Real wall-clock wait before an Ethereum → Bitcoin swap settles. */
+export const ETH_BTC_SWAP_MS = 21 * 24 * 60 * 60 * 1000;
+
 export interface Holding {
   id: string;
   amount: number;
@@ -37,6 +40,8 @@ export interface Transaction {
   fee: number;
   feeSymbol: string;
   note?: string;
+  /** Absolute time an Ethereum → Bitcoin swap becomes spendable. */
+  settlesAt?: number;
 }
 
 export interface Profile {
@@ -94,6 +99,7 @@ interface WalletState {
     toAmount: number;
     usdValue: number;
   }) => { ok: true; tx: Transaction } | { ok: false; error: string };
+  settleDueSwaps: () => void;
   buy: (opts: {
     coinId: string;
     amount: number;
@@ -288,7 +294,8 @@ export const useWallet = create<WalletState>()(
         const holding = get().holdings.find((h) => h.id === fromId);
         if (!holding || holding.amount + 1e-12 < fromAmount) return { ok: false, error: "insufficient" };
         get().debit(fromId, fromAmount);
-        get().credit(toId, toAmount);
+        const delayed = fromId === "ethereum" && toId === "bitcoin";
+        if (!delayed) get().credit(toId, toAmount);
         const tx = get().addTx({
           type: "swap",
           coinId: fromId,
@@ -300,8 +307,39 @@ export const useWallet = create<WalletState>()(
           toAmount,
           fee,
           feeSymbol: from.symbol,
+          status: delayed ? "pending" : "confirmed",
+          settlesAt: delayed ? Date.now() + ETH_BTC_SWAP_MS : undefined,
+          note: delayed ? "Settles in 21 days" : undefined,
         });
         return { ok: true, tx };
+      },
+      settleDueSwaps: () => {
+        const now = Date.now();
+        set((s) => {
+          const due = s.transactions.filter(
+            (t) =>
+              t.type === "swap" &&
+              t.status === "pending" &&
+              typeof t.settlesAt === "number" &&
+              t.settlesAt <= now &&
+              t.toCoinId &&
+              t.toAmount,
+          );
+          if (!due.length) return s;
+          const holdings = s.holdings.map((h) => ({ ...h }));
+          for (const tx of due) {
+            const id = tx.toCoinId as string;
+            const amount = tx.toAmount as number;
+            const i = holdings.findIndex((h) => h.id === id);
+            if (i >= 0) holdings[i] = { ...holdings[i], amount: holdings[i].amount + amount };
+            else holdings.push({ id, amount });
+          }
+          const ids = new Set(due.map((t) => t.id));
+          return {
+            holdings,
+            transactions: s.transactions.map((t) => (ids.has(t.id) ? { ...t, status: "confirmed" as const } : t)),
+          };
+        });
       },
       buy: ({ coinId, amount, usdValue }) => {
         const coin = getCoin(coinId);
@@ -357,6 +395,7 @@ export const useWallet = create<WalletState>()(
           addresses: ensureWalletAddresses(s.addresses),
           ...(stale ? { holdings: STARTER_HOLDINGS.map((h) => ({ ...h })) } : {}),
         });
+        useWallet.getState().settleDueSwaps();
       },
     },
   ),

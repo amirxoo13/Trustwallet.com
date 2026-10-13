@@ -34,6 +34,16 @@ export function formatAmount(value: number, max = 8): string {
   return str;
 }
 
+export function formatDuration(ms: number): string {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const seconds = total % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
+}
+
 export function formatPct(value: number): string {
   if (!Number.isFinite(value)) return "0.00%";
   const sign = value > 0 ? "+" : "";

@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, Plus } from "lucide-react";
 import { WalletShell } from "@/components/wallet-shell";
-import { formatAmount, formatTime, formatUsdFull, shortAddress } from "@/lib/format";
+import { formatAmount, formatDuration, formatTime, formatUsdFull, shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useWallet, type TxType } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,12 @@ const icons: Record<TxType, typeof ArrowUpRight> = {
 export function WalletActivityScreen() {
   const txs = useWallet((s) => s.transactions);
   const copy = t();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
   return (
     <WalletShell title={copy.wallet.activity}>
@@ -48,6 +55,9 @@ export function WalletActivityScreen() {
                     {tx.type === "swap" && tx.toSymbol ? (
                       <p className="mt-1 text-xs text-muted">
                         → {formatAmount(tx.toAmount ?? 0, 6)} {tx.toSymbol}
+                        {tx.status === "pending" && tx.settlesAt
+                          ? ` · Pending ${formatDuration(tx.settlesAt - now)}`
+                          : ""}
                       </p>
                     ) : null}
                     {tx.toAddress ? (

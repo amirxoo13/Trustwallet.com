@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowDown, Check } from "lucide-react";
 import { CoinIcon } from "@/components/coin-icon";
@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { WalletShell } from "@/components/wallet-shell";
 import { useMarketMap } from "@/hooks/use-markets";
 import { COIN_BY_ID, COINS, usdPrice } from "@/lib/coins";
-import { formatAmount, formatUsdFull } from "@/lib/format";
+import { formatAmount, formatDuration, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
-import { holdingAmount, useWallet } from "@/lib/store";
+import { ETH_BTC_SWAP_MS, holdingAmount, useWallet } from "@/lib/store";
 
 export function WalletSwapScreen() {
   const holdings = useWallet((s) => s.holdings);
+  const transactions = useWallet((s) => s.transactions);
   const swap = useWallet((s) => s.swap);
   const copy = t();
   const markets = useMarketMap();
@@ -20,9 +21,11 @@ export function WalletSwapScreen() {
   const [fromId, setFromId] = useState("tether");
   const [toId, setToId] = useState("bitcoin");
   const [amount, setAmount] = useState("");
-  const [step, setStep] = useState<"form" | "done">("form");
+  const [step, setStep] = useState<"form" | "pending" | "done">("form");
   const [error, setError] = useState("");
   const [hash, setHash] = useState("");
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const from = COIN_BY_ID[fromId];
   const to = COIN_BY_ID[toId];
@@ -34,6 +37,20 @@ export function WalletSwapScreen() {
   const usd = pay * fromPx;
   const receive = toPx > 0 ? (usd * 0.997) / toPx : 0;
   const rate = fromPx && toPx ? fromPx / toPx : 0;
+  const ethToBtc = fromId === "ethereum" && toId === "bitcoin";
+  const pendingSwaps = transactions.filter(
+    (tx) => tx.type === "swap" && tx.status === "pending" && tx.coinId === "ethereum" && tx.toCoinId === "bitcoin",
+  );
+  const activePending = transactions.find((tx) => tx.id === pendingId);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    if (step === "pending" && activePending?.status === "confirmed") setStep("done");
+  }, [step, activePending?.status]);
 
   const canSwap = useMemo(() => {
     return from && to && fromId !== toId && pay > 0 && pay <= avail + 1e-12 && receive > 0;
@@ -72,6 +89,11 @@ export function WalletSwapScreen() {
       return;
     }
     setHash(res.tx.hash);
+    if (res.tx.status === "pending") {
+      setPendingId(res.tx.id);
+      setStep("pending");
+      return;
+    }
     setStep("done");
   }
 
@@ -166,8 +188,54 @@ export function WalletSwapScreen() {
               </div>
             </dl>
             {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
+            {ethToBtc ? (
+              <p className="mt-4 text-sm text-muted">
+                Ethereum to Bitcoin takes 21 real days. This applies to one token or the full balance. Bitcoin is added
+                only when the timer reaches zero.
+              </p>
+            ) : null}
+            {pendingSwaps.length ? (
+              <div className="mt-4 space-y-2">
+                {pendingSwaps.map((tx) => (
+                  <div key={tx.id} className="rounded-xl bg-card px-4 py-3 text-sm shadow-border">
+                    <p className="font-medium">Swap in progress</p>
+                    <p className="mt-1 text-muted">
+                      {formatAmount(tx.amount)} {tx.symbol} → {formatAmount(tx.toAmount ?? 0, 6)} {tx.toSymbol}
+                    </p>
+                    <p className="mt-2 font-mono text-base text-foreground">
+                      {formatDuration((tx.settlesAt ?? now + ETH_BTC_SWAP_MS) - now)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : null}
             <Button variant="solid" size="lg" className="mt-6 w-full" disabled={!canSwap} onClick={confirm}>
               {copy.wallet.confirm} {from && to ? `${from.symbol} → ${to.symbol}` : ""}
+            </Button>
+          </div>
+        ) : step === "pending" ? (
+          <div className="mt-10 flex flex-col items-center text-center">
+            <h2 className="font-display text-xl font-semibold">Swap in progress</h2>
+            <p className="mt-2 max-w-xs text-sm text-muted">
+              Ethereum is locked now. Bitcoin is credited after 21 real days, counted from the moment you confirmed.
+            </p>
+            <p className="mt-6 font-mono text-3xl tabular">
+              {formatDuration((activePending?.settlesAt ?? now + ETH_BTC_SWAP_MS) - now)}
+            </p>
+            <div className="mt-4 flex items-center gap-2 text-sm">
+              <CoinIcon id={fromId} symbol={from?.symbol ?? ""} size={24} />
+              <span>
+                {formatAmount(pay)} {from?.symbol}
+              </span>
+              <span className="text-muted">→</span>
+              <CoinIcon id={toId} symbol={to?.symbol ?? ""} size={24} />
+              <span>
+                {formatAmount(receive, 6)} {to?.symbol}
+              </span>
+            </div>
+            <p className="mt-3 max-w-xs break-all font-mono text-xs text-muted">{hash}</p>
+            <Button asChild variant="solid" className="mt-8 w-full">
+              <Link to="/wallet">{copy.wallet.done}</Link>
             </Button>
           </div>
         ) : (

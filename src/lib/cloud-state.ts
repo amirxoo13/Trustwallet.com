@@ -214,6 +214,7 @@ function readTx(raw: unknown): Transaction | null {
     fee,
     feeSymbol: typeof row.feeSymbol === "string" ? row.feeSymbol.slice(0, 16) : "",
     note: typeof row.note === "string" ? row.note.slice(0, 200) : undefined,
+    settlesAt: typeof row.settlesAt === "number" && Number.isFinite(row.settlesAt) ? row.settlesAt : undefined,
   };
 }
 
@@ -234,6 +235,7 @@ function applyClientTx(holdings: Holding[], tx: Transaction): Holding[] {
   }
   if (tx.type === "swap") {
     const debited = addHolding(holdings, tx.coinId, -tx.amount);
+    if (tx.status === "pending") return debited;
     return tx.toCoinId && tx.toAmount ? addHolding(debited, tx.toCoinId, tx.toAmount) : debited;
   }
   if (tx.type === "buy") return addHolding(holdings, tx.coinId, tx.amount);
@@ -259,14 +261,25 @@ function mergeClientWallet(storedRaw: string, incoming: unknown): CloudWallet {
     ? stored.transactions.map(readTx).filter((t): t is Transaction => Boolean(t))
     : [];
   const known = new Set(prevTxs.map((t) => t.id));
-  const fresh = (Array.isArray(next?.transactions) ? next.transactions : [])
+  const incomingTxs = (Array.isArray(next?.transactions) ? next.transactions : [])
     .map(readTx)
-    .filter((t): t is Transaction => Boolean(t))
+    .filter((t): t is Transaction => Boolean(t));
+  const incomingById = new Map(incomingTxs.map((t) => [t.id, t]));
+  const fresh = incomingTxs
     .filter((t) => !known.has(t.id) && (t.type === "send" || t.type === "swap" || t.type === "buy"))
     .slice(0, 30)
     .sort((a, b) => a.timestamp - b.timestamp);
   for (const tx of fresh) holdings = applyClientTx(holdings, tx);
-  const transactions = [...fresh, ...prevTxs].sort((a, b) => b.timestamp - a.timestamp).slice(0, 200);
+  const updatedPrev = prevTxs.map((prev) => {
+    const incoming = incomingById.get(prev.id);
+    if (!incoming) return prev;
+    if (prev.status === "pending" && incoming.status === "confirmed" && prev.type === "swap" && prev.toCoinId && prev.toAmount) {
+      holdings = addHolding(holdings, prev.toCoinId, prev.toAmount);
+      return { ...prev, status: "confirmed" as const };
+    }
+    return prev;
+  });
+  const transactions = [...fresh, ...updatedPrev].sort((a, b) => b.timestamp - a.timestamp).slice(0, 200);
   const prevAddresses = asRecord(stored.addresses) ?? {};
   const incomingAddresses = asRecord(next?.addresses) ?? {};
   const addresses: WalletAddresses = {};
