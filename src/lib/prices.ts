@@ -7,6 +7,8 @@ export interface MarketCoin {
   image: string;
   price: number;
   change24h: number;
+  change1h: number;
+  change7d: number;
   marketCap: number;
   volume24h: number;
   sparkline: number[];
@@ -62,6 +64,8 @@ function fromCoinGecko(raw: unknown): MarketCoin[] | null {
       image: String(r.image ?? ""),
       price: num(r.current_price),
       change24h: num(r.price_change_percentage_24h),
+      change1h: num(r.price_change_percentage_1h_in_currency),
+      change7d: num(r.price_change_percentage_7d_in_currency),
       marketCap: num(r.market_cap),
       volume24h: num(r.total_volume),
       sparkline,
@@ -95,6 +99,8 @@ function fromBinance(raw: unknown, catalog: CoinMeta[]): MarketCoin[] | null {
       image: coin.image,
       price: price || 1,
       change24h: change,
+      change1h: change,
+      change7d: change,
       marketCap: 0,
       volume24h: num(row?.quoteVolume),
       sparkline: [],
@@ -198,4 +204,74 @@ export function marketMap(list: MarketCoin[]): Record<string, MarketCoin> {
     map[m.symbol.toUpperCase()] = m;
   }
   return map;
+}
+
+const BOARD_MS = 60_000;
+const boardCache = new Map<string, CacheEntry<MarketCoin[]>>();
+
+async function geckoMarkets(params: string): Promise<MarketCoin[]> {
+  const hit = boardCache.get(params);
+  if (hit && Date.now() - hit.at < BOARD_MS) return hit.data;
+  const raw = await getJson(
+    `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&sparkline=true&price_change_percentage=1h,24h,7d&${params}`,
+  );
+  const parsed = fromCoinGecko(raw) ?? [];
+  boardCache.set(params, { at: Date.now(), data: parsed });
+  return parsed;
+}
+
+export function fetchTopTraded(): Promise<MarketCoin[]> {
+  return geckoMarkets("order=volume_desc&per_page=12&page=1");
+}
+
+export function fetchCategoryMarkets(category: string): Promise<MarketCoin[]> {
+  return geckoMarkets(`category=${encodeURIComponent(category)}&order=volume_desc&per_page=40&page=1`);
+}
+
+export async function fetchTrendingMarkets(): Promise<MarketCoin[]> {
+  const key = "trending";
+  const hit = boardCache.get(key);
+  if (hit && Date.now() - hit.at < BOARD_MS) return hit.data;
+  const raw = await getJson("https://api.coingecko.com/api/v3/search/trending");
+  const rec = asRecord(raw);
+  const coins = Array.isArray(rec?.coins) ? rec.coins : [];
+  const ids: string[] = [];
+  for (const item of coins) {
+    const row = asRecord(item);
+    const coin = asRecord(row?.item);
+    if (typeof coin?.id === "string") ids.push(coin.id);
+  }
+  if (!ids.length) return [];
+  const list = await geckoMarkets(`ids=${ids.join(",")}&order=market_cap_desc&per_page=20&page=1`);
+  boardCache.set(key, { at: Date.now(), data: list });
+  return list;
+}
+
+export async function fetchSearchMarkets(query: string): Promise<MarketCoin[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const key = `search:${q.toLowerCase()}`;
+  const hit = boardCache.get(key);
+  if (hit && Date.now() - hit.at < BOARD_MS) return hit.data;
+  const raw = await getJson(`https://api.coingecko.com/api/v3/search?query=${encodeURIComponent(q)}`);
+  const rec = asRecord(raw);
+  const coins = Array.isArray(rec?.coins) ? rec.coins : [];
+  const ids: string[] = [];
+  for (const item of coins) {
+    const row = asRecord(item);
+    if (typeof row?.id === "string") ids.push(row.id);
+    if (ids.length >= 15) break;
+  }
+  if (!ids.length) {
+    boardCache.set(key, { at: Date.now(), data: [] });
+    return [];
+  }
+  const list = await geckoMarkets(`ids=${ids.join(",")}&order=market_cap_desc&per_page=15&page=1`);
+  boardCache.set(key, { at: Date.now(), data: list });
+  return list;
+}
+
+export async function fetchCoinMarket(id: string): Promise<MarketCoin | null> {
+  const list = await geckoMarkets(`ids=${encodeURIComponent(id)}&order=market_cap_desc&per_page=1&page=1`);
+  return list[0] ?? null;
 }

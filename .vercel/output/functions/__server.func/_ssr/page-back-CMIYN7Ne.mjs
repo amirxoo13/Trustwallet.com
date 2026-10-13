@@ -1,7 +1,7 @@
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { r as cn } from "./logo-fUdwjYeW.mjs";
 import { S as useRouter } from "../_libs/@tanstack/react-router+[...].mjs";
-import { j as ArrowLeft } from "../_libs/lucide-react.mjs";
+import { F as ArrowLeft } from "../_libs/lucide-react.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/page-back-CMIYN7Ne.js
 var import_jsx_runtime = require_jsx_runtime();
 function PageBack({ to, label = "Back", className }) {

@@ -10,6 +10,7 @@ import { COIN_BY_ID, COINS, usdPrice } from "@/lib/coins";
 import { formatAmount, formatDuration, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { ETH_BTC_SWAP_MS, holdingAmount, useWallet } from "@/lib/store";
+import { SwapMarkets } from "@/screens/swap-markets";
 
 export function WalletSwapScreen() {
   const holdings = useWallet((s) => s.holdings);
@@ -26,6 +27,7 @@ export function WalletSwapScreen() {
   const [hash, setHash] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
+  const [view, setView] = useState<"markets" | "trade">("markets");
 
   const from = COIN_BY_ID[fromId];
   const to = COIN_BY_ID[toId];
@@ -99,9 +101,20 @@ export function WalletSwapScreen() {
 
   const assetOptions = COINS;
 
+  if (view === "markets") {
+    return (
+      <WalletShell home>
+        <SwapMarkets onSwap={() => setView("trade")} />
+      </WalletShell>
+    );
+  }
+
   return (
     <WalletShell title={copy.wallet.swap}>
       <div className="mx-auto w-full max-w-md px-4 py-8">
+        <button type="button" onClick={() => setView("markets")} className="text-sm text-muted">
+          Markets
+        </button>
         <h1 className="font-display text-2xl font-semibold">{copy.wallet.swap}</h1>
         {step === "form" ? (
           <div className="mt-6">

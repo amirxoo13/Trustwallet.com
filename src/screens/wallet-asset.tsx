@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowDownLeft } from "lucide-react";
 import { CoinIcon } from "@/components/coin-icon";
 import { PriceChart } from "@/components/price-chart";
@@ -9,6 +10,7 @@ import { useChart, useMarketMap } from "@/hooks/use-markets";
 import { getCoin, usdPrice } from "@/lib/coins";
 import { formatAmount, formatPct, formatUsd, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { fetchCoinMarket } from "@/lib/prices";
 import { holdingAmount, useWallet } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -17,7 +19,14 @@ export function WalletAssetScreen({ id }: { id: string }) {
   const copy = t();
   const coin = getCoin(id);
   const markets = useMarketMap();
-  const market = markets[id];
+  const listed = markets[id];
+  const extra = useQuery({
+    queryKey: ["coin-market", id],
+    queryFn: () => fetchCoinMarket(id),
+    enabled: !listed,
+    staleTime: 60_000,
+  });
+  const market = listed ?? extra.data ?? undefined;
   const [days, setDays] = useState(7);
   const chart = useChart(id, days);
   const amount = holdingAmount(holdings, id);
@@ -27,13 +36,66 @@ export function WalletAssetScreen({ id }: { id: string }) {
   const points = chart.data ?? [];
   const chartUp = points.length >= 2 ? points[points.length - 1].p >= points[0].p : up;
 
-  if (!coin) {
+  if (!coin && extra.isLoading) {
     return (
       <WalletShell title="Asset">
-        <p className="p-8 text-sm text-muted">Unknown asset.</p>
+        <div className="mx-auto max-w-xl px-4 py-8">
+          <div className="h-40 animate-pulse rounded-xl bg-card" />
+        </div>
       </WalletShell>
     );
   }
+
+  if (!coin && !market) {
+    return (
+      <WalletShell title="Asset">
+        <p className="p-8 text-sm text-muted">This asset is not on the market feed.</p>
+      </WalletShell>
+    );
+  }
+
+  if (!coin && market) {
+    return (
+      <WalletShell title={market.symbol}>
+        <div className="mx-auto w-full max-w-xl px-4 py-8">
+          <div className="flex items-center gap-3">
+            <CoinIcon id={market.id} symbol={market.symbol} image={market.image} size={48} />
+            <div>
+              <h1 className="font-display text-xl font-semibold">{market.name}</h1>
+              <p className="text-sm text-muted">{market.symbol}</p>
+            </div>
+          </div>
+          <p className="mt-6 font-display text-3xl font-semibold tabular">{formatUsdFull(market.price)}</p>
+          <p className={cn("mt-1 text-sm tabular", up ? "text-success" : "text-danger")}>{formatPct(market.change24h)}</p>
+          <div className="mt-6">
+            {chart.isLoading ? (
+              <div className="h-56 animate-pulse rounded-xl bg-card" />
+            ) : points.length ? (
+              <PriceChart data={points} positive={chartUp} />
+            ) : (
+              <p className="py-10 text-center text-sm text-muted">No chart data.</p>
+            )}
+          </div>
+          <dl className="mt-6 grid grid-cols-2 gap-3 text-sm">
+            <div className="rounded-xl bg-card p-4 shadow-border">
+              <dt className="text-xs text-muted">{copy.markets.cap}</dt>
+              <dd className="mt-1 tabular">{formatUsd(market.marketCap)}</dd>
+            </div>
+            <div className="rounded-xl bg-card p-4 shadow-border">
+              <dt className="text-xs text-muted">{copy.markets.vol}</dt>
+              <dd className="mt-1 tabular">{formatUsd(market.volume24h)}</dd>
+            </div>
+          </dl>
+          <p className="mt-6 text-sm text-muted">Live market data. This token is not in the wallet, so it cannot be sent from here.</p>
+          <Button asChild variant="solid" className="mt-4 w-full">
+            <Link to="/wallet/swap">Swap</Link>
+          </Button>
+        </div>
+      </WalletShell>
+    );
+  }
+
+  if (!coin) return null;
 
   return (
     <WalletShell title={coin.symbol}>
