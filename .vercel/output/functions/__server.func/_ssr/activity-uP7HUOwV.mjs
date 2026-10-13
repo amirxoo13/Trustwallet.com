@@ -4,7 +4,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { M as ArrowLeftRight, P as ArrowDownLeft, k as ArrowUpRight, m as Plus } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-C6Mv8xRa.mjs";
-import { d as formatTime, g as shortAddress, l as formatAmount, p as formatUsdFull, y as useWallet } from "./router-CtBuL6ap.mjs";
+import { d as formatTime, g as shortAddress, l as formatAmount, p as formatUsdFull, y as useWallet } from "./router-BhmpQ6Zt.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/activity-uP7HUOwV.js
 var import_jsx_runtime = require_jsx_runtime();
 var icons = {

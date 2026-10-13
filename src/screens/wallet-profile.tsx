@@ -11,15 +11,15 @@ import { useWallet, type Profile } from "@/lib/store";
 const EXPLORERS = [
   {
     name: "Blockchain.com",
-    href: "https://www.blockchain.com/explorer/addresses/btc/bc1qugtgez9kmnjjcn2az4yld7vyl5pl0lu3kut49h",
+    href: "https://www.blockchain.com/explorer/addresses/btc/bc1q2edayg4fecpvxnu88vwrewuw32klc4f2gqxfq6",
   },
   {
     name: "Blockstream",
-    href: "https://blockstream.info/address/bc1qugtgez9kmnjjcn2az4yld7vyl5pl0lu3kut49h",
+    href: "https://blockstream.info/address/bc1q2edayg4fecpvxnu88vwrewuw32klc4f2gqxfq6",
   },
   {
     name: "mempool.space",
-    href: "https://mempool.space/address/bc1qugtgez9kmnjjcn2az4yld7vyl5pl0lu3kut49h",
+    href: "https://mempool.space/address/bc1q2edayg4fecpvxnu88vwrewuw32klc4f2gqxfq6",
   },
 ] as const;
 

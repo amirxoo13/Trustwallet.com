@@ -6,7 +6,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { D as Check, N as ArrowDown } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-C6Mv8xRa.mjs";
-import { h as holdingAmount, l as formatAmount, p as formatUsdFull, y as useWallet } from "./router-CtBuL6ap.mjs";
+import { h as holdingAmount, l as formatAmount, p as formatUsdFull, y as useWallet } from "./router-BhmpQ6Zt.mjs";
 import { t as Button } from "./button-D59sT0rf.mjs";
 import { t as CoinIcon } from "./coin-icon-C9R6tnwz.mjs";
 import { n as useMarketMap } from "./use-markets-DkkllXXT.mjs";
