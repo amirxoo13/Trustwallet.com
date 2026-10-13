@@ -5,7 +5,7 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link, x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as WalletShell } from "./wallet-shell-C6Mv8xRa.mjs";
-import { c as demoSeedPhrase, g as shortAddress, m as hasAdminProof, y as useWallet } from "./router-BhmpQ6Zt.mjs";
+import { c as demoSeedPhrase, g as shortAddress, m as hasAdminProof, y as useWallet } from "./router-Do_8wGde.mjs";
 import { t as Button } from "./button-D59sT0rf.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/settings-BKb7Co-N.js
 var import_react = /* @__PURE__ */ __toESM(require_react());

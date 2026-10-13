@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,6 +125,12 @@ export function WalletProfileScreen() {
             </Button>
           ))}
         </div>
+        <section className="mt-8">
+          <h2 className="text-sm font-medium text-muted">حساب دوم</h2>
+          <Button asChild variant="solid" size="lg" className="mt-3 w-full">
+            <Link to="/wallet/ethereum">Ethereum</Link>
+          </Button>
+        </section>
         <div className="mt-6 grid gap-4">
           <label className="flex flex-col gap-2">
             <Label>{copy.profile.first}</Label>

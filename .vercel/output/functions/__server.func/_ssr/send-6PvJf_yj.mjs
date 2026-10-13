@@ -8,7 +8,7 @@ import { b as Link, x as useNavigate } from "../_libs/@tanstack/react-router+[..
 import { D as Check, c as ShieldCheck, t as X } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-C6Mv8xRa.mjs";
 import { a as DialogOverlay$1, i as DialogDescription$1, n as DialogClose, o as DialogPortal$1, r as DialogContent$1, s as DialogTitle$1, t as Dialog$1 } from "../_libs/@radix-ui/react-dialog+[...].mjs";
-import { _ as useLoginWindow, b as validateAddress, g as shortAddress, h as holdingAmount, l as formatAmount, p as formatUsdFull, s as addressHint, v as useSite, y as useWallet } from "./router-BhmpQ6Zt.mjs";
+import { _ as useLoginWindow, b as validateAddress, g as shortAddress, h as holdingAmount, l as formatAmount, p as formatUsdFull, s as addressHint, v as useSite, y as useWallet } from "./router-Do_8wGde.mjs";
 import { t as Button } from "./button-D59sT0rf.mjs";
 import { t as CoinIcon } from "./coin-icon-C9R6tnwz.mjs";
 import { n as useMarketMap } from "./use-markets-DkkllXXT.mjs";

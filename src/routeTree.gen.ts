@@ -19,6 +19,7 @@ import { Route as WalletRouteRouteImport } from './routes/wallet/route'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
 import { Route as WalletActivityRouteImport } from './routes/wallet/activity'
 import { Route as WalletBuyRouteImport } from './routes/wallet/buy'
+import { Route as WalletEthereumRouteImport } from './routes/wallet/ethereum'
 import { Route as WalletMarketsRouteImport } from './routes/wallet/markets'
 import { Route as WalletProfileRouteImport } from './routes/wallet/profile'
 import { Route as WalletReceiveRouteImport } from './routes/wallet/receive'
@@ -77,6 +78,11 @@ const WalletBuyRoute = WalletBuyRouteImport.update({
   path: '/buy',
   getParentRoute: () => WalletRouteRoute,
 } as any)
+const WalletEthereumRoute = WalletEthereumRouteImport.update({
+  id: '/ethereum',
+  path: '/ethereum',
+  getParentRoute: () => WalletRouteRoute,
+} as any)
 const WalletMarketsRoute = WalletMarketsRouteImport.update({
   id: '/markets',
   path: '/markets',
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof StudioRoute
   '/wallet/activity': typeof WalletActivityRoute
   '/wallet/buy': typeof WalletBuyRoute
+  '/wallet/ethereum': typeof WalletEthereumRoute
   '/wallet/markets': typeof WalletMarketsRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/studio': typeof StudioRoute
   '/wallet/activity': typeof WalletActivityRoute
   '/wallet/buy': typeof WalletBuyRoute
+  '/wallet/ethereum': typeof WalletEthereumRoute
   '/wallet/markets': typeof WalletMarketsRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/studio': typeof StudioRoute
   '/wallet/activity': typeof WalletActivityRoute
   '/wallet/buy': typeof WalletBuyRoute
+  '/wallet/ethereum': typeof WalletEthereumRoute
   '/wallet/markets': typeof WalletMarketsRoute
   '/wallet/profile': typeof WalletProfileRoute
   '/wallet/receive': typeof WalletReceiveRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/wallet/activity'
     | '/wallet/buy'
+    | '/wallet/ethereum'
     | '/wallet/markets'
     | '/wallet/profile'
     | '/wallet/receive'
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/wallet/activity'
     | '/wallet/buy'
+    | '/wallet/ethereum'
     | '/wallet/markets'
     | '/wallet/profile'
     | '/wallet/receive'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/wallet/activity'
     | '/wallet/buy'
+    | '/wallet/ethereum'
     | '/wallet/markets'
     | '/wallet/profile'
     | '/wallet/receive'
@@ -311,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletBuyRouteImport
       parentRoute: typeof WalletRouteRoute
     }
+    '/wallet/ethereum': {
+      id: '/wallet/ethereum'
+      path: '/ethereum'
+      fullPath: '/wallet/ethereum'
+      preLoaderRoute: typeof WalletEthereumRouteImport
+      parentRoute: typeof WalletRouteRoute
+    }
     '/wallet/markets': {
       id: '/wallet/markets'
       path: '/markets'
@@ -366,6 +385,7 @@ declare module '@tanstack/react-router' {
 interface WalletRouteRouteChildren {
   WalletActivityRoute: typeof WalletActivityRoute
   WalletBuyRoute: typeof WalletBuyRoute
+  WalletEthereumRoute: typeof WalletEthereumRoute
   WalletMarketsRoute: typeof WalletMarketsRoute
   WalletProfileRoute: typeof WalletProfileRoute
   WalletReceiveRoute: typeof WalletReceiveRoute
@@ -379,6 +399,7 @@ interface WalletRouteRouteChildren {
 const WalletRouteRouteChildren: WalletRouteRouteChildren = {
   WalletActivityRoute: WalletActivityRoute,
   WalletBuyRoute: WalletBuyRoute,
+  WalletEthereumRoute: WalletEthereumRoute,
   WalletMarketsRoute: WalletMarketsRoute,
   WalletProfileRoute: WalletProfileRoute,
   WalletReceiveRoute: WalletReceiveRoute,
