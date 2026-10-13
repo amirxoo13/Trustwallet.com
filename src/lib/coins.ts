@@ -282,6 +282,15 @@ export const COIN_BY_ID = Object.fromEntries(COINS.map((c) => [c.id, c])) as Rec
   CoinMeta
 >;
 
+const STABLE_IDS = new Set(["tether", "usd-coin"]);
+
+export function swapFeeRate(fromId: string, toId: string): number {
+  const from = COIN_BY_ID[fromId];
+  const to = COIN_BY_ID[toId];
+  if (from && to && STABLE_IDS.has(from.id) && STABLE_IDS.has(to.id) && from.chain === to.chain) return 0;
+  return 0.003;
+}
+
 export const COIN_BY_SYMBOL = Object.fromEntries(
   COINS.map((c) => [c.symbol.toUpperCase(), c]),
 ) as Record<string, CoinMeta>;

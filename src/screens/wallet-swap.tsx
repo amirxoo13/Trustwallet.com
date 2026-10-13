@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WalletShell } from "@/components/wallet-shell";
 import { useMarketMap } from "@/hooks/use-markets";
-import { COIN_BY_ID, COINS, usdPrice } from "@/lib/coins";
+import { COIN_BY_ID, COINS, swapFeeRate, usdPrice } from "@/lib/coins";
 import { formatAmount, formatDuration, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { ETH_BTC_SWAP_MS, holdingAmount, useWallet } from "@/lib/store";
@@ -35,9 +35,10 @@ export function WalletSwapScreen() {
   const fromPx = usdPrice(fromId, markets[fromId]?.price);
   const toPx = usdPrice(toId, markets[toId]?.price);
   const pay = Number(amount) || 0;
-  const fee = pay * 0.003;
+  const feeRate = swapFeeRate(fromId, toId);
+  const fee = pay * feeRate;
   const usd = pay * fromPx;
-  const receive = toPx > 0 ? (usd * 0.997) / toPx : 0;
+  const receive = toPx > 0 ? (usd * (1 - feeRate)) / toPx : 0;
   const rate = fromPx && toPx ? fromPx / toPx : 0;
   const ethToBtc = fromId === "ethereum" && toId === "bitcoin";
   const pendingSwaps = transactions.filter(
@@ -186,7 +187,7 @@ export function WalletSwapScreen() {
                 </dd>
               </div>
               <div className="flex justify-between text-muted">
-                <dt>{copy.wallet.fee} (0.3%)</dt>
+                <dt>{copy.wallet.fee} ({feeRate === 0 ? "0%" : "0.3%"})</dt>
                 <dd className="tabular text-foreground">
                   {formatAmount(fee)} {from?.symbol}
                 </dd>

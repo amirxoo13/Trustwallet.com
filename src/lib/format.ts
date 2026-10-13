@@ -13,6 +13,7 @@ const usdFine = new Intl.NumberFormat("en-US", {
 export function formatUsd(value: number, fine = false): string {
   if (!Number.isFinite(value)) return "$0.00";
   if (fine && Math.abs(value) < 1) return usdFine.format(value);
+  if (Math.abs(value) >= 1_000_000_000_000) return `$${(value / 1_000_000_000_000).toFixed(2)}T`;
   if (Math.abs(value) >= 1_000_000_000) return `$${(value / 1_000_000_000).toFixed(2)}B`;
   if (Math.abs(value) >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
   return usd.format(value);

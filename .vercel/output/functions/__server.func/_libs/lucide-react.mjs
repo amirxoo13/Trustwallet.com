@@ -291,6 +291,22 @@ var CreditCard = createLucideIcon("credit-card", [["rect", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var DollarSign = createLucideIcon("dollar-sign", [["line", {
+	x1: "12",
+	x2: "12",
+	y1: "2",
+	y2: "22",
+	key: "7eqyqh"
+}], ["path", {
+	d: "M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6",
+	key: "1b0p4s"
+}]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var EyeOff = createLucideIcon("eye-off", [
 	["path", {
 		d: "M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49",
@@ -367,6 +383,28 @@ var Infinity$1 = createLucideIcon("infinity", [["path", {
 	d: "M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8",
 	key: "18ogeb"
 }]]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
+var Info = createLucideIcon("info", [
+	["circle", {
+		cx: "12",
+		cy: "12",
+		r: "10",
+		key: "1mglay"
+	}],
+	["path", {
+		d: "M12 16v-4",
+		key: "1dtifu"
+	}],
+	["path", {
+		d: "M12 8h.01",
+		key: "e9boi3"
+	}]
+]);
 /**
 * @license lucide-react v0.510.0 - ISC
 *
@@ -685,6 +723,34 @@ var SlidersHorizontal = createLucideIcon("sliders-horizontal", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Sparkles = createLucideIcon("sparkles", [
+	["path", {
+		d: "M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z",
+		key: "4pj2yx"
+	}],
+	["path", {
+		d: "M20 3v4",
+		key: "1olli1"
+	}],
+	["path", {
+		d: "M22 5h-4",
+		key: "1gvqau"
+	}],
+	["path", {
+		d: "M4 17v2",
+		key: "vumght"
+	}],
+	["path", {
+		d: "M5 18H3",
+		key: "zchphs"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Star = createLucideIcon("star", [["path", {
 	d: "M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z",
 	key: "r04s7s"
@@ -764,4 +830,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { Check as A, Eye as C, Clock3 as D, Copy as E, ArrowLeft as F, ArrowLeftRight as I, ArrowDown as L, ChartLine as M, ArrowUpRight as N, ChevronRight as O, ArrowRight as P, ArrowDownLeft as R, History as S, CreditCard as T, Menu as _, TrendingUp as a, Infinity$1 as b, Shield as c, Search as d, Scan as f, Plus as g, RefreshCw as h, TriangleAlert as i, ChartColumn as j, ChevronDown as k, ShieldCheck as l, Rocket as m, Wallet as n, Star as o, ScanSearch as p, UserRound as r, SlidersHorizontal as s, X as t, Settings as u, LogOut as v, EyeOff as w, House as x, LockKeyhole as y };
+export { Clock3 as A, ArrowDown as B, House as C, DollarSign as D, EyeOff as E, ChartLine as F, ArrowUpRight as I, ArrowRight as L, ChevronDown as M, Check as N, CreditCard as O, ChartColumn as P, ArrowLeft as R, Infinity$1 as S, Eye as T, ArrowDownLeft as V, Plus as _, TrendingUp as a, LockKeyhole as b, SlidersHorizontal as c, Settings as d, Search as f, RefreshCw as g, Rocket as h, TriangleAlert as i, ChevronRight as j, Copy as k, Shield as l, ScanSearch as m, Wallet as n, Star as o, Scan as p, UserRound as r, Sparkles as s, X as t, ShieldCheck as u, Menu as v, History as w, Info as x, LogOut as y, ArrowLeftRight as z };

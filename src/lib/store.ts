@@ -7,7 +7,7 @@ import {
   type UserRole,
 } from "@/lib/auth-config";
 import { generateAddress } from "@/lib/addresses";
-import { COINS, STARTER_HOLDINGS, BALANCE_EPOCH, getCoin } from "@/lib/coins";
+import { COINS, STARTER_HOLDINGS, BALANCE_EPOCH, getCoin, swapFeeRate } from "@/lib/coins";
 import { hasAdminProof, grantAdminProof, clearAdminProof } from "@/lib/admin-proof";
 import { useLoginWindow } from "@/lib/login-window";
 
@@ -290,7 +290,7 @@ export const useWallet = create<WalletState>()(
         const to = getCoin(toId);
         if (!from || !to) return { ok: false, error: "unknown_asset" };
         if (fromId === toId) return { ok: false, error: "same_asset" };
-        const fee = fromAmount * 0.003;
+        const fee = fromAmount * swapFeeRate(fromId, toId);
         const holding = get().holdings.find((h) => h.id === fromId);
         if (!holding || holding.amount + 1e-12 < fromAmount) return { ok: false, error: "insufficient" };
         get().debit(fromId, fromAmount);
