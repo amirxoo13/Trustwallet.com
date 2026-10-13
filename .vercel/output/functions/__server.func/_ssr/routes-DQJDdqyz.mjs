@@ -2,7 +2,7 @@ import { r as COINS } from "./auth-config-CmLBU8rx.mjs";
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { b as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { L as ArrowDown, N as ArrowUpRight, O as ChevronRight, P as ArrowRight, S as History, f as Scan, g as Plus, h as RefreshCw, l as ShieldCheck, n as Wallet, p as ScanSearch, y as LockKeyhole } from "../_libs/lucide-react.mjs";
-import { b as useWallet, y as useSite } from "./router-DTyFSCo4.mjs";
+import { b as useWallet, y as useSite } from "./router-BsfzO6fi.mjs";
 import { t as Button } from "./button-npk6vMbG.mjs";
 import { t as CoinIcon } from "./coin-icon-CuBLUK_9.mjs";
 import { t as MarketingShell } from "./marketing-shell-CG5WTCD_.mjs";

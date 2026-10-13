@@ -1,6 +1,6 @@
 import { o as STARTER_HOLDINGS, t as ADMIN_ACCOUNT } from "./auth-config-CmLBU8rx.mjs";
 import { a as object, c as unknown, n as boolean, o as string, t as _enum } from "../_libs/zod.mjs";
-import { t as createServerFn } from "./ssr.mjs";
+import { n as createServerFn } from "./ssr.mjs";
 import { t as createServerRpc } from "./createServerRpc-A6pJPYTF.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/cloud-state-w7wyjeQ2.js
 var _0002_app_state_default = "-- Shared site + wallet state so every browser sees the same admin edits.\ncreate table if not exists app_state (\n  id          text primary key,\n  site_json   text not null default '{}',\n  wallet_json text not null default '{}',\n  login_json  text not null default '{}',\n  updated_at  timestamptz not null default now()\n);\n\ninsert into app_state (id) values ('aurex')\non conflict (id) do nothing;\n";

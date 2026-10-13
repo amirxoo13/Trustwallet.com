@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-BwRAOukq.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-DvLfJbSR.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -125,6 +125,14 @@ async function getStartManifest(matchedRoutes) {
 	};
 }
 var manifest = {
+	"11ec7de365bdde6f12d22455d07d0d753573eda0ecb113d397b0b368b4a6e3a7": {
+		functionName: "loadPerpMarkets_createServerFn_handler",
+		importer: () => import("./perps-feed-DGq5td56.mjs")
+	},
+	"89f56e9d5bd7a0a623c2945f0f7c9bdfbf92d6a8f76109971d9056f82e1f90f8": {
+		functionName: "loadPerpMids_createServerFn_handler",
+		importer: () => import("./perps-feed-DGq5td56.mjs")
+	},
 	"923316848a73f3c6da76600f9c08fb58f605d967b2be44a94c0f4a90be87473e": {
 		functionName: "loadPredictions_createServerFn_handler",
 		importer: () => import("./predictions-3u7wyltC.mjs")
@@ -1544,7 +1552,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-DTyFSCo4.mjs").then((n) => n.t),
+		import("./router-BsfzO6fi.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);
@@ -2009,4 +2017,4 @@ function createServerEntry(entry) {
 }
 var server_default = createServerEntry({ fetch });
 //#endregion
-export { createServerEntry, server_default as default, ssr_exports as i, TSS_SERVER_FUNCTION as n, getServerFnById as r, createServerFn as t };
+export { ssr_exports as i, createServerFn as n, getServerFnById as r, TSS_SERVER_FUNCTION as t };

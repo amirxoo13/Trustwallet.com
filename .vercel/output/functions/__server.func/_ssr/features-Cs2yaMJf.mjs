@@ -1,7 +1,7 @@
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { I as ArrowLeftRight, M as ChartLine, N as ArrowUpRight, R as ArrowDownLeft, T as CreditCard, c as Shield } from "../_libs/lucide-react.mjs";
-import { y as useSite } from "./router-DTyFSCo4.mjs";
+import { y as useSite } from "./router-BsfzO6fi.mjs";
 import { t as MarketingShell } from "./marketing-shell-CG5WTCD_.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/features-Cs2yaMJf.js
 var import_jsx_runtime = require_jsx_runtime();

@@ -27,7 +27,7 @@ export function WalletSwapScreen() {
   const [hash, setHash] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
-  const [view, setView] = useState<"markets" | "trade">("markets");
+  const [view, setView] = useState<"markets" | "trade">("trade");
 
   const from = COIN_BY_ID[fromId];
   const to = COIN_BY_ID[toId];

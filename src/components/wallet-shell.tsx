@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { Link, useNavigate, useRouter, useRouterState } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  ArrowLeftRight,
   Clock3,
   Home,
   Infinity as InfinityIcon,
@@ -60,7 +59,7 @@ export function WalletShell({
   const items = [
     { to: "/wallet", icon: Home, label: site.tabHome, match: (p: string) => p === "/wallet" || p === "/wallet/" },
     { to: "/wallet/markets", icon: TrendingUp, label: site.tabMarkets, match: (p: string) => p.startsWith("/wallet/markets") },
-    { to: "/wallet/swap", icon: ArrowLeftRight, label: site.tabSwap, match: (p: string) => p.startsWith("/wallet/swap") },
+    { to: "/wallet/perps", icon: InfinityIcon, label: "Perps", match: (p: string) => p.startsWith("/wallet/perps") },
     { to: "/wallet/activity", icon: Clock3, label: site.tabActivity, match: (p: string) => p.startsWith("/wallet/activity") },
     { to: "/wallet/profile", icon: UserRound, label: site.tabProfile, match: (p: string) => p.startsWith("/wallet/profile") },
   ];
@@ -68,7 +67,7 @@ export function WalletShell({
   const dock = [
     { to: "/wallet", kind: "home" as const, label: site.tabHome, match: (p: string) => p === "/wallet" || p === "/wallet/" },
     { to: "/wallet/markets", kind: "chart" as const, label: site.tabMarkets, match: (p: string) => p.startsWith("/wallet/markets") },
-    { to: "/wallet/swap", kind: "infinity" as const, label: site.tabSwap, match: (p: string) => p.startsWith("/wallet/swap") },
+    { to: "/wallet/perps", kind: "infinity" as const, label: "Perps", match: (p: string) => p.startsWith("/wallet/perps") },
   ];
 
   return (
