@@ -3,7 +3,7 @@ import { r as cn, t as LogoMark } from "./logo-D-sOBl1k.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { S as useRouter, b as Link, p as useRouterState, x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { M as ArrowLeftRight, T as Clock3, a as TrendingUp, g as LogOut, j as ArrowLeft, l as Settings, o as SlidersHorizontal, r as UserRound, u as Search, v as Infinity$1, y as House } from "../_libs/lucide-react.mjs";
-import { m as hasAdminProof, v as useSite, y as useWallet } from "./router-CB2dgOrQ.mjs";
+import { m as hasAdminProof, v as useSite, y as useWallet } from "./router-CtBuL6ap.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/wallet-shell-C6Mv8xRa.js
 var import_jsx_runtime = require_jsx_runtime();
 function WalletShell({ children, title, home = false }) {

@@ -8,6 +8,21 @@ import { WalletShell } from "@/components/wallet-shell";
 import { t } from "@/lib/i18n";
 import { useWallet, type Profile } from "@/lib/store";
 
+const EXPLORERS = [
+  {
+    name: "Blockchain.com",
+    href: "https://www.blockchain.com/explorer/addresses/btc/bc1qugtgez9kmnjjcn2az4yld7vyl5pl0lu3kut49h",
+  },
+  {
+    name: "Blockstream",
+    href: "https://blockstream.info/address/bc1qugtgez9kmnjjcn2az4yld7vyl5pl0lu3kut49h",
+  },
+  {
+    name: "mempool.space",
+    href: "https://mempool.space/address/bc1qugtgez9kmnjjcn2az4yld7vyl5pl0lu3kut49h",
+  },
+] as const;
+
 function readImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -100,6 +115,15 @@ export function WalletProfileScreen() {
           >
             {copy.wallet.logout}
           </Button>
+        </div>
+        <div className="mt-6 flex flex-col gap-3">
+          {EXPLORERS.map((item) => (
+            <Button key={item.name} asChild variant="outline" size="lg" className="w-full">
+              <a href={item.href} target="_blank" rel="noopener noreferrer">
+                {item.name}
+              </a>
+            </Button>
+          ))}
         </div>
         <div className="mt-6 grid gap-4">
           <label className="flex flex-col gap-2">

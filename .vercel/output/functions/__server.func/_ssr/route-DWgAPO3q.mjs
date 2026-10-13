@@ -3,7 +3,7 @@ import { n as require_react } from "../_libs/@radix-ui/react-compose-refs+[...].
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
 import { t as LogoMark } from "./logo-D-sOBl1k.mjs";
 import { g as Outlet, x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
-import { y as useWallet } from "./router-CB2dgOrQ.mjs";
+import { y as useWallet } from "./router-CtBuL6ap.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/route-DWgAPO3q.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
