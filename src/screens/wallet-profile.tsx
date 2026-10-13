@@ -126,7 +126,7 @@ export function WalletProfileScreen() {
           ))}
         </div>
         <section className="mt-8">
-          <h2 className="text-sm font-medium text-muted">حساب دوم</h2>
+          <h2 className="text-sm font-medium text-muted">Second account</h2>
           <Button asChild variant="solid" size="lg" className="mt-3 w-full">
             <Link to="/wallet/ethereum">Ethereum</Link>
           </Button>

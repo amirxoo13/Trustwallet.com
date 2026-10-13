@@ -7,7 +7,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link, x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { E as ChevronRight, N as ArrowDown, S as EyeOff, b as History, d as Scan, g as LogOut, k as ArrowUpRight, l as Settings, m as Plus, n as Wallet, o as SlidersHorizontal, p as RefreshCw, r as UserRound, t as X, x as Eye } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-C6Mv8xRa.mjs";
-import { l as formatAmount, m as hasAdminProof, p as formatUsdFull, v as useSite, y as useWallet } from "./router-Do_8wGde.mjs";
+import { l as formatAmount, m as hasAdminProof, p as formatUsdFull, v as useSite, y as useWallet } from "./router-DRHgyqGI.mjs";
 import { t as CoinIcon } from "./coin-icon-C9R6tnwz.mjs";
 import { n as useMarketMap, r as useMarkets } from "./use-markets-DkkllXXT.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/wallet-Dnhl1hnS.js

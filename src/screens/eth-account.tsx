@@ -25,7 +25,7 @@ export function EthAccountScreen() {
   return (
     <WalletShell title="Ethereum">
       <div className="mx-auto w-full max-w-lg px-4 py-8">
-        <p className="text-xs font-medium tracking-wide text-muted">حساب دوم</p>
+        <p className="text-xs font-medium tracking-wide text-muted uppercase">Second account</p>
         <h1 className="mt-1 font-display text-2xl font-semibold">Ethereum</h1>
 
         <div className="mt-6 rounded-2xl bg-card p-4 shadow-border">
