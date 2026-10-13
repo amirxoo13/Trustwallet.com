@@ -1,9 +1,9 @@
-const CACHE = "aurex-shell-v4";
+const CACHE = "trust-shell-v1";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(["./manifest.webmanifest", "./favicon.svg"])),
+    caches.open(CACHE).then((cache) => cache.addAll(["./manifest.webmanifest", "./favicon.png", "./icon-192.png", "./icon-512.png"])),
   );
 });
 
