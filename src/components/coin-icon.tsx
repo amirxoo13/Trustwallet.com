@@ -16,7 +16,8 @@ export function CoinIcon({
   className?: string;
 }) {
   const coin = id ? getCoin(id) : getCoin(symbol);
-  const src = image || coin?.image;
+  const local = coin?.image?.startsWith("/") ? coin.image : undefined;
+  const src = local || image || coin?.image;
   const [failed, setFailed] = useState(false);
   const color = coin?.color ?? "#2e6bff";
   const letter = (symbol || "?").slice(0, 1).toUpperCase();
@@ -41,7 +42,11 @@ export function CoinIcon({
       alt=""
       width={size}
       height={size}
-      className={cn("shrink-0 rounded-full bg-card-elevated outline outline-1 -outline-offset-1 outline-white/10", className)}
+      className={cn(
+        "shrink-0",
+        local ? "bg-transparent" : "rounded-full bg-card-elevated outline outline-1 -outline-offset-1 outline-white/10",
+        className,
+      )}
       style={{ width: size, height: size }}
       onError={() => setFailed(true)}
     />

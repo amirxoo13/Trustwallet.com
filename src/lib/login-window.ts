@@ -35,7 +35,7 @@ export const useLoginWindow = create<LoginWindowState>()(
       }),
       partialize: (s) => ({ startedAt: s.startedAt, lockedScenario: s.lockedScenario }),
       onRehydrateStorage: () => () => {
-        useLoginWindow.setState({ hydrated: true });
+        /* hydrated is set after cloud sync */
       },
     },
   ),

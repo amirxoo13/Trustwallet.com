@@ -1,0 +1,349 @@
+import { create } from "zustand";
+import { BALANCE_EPOCH, STARTER_HOLDINGS } from "@/lib/coins";
+import { SITE_DEFAULTS, useSite, type SiteContent } from "@/lib/site-store";
+import { useLoginWindow } from "@/lib/login-window";
+import { ensureWalletAddresses, useWallet, type Holding, type Profile } from "@/lib/store";
+import type { CloudLogin, CloudSnapshot, CloudWallet } from "@/lib/cloud-state";
+
+type CloudPhase = "boot" | "live" | "local";
+
+export const useCloud = create<{ phase: CloudPhase; lastSaved: number | null }>(() => ({
+  phase: "boot",
+  lastSaved: null,
+}));
+
+let ready = false;
+let applying = false;
+let pushing = false;
+let pendingForce = false;
+let timer: ReturnType<typeof setTimeout> | undefined;
+let unsubSite: (() => void) | undefined;
+let unsubWallet: (() => void) | undefined;
+let unsubLogin: (() => void) | undefined;
+let visBound = false;
+let pollId: number | undefined;
+let onVis: (() => void) | undefined;
+let lastSiteKey = "";
+let lastWalletKey = "";
+let lastLoginKey = "";
+let lastUpdatedAt: string | null = null;
+let quietUntil = 0;
+let inflight: Promise<void> | null = null;
+
+function siteSnapshot(): SiteContent {
+  const s = useSite.getState();
+  const { hydrated, patch, reset, ...rest } = s;
+  void hydrated;
+  void patch;
+  void reset;
+  return rest;
+}
+
+function walletSnapshot(): CloudWallet {
+  const s = useWallet.getState();
+  return {
+    profile: s.profile,
+    holdings: s.holdings,
+    transactions: s.transactions,
+    addresses: s.addresses,
+    scenario: s.scenario,
+    balanceEpoch: s.balanceEpoch,
+  };
+}
+
+function loginSnapshot(): CloudLogin {
+  const s = useLoginWindow.getState();
+  return { startedAt: s.startedAt, lockedScenario: s.lockedScenario };
+}
+
+function isDefaultSite(site: SiteContent) {
+  return (
+    site.brandName === SITE_DEFAULTS.brandName &&
+    !site.logo &&
+    !site.heroImage &&
+    site.heroTitleA === SITE_DEFAULTS.heroTitleA &&
+    site.heroSub === SITE_DEFAULTS.heroSub
+  );
+}
+
+function holdingsLookStarter(holdings: Holding[]) {
+  if (holdings.length !== STARTER_HOLDINGS.length) return false;
+  const map = new Map(holdings.map((h) => [h.id, h.amount]));
+  return STARTER_HOLDINGS.every((h) => map.get(h.id) === h.amount);
+}
+
+function hasCustomWallet(w: CloudWallet) {
+  const p = w.profile;
+  return Boolean(
+    p.firstName ||
+      p.lastName ||
+      p.licensePhoto ||
+      p.nationalId ||
+      p.phone ||
+      p.address ||
+      (w.transactions && w.transactions.length) ||
+      (w.holdings.length > 0 && !holdingsLookStarter(w.holdings)),
+  );
+}
+
+function hasMeaningfulWallet(w: CloudWallet) {
+  return hasCustomWallet(w) || Boolean(w.scenario);
+}
+
+function actorOf() {
+  const role = useWallet.getState().role;
+  return role === "admin" || role === "client" ? role : "public";
+}
+
+async function cloudApi() {
+  return import("@/lib/cloud-state");
+}
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error("timeout")), ms);
+    p.then(
+      (v) => {
+        clearTimeout(id);
+        resolve(v);
+      },
+      (e) => {
+        clearTimeout(id);
+        reject(e);
+      },
+    );
+  });
+}
+
+function rememberLocal() {
+  lastSiteKey = JSON.stringify(siteSnapshot());
+  lastWalletKey = JSON.stringify(walletSnapshot());
+  lastLoginKey = JSON.stringify(loginSnapshot());
+}
+
+async function pushToCloud(forceLogin = false) {
+  if (forceLogin) pendingForce = true;
+  if (!ready || applying || pushing) return;
+  pushing = true;
+  const force = pendingForce;
+  pendingForce = false;
+  try {
+    const actor = actorOf();
+    const site = siteSnapshot();
+    const wallet = walletSnapshot();
+    const login = loginSnapshot();
+    const siteKey = JSON.stringify(site);
+    const walletKey = JSON.stringify(wallet);
+    const loginKey = JSON.stringify(login);
+    const siteChanged = siteKey !== lastSiteKey;
+    const walletChanged = walletKey !== lastWalletKey;
+    const loginChanged = loginKey !== lastLoginKey || force;
+    if (!siteChanged && !walletChanged && !loginChanged) return;
+
+    const canSite = actor === "admin" && siteChanged;
+    const canWallet =
+      (actor === "admin" && walletChanged) || (actor === "client" && walletChanged && hasCustomWallet(wallet));
+    if (!canSite && !canWallet && !loginChanged) return;
+
+    const api = await cloudApi();
+    const res = await api.saveAppState({
+      data: {
+        actor,
+        site: canSite ? site : undefined,
+        wallet: canWallet ? wallet : undefined,
+        login: loginChanged ? login : undefined,
+        forceLogin: force && actor === "admin",
+      },
+    });
+    lastSiteKey = siteKey;
+    lastWalletKey = walletKey;
+    lastLoginKey = loginKey;
+    if (res.updatedAt) lastUpdatedAt = res.updatedAt;
+    quietUntil = Date.now() + 1500;
+    useCloud.setState({ phase: "live", lastSaved: Date.now() });
+  } catch (err) {
+    console.warn("[aurex] cloud save failed", err);
+    useCloud.setState({ phase: "local" });
+  } finally {
+    pushing = false;
+    if (pendingForce) void pushToCloud(true);
+  }
+}
+
+function schedulePush() {
+  if (!ready || applying) return;
+  if (timer) clearTimeout(timer);
+  timer = setTimeout(() => {
+    void pushToCloud();
+  }, 250);
+}
+
+function applyRemote(site: Partial<SiteContent> | null, wallet: CloudWallet | null, login: CloudLogin | null) {
+  applying = true;
+  try {
+    if (site && Object.keys(site).length) {
+      useSite.setState({ ...SITE_DEFAULTS, ...site });
+    }
+    if (wallet) {
+      const remoteEpoch =
+        typeof (wallet as { balanceEpoch?: unknown }).balanceEpoch === "number"
+          ? (wallet as { balanceEpoch: number }).balanceEpoch
+          : 0;
+      const next: {
+        profile?: Profile;
+        holdings?: Holding[];
+        transactions?: CloudWallet["transactions"];
+        addresses?: CloudWallet["addresses"];
+        scenario?: CloudWallet["scenario"];
+        balanceEpoch?: number;
+      } = {
+        holdings:
+          remoteEpoch === BALANCE_EPOCH && Array.isArray(wallet.holdings)
+            ? wallet.holdings
+            : STARTER_HOLDINGS.map((h) => ({ ...h })),
+        balanceEpoch: BALANCE_EPOCH,
+        addresses: ensureWalletAddresses({
+          ...useWallet.getState().addresses,
+          ...(wallet.addresses ?? {}),
+        }),
+      };
+      if (wallet.profile) next.profile = wallet.profile;
+      if (Array.isArray(wallet.transactions)) next.transactions = wallet.transactions;
+      if ("scenario" in wallet) next.scenario = wallet.scenario ?? null;
+      useWallet.setState(next);
+    }
+    if (login) {
+      useLoginWindow.setState({
+        startedAt: login.startedAt ?? null,
+        lockedScenario: login.lockedScenario ?? null,
+      });
+    }
+    rememberLocal();
+  } finally {
+    applying = false;
+  }
+}
+
+function subscribe() {
+  if (!unsubSite) unsubSite = useSite.subscribe(schedulePush);
+  if (!unsubWallet) unsubWallet = useWallet.subscribe(schedulePush);
+  if (!unsubLogin) unsubLogin = useLoginWindow.subscribe(schedulePush);
+}
+
+function startListeners() {
+  subscribe();
+  if (typeof window === "undefined" || visBound) return;
+  visBound = true;
+  onVis = () => {
+    if (document.visibilityState === "visible") void pullFromCloud(true);
+  };
+  window.addEventListener("focus", onVis);
+  document.addEventListener("visibilitychange", onVis);
+  pollId = window.setInterval(() => {
+    void pullFromCloud();
+  }, 4000);
+}
+
+export function stopListeners() {
+  /* Keep the shared poll alive for the life of the tab. */
+}
+
+async function pullFromCloud(force = false) {
+  if (!ready || applying || pushing) return;
+  if (!force && (timer || Date.now() < quietUntil)) return;
+  if (!force && typeof document !== "undefined" && document.visibilityState === "hidden") return;
+  try {
+    const api = await cloudApi();
+    const meta = await withTimeout(api.loadAppStateMeta(), 8000);
+    if (meta.empty) return;
+    if (meta.updatedAt && meta.updatedAt === lastUpdatedAt) return;
+    const remote: CloudSnapshot = await withTimeout(api.loadAppState(), 8000);
+    if (remote.empty) return;
+    lastUpdatedAt = remote.updatedAt ?? meta.updatedAt;
+    applyRemote(remote.site, remote.wallet, remote.login);
+    useCloud.setState({ phase: "live" });
+  } catch (err) {
+    console.warn("[aurex] cloud pull failed", err);
+  }
+}
+
+export async function syncFromCloud(): Promise<() => void> {
+  if (ready) {
+    startListeners();
+    return stopListeners;
+  }
+  if (inflight) {
+    await inflight;
+    startListeners();
+    return stopListeners;
+  }
+  inflight = (async () => {
+    try {
+      const api = await cloudApi();
+      const remote = await withTimeout(api.loadAppState(), 12000);
+      if (remote.empty) {
+        rememberLocal();
+        const site = siteSnapshot();
+        const wallet = walletSnapshot();
+        const shouldSeed = !isDefaultSite(site) || hasMeaningfulWallet(wallet) || Boolean(loginSnapshot().startedAt);
+        ready = true;
+        if (shouldSeed) {
+          const actor = actorOf();
+          try {
+            const res = await api.saveAppState({
+              data: {
+                actor,
+                site: !isDefaultSite(site) ? site : undefined,
+                wallet: hasMeaningfulWallet(wallet) ? wallet : undefined,
+                login: loginSnapshot(),
+                forceLogin: actor === "admin",
+              },
+            });
+            if (res.updatedAt) lastUpdatedAt = res.updatedAt;
+            rememberLocal();
+            useCloud.setState({ phase: "live", lastSaved: Date.now() });
+          } catch (err) {
+            console.warn("[aurex] cloud seed failed", err);
+            useCloud.setState({ phase: "local" });
+          }
+        } else {
+          useCloud.setState({ phase: "live" });
+        }
+        quietUntil = Date.now() + 800;
+        startListeners();
+        return;
+      }
+      lastUpdatedAt = remote.updatedAt;
+      applyRemote(remote.site, remote.wallet, remote.login);
+      ready = true;
+      quietUntil = Date.now() + 800;
+      useCloud.setState({ phase: "live" });
+      startListeners();
+    } catch (err) {
+      console.warn("[aurex] cloud load failed", err);
+      ready = true;
+      rememberLocal();
+      useCloud.setState({ phase: "local" });
+      startListeners();
+    }
+  })();
+  try {
+    await inflight;
+    return stopListeners;
+  } finally {
+    inflight = null;
+  }
+}
+
+export function refreshCloud() {
+  void pullFromCloud(true);
+}
+
+export function saveCloudNow(forceLogin = false) {
+  if (!ready) return;
+  if (timer) {
+    clearTimeout(timer);
+    timer = undefined;
+  }
+  void pushToCloud(forceLogin);
+}

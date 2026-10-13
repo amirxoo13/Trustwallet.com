@@ -1,11 +1,11 @@
-import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, Plus } from "lucide-react";
+import { ArrowDown, ArrowUpRight, ChevronRight, History, Plus, RefreshCw, Scan, Wallet } from "lucide-react";
 import { CoinIcon } from "@/components/coin-icon";
 
 const rows = [
-  { id: "bitcoin", symbol: "BTC", name: "Bitcoin", amt: "0.0524", usd: "$5,142.80", ch: "+2.14%", up: true },
-  { id: "ethereum", symbol: "ETH", name: "Ethereum", amt: "1.2841", usd: "$3,210.04", ch: "+1.02%", up: true },
-  { id: "solana", symbol: "SOL", name: "Solana", amt: "18.35", usd: "$2,641.20", ch: "−0.84%", up: false },
-  { id: "tether", symbol: "USDT", name: "Tether", amt: "2,480", usd: "$2,480.00", ch: "0.00%", up: true },
+  { id: "tether", symbol: "USDT", name: "Tether USDT", amt: "37,500", usd: "$37,500.00" },
+  { id: "tron", symbol: "TRX", name: "Tron", amt: "0", usd: "$0.00" },
+  { id: "bitcoin", symbol: "BTC", name: "Bitcoin", amt: "0", usd: "$0.00" },
+  { id: "ethereum", symbol: "ETH", name: "Ethereum", amt: "0", usd: "$0.00" },
 ];
 
 export function PhonePreview() {
@@ -13,46 +13,63 @@ export function PhonePreview() {
     <div className="phone-frame relative mx-auto w-[300px] shrink-0">
       <div className="absolute -inset-8 rounded-[3rem] bg-primary/10 blur-3xl" />
       <div className="relative overflow-hidden rounded-[2.2rem] bg-background shadow-float ring-1 ring-white/12">
-        <div className="absolute inset-x-0 top-0 h-6 bg-background/50" />
-        <div className="mx-auto mt-2 h-5 w-24 rounded-full bg-background" />
-        <div className="px-5 pt-5 pb-6">
-          <div className="flex items-center justify-between text-[11px] text-muted">
-            <span>Main Wallet</span>
-            <span className="rounded-full bg-accent-soft px-2 py-0.5 text-primary">Live</span>
+        <div className="mx-auto mt-2 h-4 w-20 rounded-full bg-background" />
+        <div className="px-4 pt-3 pb-5">
+          <div className="flex items-center justify-between">
+            <div className="flex h-8 items-center gap-1.5 rounded-full bg-card-elevated ps-1 pe-2.5 shadow-border">
+              <span className="flex size-6 items-center justify-center rounded-full bg-primary text-primary-fg">
+                <Wallet className="size-3" />
+              </span>
+              <span className="text-[10px] font-semibold">Main Wallet 1</span>
+            </div>
+            <div className="flex gap-1.5">
+              <span className="flex size-8 items-center justify-center rounded-full bg-card-elevated shadow-border">
+                <History className="size-3.5" />
+              </span>
+              <span className="flex size-8 items-center justify-center rounded-full bg-card-elevated shadow-border">
+                <Scan className="size-3.5" />
+              </span>
+            </div>
           </div>
-          <p className="mt-5 font-display text-[11px] tracking-wide text-muted uppercase">Total balance</p>
-          <p className="mt-1 font-display text-[34px] leading-none font-semibold tracking-tight tabular">$14,280.16</p>
-          <p className="mt-2 text-xs font-medium text-success tabular">+$186.40 (24h)</p>
-          <div className="mt-6 grid grid-cols-4 gap-2">
+          <p className="mt-4 text-[28px] leading-none font-bold tracking-tight tabular">$37,500.00</p>
+          <p className="mt-1.5 text-[11px] text-muted tabular">$0.00 (0.00%)</p>
+          <div className="mt-4 grid grid-cols-4 gap-1.5">
             {[
-              { icon: ArrowUpRight, label: "Send" },
-              { icon: ArrowDownLeft, label: "Receive" },
-              { icon: ArrowLeftRight, label: "Swap" },
-              { icon: Plus, label: "Buy" },
+              { icon: ArrowUpRight, label: "Send", hot: false },
+              { icon: ArrowDown, label: "Receive", hot: false },
+              { icon: RefreshCw, label: "Swap", hot: true },
+              { icon: Plus, label: "Buy", hot: false },
             ].map((a) => (
-              <div key={a.label} className="flex flex-col items-center gap-2">
-                <div className="flex size-11 items-center justify-center rounded-full bg-card-elevated shadow-border">
+              <div key={a.label} className="flex flex-col items-center gap-1">
+                <div
+                  className={
+                    a.hot
+                      ? "flex size-11 items-center justify-center rounded-lg bg-primary text-primary-fg"
+                      : "flex size-11 items-center justify-center rounded-lg bg-card-elevated"
+                  }
+                >
                   <a.icon className="size-4" />
                 </div>
-                <span className="text-[10px] text-muted">{a.label}</span>
+                <span className="text-[10px] font-medium">{a.label}</span>
               </div>
             ))}
           </div>
-          <div className="mt-6 space-y-3">
+          <p className="mt-4 flex items-center gap-0.5 text-xs font-semibold">
+            Tokens <ChevronRight className="size-3" />
+          </p>
+          <div className="mt-2 space-y-2.5">
             {rows.map((r) => (
-              <div key={r.symbol} className="flex items-center gap-3">
-                <CoinIcon id={r.id} symbol={r.symbol} size={32} />
+              <div key={r.symbol} className="flex items-center gap-2">
+                <CoinIcon id={r.id} symbol={r.symbol} size={28} />
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between text-[13px]">
-                    <span className="font-medium">{r.name}</span>
-                    <span className="tabular">{r.usd}</span>
-                  </div>
-                  <div className="mt-0.5 flex items-center justify-between text-[11px] text-muted">
-                    <span className="tabular">
-                      {r.amt} {r.symbol}
-                    </span>
-                    <span className={r.up ? "text-success" : "text-danger"}>{r.ch}</span>
-                  </div>
+                  <p className="truncate text-[12px] font-semibold">{r.name}</p>
+                  <p className="text-[10px] text-muted tabular">
+                    {r.amt} {r.symbol}
+                  </p>
+                </div>
+                <div className="text-end">
+                  <p className="text-[12px] font-semibold tabular">{r.usd}</p>
+                  <p className="text-[10px] text-muted tabular">$0.00</p>
                 </div>
               </div>
             ))}

@@ -7,9 +7,9 @@
       "status": 200,
       "title": "Aurex",
       "hasCanvas": false,
-      "bodyTextLen": 1533,
-      "bodyTextHash": "27a77447b7790c568619a0c9fa419c338c1786602dec814e3a360573c99c1ddb",
-      "bodyTextPrefix": "Aurex Markets Features Security Log in SELF-CUSTODY · 100+ BLOCK",
+      "bodyTextLen": 1502,
+      "bodyTextHash": "103387278d094abe9516ed12f04834e8137ce2da1bbeefe5d74e68c1e9fc5c0a",
+      "bodyTextPrefix": "Aurex MarketsFeaturesSecurity Log in Self-custody · 100+ blockch",
       "horizontalOverflow": false,
       "consoleErrors": [],
       "pageErrors": [],
@@ -21,9 +21,9 @@
       "status": 200,
       "title": "Aurex",
       "hasCanvas": false,
-      "bodyTextLen": 1507,
-      "bodyTextHash": "989a3e297c3e2ea6fd1dbe164f10d37613e0e30248be892209dc2798070d3d7d",
-      "bodyTextPrefix": "Aurex Log in SELF-CUSTODY · 100+ BLOCKCHAINS True crypto ownersh",
+      "bodyTextLen": 1502,
+      "bodyTextHash": "103387278d094abe9516ed12f04834e8137ce2da1bbeefe5d74e68c1e9fc5c0a",
+      "bodyTextPrefix": "Aurex MarketsFeaturesSecurity Log in Self-custody · 100+ blockch",
       "horizontalOverflow": false,
       "consoleErrors": [],
       "pageErrors": [],
@@ -33,6 +33,9 @@
   "brandWarnings": [],
   "authWarnings": [],
   "verdictFile": "/workspace/screenshots/app-builder-built.json",
-  "divergesFromBaseline": false,
-  "baselineReasons": []
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "desktop: body text replaced (similar length, page start changed)",
+    "mobile: body text replaced (similar length, page start changed)"
+  ]
 }

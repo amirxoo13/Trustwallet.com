@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { WalletShell } from "@/components/wallet-shell";
 import { useMarketMap } from "@/hooks/use-markets";
-import { COIN_BY_ID, COINS } from "@/lib/coins";
+import { COIN_BY_ID, COINS, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { holdingAmount, useWallet } from "@/lib/store";
@@ -17,8 +17,8 @@ export function WalletSwapScreen() {
   const copy = t();
   const markets = useMarketMap();
 
-  const [fromId, setFromId] = useState("ethereum");
-  const [toId, setToId] = useState("tether");
+  const [fromId, setFromId] = useState("tether");
+  const [toId, setToId] = useState("bitcoin");
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<"form" | "done">("form");
   const [error, setError] = useState("");
@@ -27,8 +27,8 @@ export function WalletSwapScreen() {
   const from = COIN_BY_ID[fromId];
   const to = COIN_BY_ID[toId];
   const avail = holdingAmount(holdings, fromId);
-  const fromPx = markets[fromId]?.price ?? 0;
-  const toPx = markets[toId]?.price ?? 0;
+  const fromPx = usdPrice(fromId, markets[fromId]?.price);
+  const toPx = usdPrice(toId, markets[toId]?.price);
   const pay = Number(amount) || 0;
   const fee = pay * 0.003;
   const usd = pay * fromPx;

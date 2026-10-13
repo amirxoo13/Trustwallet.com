@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { WalletShell } from "@/components/wallet-shell";
 import { useMarketMap } from "@/hooks/use-markets";
 import { addressHint, validateAddress } from "@/lib/addresses";
-import { COIN_BY_ID } from "@/lib/coins";
+import { COIN_BY_ID, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull, shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { holdingAmount, useWallet } from "@/lib/store";
@@ -24,8 +24,7 @@ export function WalletSendScreen() {
   const navigate = useNavigate();
   const [noticeOpen, setNoticeOpen] = useState(role === "client");
 
-  const first = holdings[0]?.id ?? "bitcoin";
-  const [coinId, setCoinId] = useState(first);
+  const [coinId, setCoinId] = useState("tether");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
   const [step, setStep] = useState<"form" | "confirm" | "broadcasting" | "done">("form");
@@ -34,7 +33,7 @@ export function WalletSendScreen() {
 
   const coin = COIN_BY_ID[coinId];
   const avail = holdingAmount(holdings, coinId);
-  const price = markets[coinId]?.price ?? 0;
+  const price = usdPrice(coinId, markets[coinId]?.price);
   const amt = Number(amount);
   const fee = coin?.fee ?? 0;
   const usd = (Number.isFinite(amt) ? amt : 0) * price;

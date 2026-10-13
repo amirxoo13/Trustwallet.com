@@ -6,7 +6,7 @@ import { PriceChart } from "@/components/price-chart";
 import { Button } from "@/components/ui/button";
 import { WalletShell } from "@/components/wallet-shell";
 import { useChart, useMarketMap } from "@/hooks/use-markets";
-import { getCoin } from "@/lib/coins";
+import { getCoin, usdPrice } from "@/lib/coins";
 import { formatAmount, formatPct, formatUsd, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { holdingAmount, useWallet } from "@/lib/store";
@@ -21,7 +21,7 @@ export function WalletAssetScreen({ id }: { id: string }) {
   const [days, setDays] = useState(7);
   const chart = useChart(id, days);
   const amount = holdingAmount(holdings, id);
-  const price = market?.price ?? 0;
+  const price = usdPrice(id, market?.price);
   const usd = amount * price;
   const up = (market?.change24h ?? 0) >= 0;
   const points = chart.data ?? [];

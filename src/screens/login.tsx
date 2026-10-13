@@ -8,31 +8,39 @@ import { Label } from "@/components/ui/label";
 import {
   LOGIN_WINDOW_MS,
   SCENARIO_CODES,
+  isClientEmail,
   type ScenarioCode,
 } from "@/lib/auth-config";
 import { t } from "@/lib/i18n";
 import { formatCountdown, remainingMs, useLoginWindow } from "@/lib/login-window";
 import { useSite } from "@/lib/site-store";
 import { useWallet, type LoginError } from "@/lib/store";
+import { refreshCloud, saveCloudNow } from "@/lib/cloud-sync";
 import { cn } from "@/lib/utils";
 
-function LoginTimer() {
+function LoginTimer({ arm }: { arm: boolean }) {
   const startedAt = useLoginWindow((s) => s.startedAt);
   const hydrated = useLoginWindow((s) => s.hydrated);
   const ensureStarted = useLoginWindow((s) => s.ensureStarted);
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
-    if (hydrated) ensureStarted();
-  }, [hydrated, ensureStarted]);
+    if (!hydrated || !arm) return;
+    const before = useLoginWindow.getState().startedAt;
+    ensureStarted();
+    if (!before) saveCloudNow(true);
+  }, [hydrated, arm, ensureStarted]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 200);
     return () => window.clearInterval(id);
   }, []);
 
+  if (!hydrated) return null;
+  if (!startedAt && !arm) return null;
+
   const left = remainingMs(startedAt, now);
-  const expired = left <= 0;
+  const expired = Boolean(startedAt) && left <= 0;
   const pct = Math.min(100, (left / LOGIN_WINDOW_MS) * 100);
   const urgent = left > 0 && left <= 30_000;
 
@@ -59,7 +67,7 @@ function LoginTimer() {
       </div>
       <p className="mt-3 text-xs leading-relaxed text-muted">
         {expired
-          ? "The 3-minute sign-in window has ended. Client login is locked."
+          ? "The 3-minute sign-in window has ended. Ask the admin to reset the timer."
           : "You have 3 minutes to unlock this wallet."}
       </p>
     </div>
@@ -86,6 +94,7 @@ export function LoginScreen() {
 
   const firstChoice = lockedScenario ?? savedScenario;
   const showCodes = walletHydrated && windowHydrated && !firstChoice;
+  const clientArm = isClientEmail(email);
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -97,12 +106,13 @@ export function LoginScreen() {
       return;
     }
     setError(null);
+    refreshCloud();
     void navigate({ to: "/wallet" });
   }
 
   const errorText =
     error === "expired"
-      ? "The access window has closed. Sign-in is no longer allowed."
+      ? "The access window has closed. Ask the admin to reset the 3-minute timer."
       : error === "scenario"
         ? "Select T20, F20 or K20 to continue."
         : error
@@ -112,7 +122,7 @@ export function LoginScreen() {
   return (
     <MarketingShell>
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
-        <LoginTimer />
+        <LoginTimer arm={clientArm} />
         <p className="mt-8 text-xs font-medium tracking-[0.18em] text-primary uppercase">{brandName}</p>
         <h1 className="mt-3 font-display text-3xl font-semibold tracking-tight">{loginTitle}</h1>
         <p className="mt-2 text-sm text-muted">{loginSub}</p>

@@ -1,4 +1,4 @@
-export function readImageFile(file: File, max = 1400): Promise<string> {
+export function readImageFile(file: File, max = 1100): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -15,7 +15,7 @@ export function readImageFile(file: File, max = 1400): Promise<string> {
       }
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL("image/jpeg", 0.86));
+      resolve(canvas.toDataURL("image/jpeg", 0.8));
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);

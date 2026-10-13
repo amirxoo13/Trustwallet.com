@@ -19,8 +19,10 @@
   --color-primary-hover: #1f5af0;
   --color-ring: #2e6bff;
   --color-success: #3dcf8e;
-  --color-danger: #f07178;
+  --color-danger: #ff5c4d;
   --color-warning: #e8b849;
+  --color-promo: #46641c;
+  --color-promo-fg: #dff56b;
   --color-input: #0c0e12;
   --color-accent-soft: rgb(46 107 255 / 0.14);
 

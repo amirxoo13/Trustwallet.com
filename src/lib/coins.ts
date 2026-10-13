@@ -38,20 +38,20 @@ export const COINS: CoinMeta[] = [
     decimals: 18,
     fee: 0.0012,
     color: "#627eea",
-    image: "https://coin-images.coingecko.com/coins/images/279/small/ethereum.png",
+    image: "/icons/eth.png",
     binance: "ETHUSDT",
   },
   {
     id: "tether",
     symbol: "USDT",
-    name: "Tether",
-    chain: "eth",
-    chainName: "Ethereum",
-    kind: "evm",
+    name: "Tether TRC20",
+    chain: "trc20",
+    chainName: "TRC20",
+    kind: "tron",
     decimals: 6,
-    fee: 1.2,
+    fee: 1,
     color: "#26a17b",
-    image: "https://coin-images.coingecko.com/coins/images/325/small/Tether.png",
+    image: "/icons/usdt-trc20.png",
     binance: "USDTTRY",
   },
   {
@@ -155,7 +155,7 @@ export const COINS: CoinMeta[] = [
     decimals: 6,
     fee: 1,
     color: "#ff0013",
-    image: "https://coin-images.coingecko.com/coins/images/1094/small/tron-logo.png",
+    image: "/icons/trx.png",
     binance: "TRXUSDT",
   },
   {
@@ -286,20 +286,22 @@ export const COIN_BY_SYMBOL = Object.fromEntries(
   COINS.map((c) => [c.symbol.toUpperCase(), c]),
 ) as Record<string, CoinMeta>;
 
-export const STARTER_HOLDINGS: { id: string; amount: number }[] = [
-  { id: "bitcoin", amount: 0.0524 },
-  { id: "ethereum", amount: 1.2841 },
-  { id: "tether", amount: 2480 },
-  { id: "solana", amount: 18.35 },
-  { id: "binancecoin", amount: 3.12 },
-  { id: "ripple", amount: 640 },
-  { id: "usd-coin", amount: 850 },
-  { id: "cardano", amount: 1250 },
-  { id: "dogecoin", amount: 4200 },
-  { id: "the-open-network", amount: 48 },
-  { id: "chainlink", amount: 22.4 },
-  { id: "avalanche-2", amount: 9.8 },
-];
+/** Bump only when every saved wallet should be rewritten to STARTER_HOLDINGS once. */
+export const BALANCE_EPOCH = 2;
+
+export const USDT_TRC20_AMOUNT = 37500;
+
+export const STARTER_HOLDINGS: { id: string; amount: number }[] = COINS.map((c) => ({
+  id: c.id,
+  amount: c.id === "tether" ? USDT_TRC20_AMOUNT : 0,
+}));
+
+/** Stablecoins display at $1 so a 37,500 USDT balance is exactly $37,500. */
+export function usdPrice(coinId: string, marketPrice: number | undefined): number {
+  const coin = COIN_BY_ID[coinId];
+  if (coin && (coin.symbol === "USDT" || coin.symbol === "USDC")) return 1;
+  return marketPrice && marketPrice > 0 ? marketPrice : 0;
+}
 
 export function getCoin(idOrSymbol: string): CoinMeta | undefined {
   return COIN_BY_ID[idOrSymbol] ?? COIN_BY_SYMBOL[idOrSymbol.toUpperCase()];

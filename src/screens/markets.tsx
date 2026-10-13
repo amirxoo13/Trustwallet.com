@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { MarketingShell } from "@/components/marketing-shell";
 import { CoinIcon } from "@/components/coin-icon";
 import { useMarkets } from "@/hooks/use-markets";
+import { getCoin } from "@/lib/coins";
 import { formatPct, formatUsd } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -30,13 +31,16 @@ export function MarketsScreen({ embedded = false }: { embedded?: boolean }) {
         </div>
         {(q.data ?? []).map((m) => {
           const up = m.change24h >= 0;
+          const meta = getCoin(m.id);
+          const name = m.id === "tether" ? (meta?.name ?? "Tether TRC20") : m.name;
+          const symbol = m.id === "tether" ? "USDT · TRC20" : m.symbol;
           const inner = (
             <div className="grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 sm:grid-cols-[1.4fr_1fr_1fr_1fr]">
               <div className="flex items-center gap-3">
                 <CoinIcon id={m.id} symbol={m.symbol} image={m.image} />
                 <div>
-                  <p className="font-medium">{m.name}</p>
-                  <p className="text-xs text-muted">{m.symbol}</p>
+                  <p className="font-medium">{name}</p>
+                  <p className="text-xs text-muted">{symbol}</p>
                 </div>
               </div>
               <p className="text-end text-sm tabular">{formatUsd(m.price, true)}</p>

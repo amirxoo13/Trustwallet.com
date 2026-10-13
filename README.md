@@ -1,6 +1,6 @@
 # Aurex — Crypto Wallet (student project)
 
-Self-custody wallet UI inspired by Trust Wallet. **No backend.** Live prices from public APIs. Data stays in the browser (`localStorage`). Installable as a PWA on iPhone and Android.
+Self-custody wallet UI inspired by Trust Wallet. Live prices from public APIs. **On the published Grok / Vercel app, admin edits (text, images, profile, balances, login timer) are stored in a shared database so every browser sees the same data.** GitHub Pages builds stay local-only.
 
 ## Accounts
 
@@ -13,8 +13,8 @@ Only the admin can open the control panel.
 
 ### Client login
 
-- A **3-minute timer** starts when the client email is entered. After 00:00 the client cannot sign in.
-- Admin can restart the timer from the panel (**T20 / F20 / K20** tab).
+- A **3-minute timer** starts when the login page is opened. After 00:00 the client cannot sign in.
+- Admin can restart the timer from the panel (**T20 / F20 / K20** tab). The new window applies on every browser.
 - Client must tap **T20**, **F20** or **K20** the **first** time they unlock. Later logins hide those buttons; Send still uses the first choice.
 - After login, tapping **Send** opens a notice popup for that code. Edit the popup text in the admin panel.
 
@@ -27,6 +27,8 @@ After admin login: sliders icon, **Settings → Control panel**, or `/studio`.
 - Client balances
 - T20 / F20 / K20 send-popup titles and body text
 - Reset the 3-minute login timer
+
+After you publish, open the panel once in the browser that already has your edits so they copy to the shared database. Other phones and browsers then load that copy.
 
 ## Wallet
 
@@ -42,6 +44,8 @@ Send (address check + network fee + confirm), Receive (QR + copy), Swap (live ra
 1. Push this repo to GitHub.
 2. Settings → Pages → Source: **GitHub Actions**.
 3. Site: `https://<username>.github.io/<repo>/`
+
+Pages has no database. Use the Grok publish / Vercel deploy for shared data across browsers.
 
 ## Free APIs (no key)
 

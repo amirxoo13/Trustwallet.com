@@ -12,18 +12,19 @@ import { toast } from "sonner";
 export function WalletReceiveScreen() {
   const addresses = useWallet((s) => s.addresses);
   const copy = t();
-  const [coinId, setCoinId] = useState("ethereum");
+  const [coinId, setCoinId] = useState("tether");
   const [copied, setCopied] = useState(false);
   const coin = getCoin(coinId) ?? COINS[1];
   const address = addresses[coin.chain] ?? "";
 
   const uniqueChains = useMemo(() => {
     const seen = new Set<string>();
-    return COINS.filter((c) => {
+    const list = COINS.filter((c) => {
       if (seen.has(c.chain)) return false;
       seen.add(c.chain);
       return true;
     });
+    return list.sort((a, b) => Number(b.id === "tether") - Number(a.id === "tether"));
   }, []);
 
   async function copyAddr() {

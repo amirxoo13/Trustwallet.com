@@ -222,7 +222,7 @@ export const useSite = create<SiteState>()(
       },
       onRehydrateStorage: () => () => {
         const cur = useSite.getState();
-        useSite.setState({ ...SITE_DEFAULTS, ...cur, hydrated: true });
+        useSite.setState({ ...SITE_DEFAULTS, ...cur });
       },
     },
   ),

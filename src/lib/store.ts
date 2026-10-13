@@ -7,7 +7,7 @@ import {
   type UserRole,
 } from "@/lib/auth-config";
 import { generateAddress } from "@/lib/addresses";
-import { COINS, STARTER_HOLDINGS, getCoin } from "@/lib/coins";
+import { COINS, STARTER_HOLDINGS, BALANCE_EPOCH, getCoin } from "@/lib/coins";
 import { remainingMs, useLoginWindow } from "@/lib/login-window";
 
 export type TxType = "send" | "receive" | "swap" | "buy";
@@ -64,6 +64,8 @@ interface WalletState {
   holdings: Holding[];
   transactions: Transaction[];
   profile: Profile;
+  /** 0 until the saved wallet is rewritten to the current balance set. */
+  balanceEpoch: number;
   login: (
     email: string,
     password: string,
@@ -98,8 +100,16 @@ interface WalletState {
   }) => { ok: true; tx: Transaction } | { ok: false; error: string };
 }
 
-function makeAddresses(): WalletAddresses {
-  const out: WalletAddresses = {};
+export function ensureWalletAddresses(addresses: WalletAddresses): WalletAddresses {
+  let missing = false;
+  for (const coin of COINS) {
+    if (!addresses[coin.chain]) {
+      missing = true;
+      break;
+    }
+  }
+  if (!missing) return addresses;
+  const out = { ...addresses };
   for (const coin of COINS) {
     if (!out[coin.chain]) out[coin.chain] = generateAddress(coin.kind);
   }
@@ -140,6 +150,7 @@ export const useWallet = create<WalletState>()(
       holdings: STARTER_HOLDINGS.map((h) => ({ ...h })),
       transactions: [],
       profile: emptyProfile(),
+      balanceEpoch: 0,
       login: (email, password, scenario) => {
         const e = email.trim().toLowerCase();
         const p = password;
@@ -148,7 +159,7 @@ export const useWallet = create<WalletState>()(
           set((s) => ({
             authenticated: true,
             role: "admin",
-            addresses: Object.keys(s.addresses).length ? s.addresses : makeAddresses(),
+            addresses: ensureWalletAddresses(s.addresses),
           }));
           return { ok: true };
         }
@@ -164,7 +175,7 @@ export const useWallet = create<WalletState>()(
             authenticated: true,
             role: "client",
             scenario: chosen,
-            addresses: Object.keys(s.addresses).length ? s.addresses : makeAddresses(),
+            addresses: ensureWalletAddresses(s.addresses),
             profile: {
               ...s.profile,
               email: s.profile.email || CLIENT_ACCOUNT.email,
@@ -186,8 +197,9 @@ export const useWallet = create<WalletState>()(
         const n = Number(amount);
         const value = Number.isFinite(n) && n > 0 ? n : 0;
         set((s) => {
-          const holdings = s.holdings.filter((h) => h.id !== coinId);
-          if (value > 0) holdings.push({ id: coinId, amount: value });
+          const holdings = s.holdings.some((h) => h.id === coinId)
+            ? s.holdings.map((h) => (h.id === coinId ? { ...h, amount: value } : h))
+            : [...s.holdings, { id: coinId, amount: value }];
           return { holdings };
         });
       },
@@ -205,9 +217,9 @@ export const useWallet = create<WalletState>()(
         const h = get().holdings.find((x) => x.id === coinId);
         if (!h || h.amount + 1e-12 < amount) return false;
         set((s) => ({
-          holdings: s.holdings
-            .map((x) => (x.id === coinId ? { ...x, amount: Math.max(0, x.amount - amount) } : x))
-            .filter((x) => x.amount > 1e-12),
+          holdings: s.holdings.map((x) =>
+            x.id === coinId ? { ...x, amount: Math.max(0, x.amount - amount) } : x,
+          ),
         }));
         return true;
       },
@@ -318,6 +330,7 @@ export const useWallet = create<WalletState>()(
         holdings: s.holdings,
         transactions: s.transactions,
         profile: s.profile,
+        balanceEpoch: s.balanceEpoch,
       }),
       onRehydrateStorage: () => () => {
         const s = useWallet.getState();
@@ -325,7 +338,13 @@ export const useWallet = create<WalletState>()(
         if (s.authenticated && !role) {
           role = s.profile.email.toLowerCase() === ADMIN_ACCOUNT.email.toLowerCase() ? "admin" : "client";
         }
-        useWallet.setState({ hydrated: true, role });
+        const stale = s.balanceEpoch !== BALANCE_EPOCH;
+        useWallet.setState({
+          role,
+          balanceEpoch: BALANCE_EPOCH,
+          addresses: ensureWalletAddresses(s.addresses),
+          ...(stale ? { holdings: STARTER_HOLDINGS.map((h) => ({ ...h })) } : {}),
+        });
       },
     },
   ),

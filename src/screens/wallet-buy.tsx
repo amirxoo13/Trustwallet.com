@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WalletShell } from "@/components/wallet-shell";
 import { useMarketMap } from "@/hooks/use-markets";
-import { COINS, getCoin } from "@/lib/coins";
+import { COINS, getCoin, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useWallet } from "@/lib/store";
@@ -25,7 +25,7 @@ export function WalletBuyScreen() {
   const [got, setGot] = useState(0);
 
   const coin = getCoin(coinId) ?? COINS[0];
-  const price = markets[coinId]?.price ?? 0;
+  const price = usdPrice(coinId, markets[coinId]?.price);
   const spend = Number(usd) || 0;
   const receive = price > 0 ? (spend * 0.9851) / price : 0;
 

@@ -8,10 +8,16 @@ const rootDir = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   base: "./",
+  define: {
+    "import.meta.env.VITE_PAGES": JSON.stringify("true"),
+  },
   plugins: [tailwindcss(), viteReact()],
   resolve: {
     tsconfigPaths: true,
-    alias: { "@": path.join(rootDir, "src") },
+    alias: {
+      "@/lib/cloud-state": path.join(rootDir, "src/lib/cloud-state.pages.ts"),
+      "@": path.join(rootDir, "src"),
+    },
   },
   publicDir: "public",
   build: {

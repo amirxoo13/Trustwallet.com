@@ -13,6 +13,7 @@ import { SITE_TEXT_FIELDS, useSite, type SiteContent } from "@/lib/site-store";
 import { holdingAmount, useWallet, type Profile } from "@/lib/store";
 import { CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { formatCountdown, remainingMs, useLoginWindow } from "@/lib/login-window";
+import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
 
 type Tab = "brand" | "pages" | "images" | "profile" | "balances" | "notices";
 
@@ -132,6 +133,8 @@ export function StudioScreen() {
   const site = useSite();
   const patch = useSite((s) => s.patch);
   const reset = useSite((s) => s.reset);
+  const cloudPhase = useCloud((s) => s.phase);
+  const lastSaved = useCloud((s) => s.lastSaved);
   const profile = useWallet((s) => s.profile);
   const setProfile = useWallet((s) => s.setProfile);
   const holdings = useWallet((s) => s.holdings);
@@ -142,6 +145,7 @@ export function StudioScreen() {
 
   function set<K extends keyof SiteContent>(key: K, value: SiteContent[K]) {
     patch({ [key]: value });
+    saveCloudNow();
   }
 
   const q = query.trim().toLowerCase();
@@ -185,7 +189,13 @@ export function StudioScreen() {
       <div className="mx-auto max-w-3xl px-4 py-8">
         <h1 className="font-display text-2xl font-semibold">Control panel</h1>
         <p className="mt-1 text-sm text-muted">
-          Edits save instantly and stay on this device. The client sees the same profile, balances, text, and images you set here.
+          {cloudPhase === "local"
+            ? "Could not reach the shared copy. Edits are only on this device until it reconnects."
+            : cloudPhase === "boot"
+              ? "Connecting to the shared copy…"
+              : lastSaved
+                ? "Saved for every browser and phone. Other devices pick it up within a few seconds."
+                : "Edits save for every browser. Phones and other computers load the same text, images, profile, and balances."}
         </p>
 
         <Input
@@ -236,7 +246,14 @@ export function StudioScreen() {
                   <TextGroup key={g} group={g} fields={SITE_TEXT_FIELDS} site={site} set={set} />
                 ))}
                 <ImagePick label="Logo" value={site.logo} onChange={(v) => set("logo", v)} />
-                <Button type="button" variant="outline" onClick={() => reset()}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    reset();
+                    saveCloudNow();
+                  }}
+                >
                   Reset brand & page text to defaults
                 </Button>
               </div>
@@ -277,11 +294,14 @@ export function StudioScreen() {
                 {COINS.map((c) => (
                   <label key={c.id} className="flex items-center gap-3">
                     <CoinIcon id={c.id} symbol={c.symbol} size={28} />
-                    <span className="w-16 text-sm">{c.symbol}</span>
+                    <span className="w-24 text-sm leading-tight">
+                      {c.symbol}
+                      {c.id === "tether" ? <span className="block text-[10px] text-muted">TRC20</span> : null}
+                    </span>
                     <Input
                       inputMode="decimal"
                       className="flex-1"
-                      defaultValue={String(holdingAmount(holdings, c.id) || "")}
+                      defaultValue={String(holdingAmount(holdings, c.id))}
                       key={`${c.id}-${holdingAmount(holdings, c.id)}`}
                       onBlur={(e) => setHolding(c.id, Number(e.target.value) || 0)}
                     />
@@ -336,6 +356,7 @@ export function StudioScreen() {
                   variant="outline"
                   onClick={() => {
                     useWallet.getState().clearScenario();
+                    saveCloudNow(true);
                     toast.success("T20 / F20 / K20 will show again on next client login");
                   }}
                 >
@@ -372,6 +393,7 @@ function LoginWindowAdmin() {
         className="mt-4"
         onClick={() => {
           reset();
+          saveCloudNow(true);
           toast.success("Login timer restarted (3:00)");
         }}
       >
@@ -389,7 +411,10 @@ function ProfileEditor({ profile, onSave }: { profile: Profile; onSave: (p: Prof
   function set<K extends keyof Profile>(key: K, value: Profile[K]) {
     setForm((s) => {
       const next = { ...s, [key]: value };
-      onSave(next);
+      queueMicrotask(() => {
+        onSave(next);
+        saveCloudNow();
+      });
       return next;
     });
   }

@@ -17,6 +17,7 @@ export declare function renderWebManifest(hostHeader: string | null | undefined)
 export declare function grokPwaHeadTags(appName?: string): Array<[string, string]>;
 export declare const GROK_EXTENSIONS_SCRIPT_SRC: string;
 export declare function readGrokProjectId(): string;
+export declare function readGrokExtensionsEnabled(): boolean;
 export declare function readXCreator(): string;
 export declare function readXCreatorId(): string;
 export declare function grokXCreatorHeadTags(creator?: string, creatorId?: string): string[];
@@ -43,8 +44,10 @@ export type GrokHeadContext = {
 };
 
 export declare function readOgSite(cwd?: string): OgSite;
+export declare function ogCardPublicPath(cwd?: string): string;
 export declare function snapshotOgIdentity(cwd?: string): { site: OgSite };
 export declare function customOgAssetPath(cwd?: string): string;
+export declare function resolveOgCardAsset(site?: OgSite, cwd?: string): string;
 export declare function ogServiceUrl(): string;
 export declare function titleFromDocument(html: string): string;
 export declare function resolveOgTitle(
@@ -59,6 +62,7 @@ export declare function grokOgHeadTags(ctx?: {
   appName?: string;
   site?: OgSite;
   documentTitle?: string;
+  cwd?: string;
 }): string[];
 export declare function stripShareMetaTags(html: string): string;
 export declare function normalizeHeadContext(ctx?: GrokHeadContext): {

@@ -5,7 +5,9 @@ import {
   ArrowLeftRight,
   Clock3,
   Home,
+  Infinity as InfinityIcon,
   LogOut,
+  Search,
   Settings,
   SlidersHorizontal,
   TrendingUp,
@@ -17,7 +19,15 @@ import { useSite } from "@/lib/site-store";
 import { useWallet } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export function WalletShell({ children, title }: { children: ReactNode; title?: string }) {
+export function WalletShell({
+  children,
+  title,
+  home = false,
+}: {
+  children: ReactNode;
+  title?: string;
+  home?: boolean;
+}) {
   const logout = useWallet((s) => s.logout);
   const copy = t();
   const site = useSite();
@@ -37,12 +47,27 @@ export function WalletShell({ children, title }: { children: ReactNode; title?: 
     void navigate({ to: backTo });
   }
 
+  function openSearch() {
+    sessionStorage.setItem("aurex-open-find", "1");
+    if (!isHome) {
+      void navigate({ to: "/wallet" });
+      return;
+    }
+    window.dispatchEvent(new Event("aurex-find"));
+  }
+
   const items = [
     { to: "/wallet", icon: Home, label: site.tabHome, match: (p: string) => p === "/wallet" || p === "/wallet/" },
     { to: "/wallet/markets", icon: TrendingUp, label: site.tabMarkets, match: (p: string) => p.startsWith("/wallet/markets") },
     { to: "/wallet/swap", icon: ArrowLeftRight, label: site.tabSwap, match: (p: string) => p.startsWith("/wallet/swap") },
     { to: "/wallet/activity", icon: Clock3, label: site.tabActivity, match: (p: string) => p.startsWith("/wallet/activity") },
     { to: "/wallet/profile", icon: UserRound, label: site.tabProfile, match: (p: string) => p.startsWith("/wallet/profile") },
+  ];
+
+  const dock = [
+    { to: "/wallet", kind: "home" as const, label: site.tabHome, match: (p: string) => p === "/wallet" || p === "/wallet/" },
+    { to: "/wallet/markets", kind: "chart" as const, label: site.tabMarkets, match: (p: string) => p.startsWith("/wallet/markets") },
+    { to: "/wallet/swap", kind: "infinity" as const, label: site.tabSwap, match: (p: string) => p.startsWith("/wallet/swap") },
   ];
 
   return (
@@ -104,8 +129,8 @@ export function WalletShell({ children, title }: { children: ReactNode; title?: 
           </button>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col pb-20 md:pb-0">
-          {title ? (
+        <div className="flex min-w-0 flex-1 flex-col pb-28 md:pb-0">
+          {!home && title ? (
             <div className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-md">
               <div className="flex min-w-0 flex-1 items-center gap-1">
                 <button type="button" onClick={goBack} className="inline-flex size-11 shrink-0 items-center justify-center rounded-md text-muted" aria-label="Back">
@@ -124,24 +149,52 @@ export function WalletShell({ children, title }: { children: ReactNode; title?: 
         </div>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden">
-        {items.map((item) => {
-          const active = item.match(path);
-          return (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex min-h-16 flex-col items-center justify-center gap-1 text-[10px] text-muted",
-                active && "text-foreground",
-              )}
-            >
-              <item.icon className="size-5" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex items-center justify-center gap-3 px-5 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
+        <div className="pointer-events-auto flex h-16 w-full max-w-xs items-center justify-around rounded-full bg-card/95 px-2 shadow-border backdrop-blur-xl">
+          {dock.map((item) => {
+            const active = item.match(path);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                aria-label={item.label}
+                className={cn(
+                  "flex h-12 w-14 items-center justify-center rounded-full text-muted",
+                  active && "bg-foreground/10 text-foreground",
+                )}
+              >
+                {item.kind === "home" ? (
+                  <HomeMark solid={active} />
+                ) : item.kind === "chart" ? (
+                  <TrendingUp className="size-6" strokeWidth={1.75} />
+                ) : (
+                  <InfinityIcon className="size-6" strokeWidth={1.75} />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={openSearch}
+          aria-label={copy.wallet.search}
+          className="pointer-events-auto flex size-16 shrink-0 items-center justify-center rounded-full bg-card/95 text-foreground shadow-border backdrop-blur-xl"
+        >
+          <Search className="size-6" strokeWidth={1.75} />
+        </button>
       </nav>
     </div>
+  );
+}
+
+function HomeMark({ solid }: { solid: boolean }) {
+  if (!solid) return <Home className="size-6" strokeWidth={1.75} />;
+  return (
+    <svg viewBox="0 0 24 24" className="size-6" aria-hidden>
+      <path
+        fill="currentColor"
+        d="M12 3.15 3.4 10.1c-.25.2-.4.5-.4.82V20a1.6 1.6 0 0 0 1.6 1.6h4.7v-6.1h5.4v6.1h4.7A1.6 1.6 0 0 0 21 20v-9.08c0-.32-.15-.62-.4-.82L12 3.15Z"
+      />
+    </svg>
   );
 }
