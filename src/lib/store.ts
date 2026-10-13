@@ -100,6 +100,7 @@ interface WalletState {
     usdValue: number;
   }) => { ok: true; tx: Transaction } | { ok: false; error: string };
   settleDueSwaps: () => void;
+  cancelSwap: (id: string) => { ok: true } | { ok: false; error: "forbidden" | "missing" | "already" | "spent" };
   buy: (opts: {
     coinId: string;
     amount: number;
@@ -340,6 +341,42 @@ export const useWallet = create<WalletState>()(
             transactions: s.transactions.map((t) => (ids.has(t.id) ? { ...t, status: "confirmed" as const } : t)),
           };
         });
+      },
+      cancelSwap: (id) => {
+        if (!hasAdminProof()) return { ok: false, error: "forbidden" };
+        const tx = get().transactions.find((t) => t.id === id && t.type === "swap");
+        if (!tx) return { ok: false, error: "missing" };
+        if (tx.status === "failed") return { ok: false, error: "already" };
+        if (tx.status === "confirmed" && tx.toCoinId && (tx.toAmount ?? 0) > 0) {
+          const dest = get().holdings.find((h) => h.id === tx.toCoinId);
+          if (!dest || dest.amount + 1e-8 < (tx.toAmount ?? 0)) return { ok: false, error: "spent" };
+        }
+        set((s) => {
+          const row = s.transactions.find((t) => t.id === id && t.type === "swap" && t.status !== "failed");
+          if (!row) return s;
+          let holdings = s.holdings.map((h) => ({ ...h }));
+          const credit = (coinId: string, amount: number) => {
+            const i = holdings.findIndex((h) => h.id === coinId);
+            if (i >= 0) holdings[i] = { ...holdings[i], amount: holdings[i].amount + amount };
+            else holdings.push({ id: coinId, amount });
+          };
+          const debit = (coinId: string, amount: number) => {
+            holdings = holdings.map((h) =>
+              h.id === coinId ? { ...h, amount: Math.max(0, h.amount - amount) } : h,
+            );
+          };
+          credit(row.coinId, row.amount);
+          if (row.status === "confirmed" && row.toCoinId && row.toAmount) debit(row.toCoinId, row.toAmount);
+          return {
+            holdings,
+            transactions: s.transactions.map((t) =>
+              t.id === id
+                ? { ...t, status: "failed" as const, settlesAt: undefined, note: "Cancelled by admin" }
+                : t,
+            ),
+          };
+        });
+        return { ok: true };
       },
       buy: ({ coinId, amount, usdValue }) => {
         const coin = getCoin(coinId);

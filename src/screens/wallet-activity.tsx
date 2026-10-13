@@ -57,7 +57,9 @@ export function WalletActivityScreen() {
                         → {formatAmount(tx.toAmount ?? 0, 6)} {tx.toSymbol}
                         {tx.status === "pending" && tx.settlesAt
                           ? ` · Pending ${formatDuration(tx.settlesAt - now)}`
-                          : ""}
+                          : tx.status === "failed"
+                            ? " · Cancelled"
+                            : ""}
                       </p>
                     ) : null}
                     {tx.toAddress ? (

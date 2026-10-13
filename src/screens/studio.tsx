@@ -11,6 +11,7 @@ import { COINS } from "@/lib/coins";
 import { readImageFile } from "@/lib/image-file";
 import { SITE_TEXT_FIELDS, useSite, type SiteContent } from "@/lib/site-store";
 import { holdingAmount, useWallet, type Profile } from "@/lib/store";
+import { formatAmount, formatDuration } from "@/lib/format";
 import { CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
 
@@ -139,8 +140,16 @@ export function StudioScreen() {
   const holdings = useWallet((s) => s.holdings);
   const setHolding = useWallet((s) => s.setHolding);
   const simulateIncoming = useWallet((s) => s.simulateIncoming);
+  const transactions = useWallet((s) => s.transactions);
+  const cancelSwap = useWallet((s) => s.cancelSwap);
   const [creditId, setCreditId] = useState("ethereum");
   const [creditAmt, setCreditAmt] = useState("0.05");
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
 
   function set<K extends keyof SiteContent>(key: K, value: SiteContent[K]) {
     patch({ [key]: value });
@@ -306,6 +315,57 @@ export function StudioScreen() {
                     />
                   </label>
                 ))}
+                <div className="mt-4 rounded-xl bg-card p-4 shadow-border">
+                  <p className="text-sm font-medium">Swaps</p>
+                  <p className="mt-1 text-xs text-muted">
+                    Cancel returns the asset that was swapped. A pending Ethereum to Bitcoin swap will not pay out.
+                  </p>
+                  <div className="mt-3 space-y-3">
+                    {transactions.filter((tx) => tx.type === "swap").length === 0 ? (
+                      <p className="text-sm text-muted">No swaps yet.</p>
+                    ) : (
+                      transactions
+                        .filter((tx) => tx.type === "swap")
+                        .map((tx) => (
+                          <div key={tx.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium">
+                                {formatAmount(tx.amount)} {tx.symbol} → {formatAmount(tx.toAmount ?? 0, 6)} {tx.toSymbol}
+                              </p>
+                              <p className="text-xs text-muted">
+                                {tx.status === "pending" && tx.settlesAt
+                                  ? `Pending · ${formatDuration(Math.max(0, tx.settlesAt - now))} left`
+                                  : tx.status === "failed"
+                                    ? "Cancelled"
+                                    : "Completed"}
+                              </p>
+                            </div>
+                            {tx.status !== "failed" ? (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  const res = cancelSwap(tx.id);
+                                  if (!res.ok) {
+                                    toast.error(
+                                      res.error === "spent"
+                                        ? "The received asset was already spent, so this swap cannot be cancelled."
+                                        : "Could not cancel this swap.",
+                                    );
+                                    return;
+                                  }
+                                  saveCloudNow();
+                                  toast.success("Swap cancelled and the balance was returned");
+                                }}
+                              >
+                                Cancel swap
+                              </Button>
+                            ) : null}
+                          </div>
+                        ))
+                    )}
+                  </div>
+                </div>
                 <div className="mt-4 rounded-xl bg-card p-4 shadow-border">
                   <p className="text-sm font-medium">Credit incoming (Receive)</p>
                   <div className="mt-3 flex flex-wrap gap-2">
