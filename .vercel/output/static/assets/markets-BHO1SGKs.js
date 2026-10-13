@@ -1,0 +1,1 @@
+import{t as e}from"./markets-0q6LKytO.js";var t=e;export{t as component};

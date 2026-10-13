@@ -348,8 +348,11 @@ export function StudioScreen() {
               <div className="mt-8 grid gap-8">
                 <LoginWindowAdmin />
                 <TextGroup group="Send notices" fields={SITE_TEXT_FIELDS} site={site} set={set} />
+                <TextGroup group="Send confirmation" fields={SITE_TEXT_FIELDS} site={site} set={set} />
                 <p className="text-xs text-muted">
-                  The matching popup opens when the client taps Send, using the code they chose on first login.
+                  T20, F20, or K20 opens when the client taps Send, using the code from their first login. After they
+                  confirm the wallet address, confirmations run for the minutes you set. The code box opens on the last
+                  confirmation. Use {"{current}"} and {"{total}"} in the confirming line.
                 </p>
                 <Button
                   type="button"
