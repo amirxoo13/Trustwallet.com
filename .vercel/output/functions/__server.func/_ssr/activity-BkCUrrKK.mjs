@@ -7,7 +7,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link } from "../_libs/@tanstack/react-router+[...].mjs";
 import { I as ArrowUpRight, V as ArrowDownLeft, _ as Plus, z as ArrowLeftRight } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-DUOd2QiC.mjs";
-import { v as useWallet } from "./router-B6P5sC19.mjs";
+import { v as useWallet } from "./router-CsPoWHrR.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/activity-BkCUrrKK.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();

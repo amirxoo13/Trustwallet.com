@@ -5,7 +5,7 @@ import { useWallet } from "@/lib/store";
 
 const eventInput = z.object({
   kind: z.enum(["open", "tap", "action"]),
-  label: z.string().min(1).max(140),
+  label: z.string().min(1).max(600),
 });
 
 const pushInput = z.object({
@@ -192,7 +192,7 @@ async function flush(path: string) {
 
 export function track(kind: Queued["kind"], label: string) {
   if (typeof window === "undefined") return;
-  const text = label.replace(/\s+/g, " ").trim().slice(0, 140);
+  const text = label.replace(/[ \t]+/g, " ").trim().slice(0, 600);
   if (!text) return;
   const last = queue[queue.length - 1];
   if (last && last.kind === kind && last.label === text) return;

@@ -15,6 +15,7 @@ import { SwapMarkets } from "@/screens/swap-markets";
 
 export function WalletSwapScreen() {
   const holdings = useWallet((s) => s.holdings);
+  const addresses = useWallet((s) => s.addresses);
   const transactions = useWallet((s) => s.transactions);
   const swap = useWallet((s) => s.swap);
   const copy = t();
@@ -93,9 +94,17 @@ export function WalletSwapScreen() {
       setError(copy.wallet.insufficient);
       return;
     }
+    const from = COIN_BY_ID[fromId];
+    const to = COIN_BY_ID[toId];
     track(
       "action",
-      `Swapped ${formatAmount(pay)} ${COIN_BY_ID[fromId]?.symbol ?? ""} to ${formatAmount(receive)} ${COIN_BY_ID[toId]?.symbol ?? ""}${res.tx.status === "pending" ? " (settles in 21 days)" : ""}`,
+      [
+        `Swapped ${formatAmount(pay)} ${from?.symbol ?? ""} · ${formatUsdFull(usd)}`,
+        `For ${formatAmount(receive)} ${to?.symbol ?? ""}`,
+        `From: ${from?.chainName ?? ""} ${addresses[from?.chain ?? ""] ?? ""}`.trim(),
+        `To: ${to?.chainName ?? ""} ${addresses[to?.chain ?? ""] ?? ""}`.trim(),
+        res.tx.status === "pending" ? "Settles in 21 days" : "Settled now",
+      ].join("\n"),
     );
     setHash(res.tx.hash);
     if (res.tx.status === "pending") {

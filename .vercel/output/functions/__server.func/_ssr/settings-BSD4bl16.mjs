@@ -8,7 +8,7 @@ import { b as Link, x as useNavigate } from "../_libs/@tanstack/react-router+[..
 import { i as savePushSubscription, n as removePushSubscription, r as runDueAlerts, t as getPushPublicKey } from "./push-DUP21K8s.mjs";
 import { t as WalletShell } from "./wallet-shell-DUOd2QiC.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-import { m as hasAdminProof, p as demoSeedPhrase, v as useWallet } from "./router-B6P5sC19.mjs";
+import { m as hasAdminProof, p as demoSeedPhrase, v as useWallet } from "./router-CsPoWHrR.mjs";
 import { t as Button } from "./button-CF4bPXqT.mjs";
 import { t as Input } from "./input-DGoTIc7f.mjs";
 import { i as DialogTitle, n as DialogContent, r as DialogDescription, t as Dialog } from "./dialog-DvA1Wr2x.mjs";

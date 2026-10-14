@@ -60,10 +60,34 @@ function span(ms: number) {
 
 function tone(item: Item): "money" | "danger" | "action" | "open" | "tap" {
   if (/fail|stopped|wrong|not enough/i.test(item.label)) return "danger";
-  if (/^(Sent |Swapped |Bought |Signed in)/.test(item.label)) return "money";
+  if (/^(Sent |Started send |Swapped |Bought |Signed in|Viewing receive|Copied receive)/.test(item.label)) return "money";
   if (item.kind === "action") return "action";
   if (item.kind === "open") return "open";
   return "tap";
+}
+
+function ActivityBody({ label }: { label: string }) {
+  const lines = label.split("\n").map((line) => line.trim()).filter(Boolean);
+  return (
+    <div className="mt-1 grid gap-1">
+      {lines.map((line, index) => {
+        const field = line.match(/^(To|From|Hash|Network|Fee|For|Card ending):\s*(.*)$/i);
+        if (!field) {
+          return (
+            <p key={index} className={index === 0 ? "text-sm font-medium leading-snug" : "text-sm leading-snug break-all"}>
+              {line}
+            </p>
+          );
+        }
+        return (
+          <p key={index} className="font-mono text-[12px] leading-relaxed break-all">
+            <span className="text-muted">{field[1]}: </span>
+            {field[2]}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 const TONE_CLASS = {
@@ -342,7 +366,7 @@ export function LiveBoard() {
                         <Pill tone={tone(item)}>{tone(item) === "money" ? "money" : item.kind}</Pill>
                         <span className="truncate text-xs text-muted">{item.who}</span>
                       </div>
-                      <p className="mt-1 text-sm leading-snug">{item.label}</p>
+                      <ActivityBody label={item.label} />
                     </div>
                     <span className="shrink-0 font-mono text-[11px] text-muted">{clock(item.at)}</span>
                   </div>

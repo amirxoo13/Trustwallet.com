@@ -8,7 +8,7 @@ import { n as createServerFn } from "./ssr.mjs";
 import { M as ChevronDown, P as ChartColumn, f as Search, h as Rocket, o as Star } from "../_libs/lucide-react.mjs";
 import { a as fetchSearchMarkets, o as fetchTopTraded, s as fetchTrendingMarkets, t as fetchCategoryMarkets } from "./prices-7icuP-SQ.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { l as createSsrRpc } from "./router-B6P5sC19.mjs";
+import { l as createSsrRpc } from "./router-CsPoWHrR.mjs";
 import { t as CoinIcon } from "./coin-icon-DTtCkdcR.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/swap-markets-OGRgt0_l.js
 var import_react = /* @__PURE__ */ __toESM(require_react());

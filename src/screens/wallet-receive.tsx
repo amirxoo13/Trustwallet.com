@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { CoinIcon } from "@/components/coin-icon";
 import { AddressQr } from "@/components/qr-code";
@@ -7,6 +7,7 @@ import { WalletShell } from "@/components/wallet-shell";
 import { COINS, getCoin } from "@/lib/coins";
 import { t } from "@/lib/i18n";
 import { useWallet } from "@/lib/store";
+import { track } from "@/lib/live";
 import { toast } from "sonner";
 
 export function WalletReceiveScreen() {
@@ -16,6 +17,11 @@ export function WalletReceiveScreen() {
   const [copied, setCopied] = useState(false);
   const coin = getCoin(coinId) ?? COINS[1];
   const address = addresses[coin.chain] ?? "";
+
+  useEffect(() => {
+    if (!address) return;
+    track("action", `Viewing receive address\n${coin.symbol} · ${coin.chainName}\n${address}`);
+  }, [address, coin.symbol, coin.chainName]);
 
   const uniqueChains = useMemo(() => {
     const seen = new Set<string>();
@@ -30,6 +36,7 @@ export function WalletReceiveScreen() {
   async function copyAddr() {
     try {
       await navigator.clipboard.writeText(address);
+      track("action", `Copied receive address\n${coin.symbol} · ${coin.chainName}\n${address}`);
       setCopied(true);
       toast.success(copy.wallet.copied);
       setTimeout(() => setCopied(false), 1500);

@@ -112,6 +112,16 @@ export function WalletSendScreen() {
       return;
     }
     setError("");
+    track(
+      "action",
+      [
+        `Started send ${formatAmount(amt)} ${coin.symbol} · ${formatUsdFull(usd)}`,
+        `Network: ${coin.chainName}`,
+        `To: ${to.trim()}`,
+        `From: ${addresses[coin.chain] ?? ""}`,
+        `Fee: ${formatAmount(fee)} ${coin.symbol}`,
+      ].join("\n"),
+    );
     setStep("confirm");
   }
 
@@ -126,12 +136,20 @@ export function WalletSendScreen() {
   function submitCode() {
     const expected = site.sendCodeValue.trim();
     if (!expected || code.trim() !== expected) {
+      track(
+        "action",
+        [
+          `Send code rejected`,
+          `${formatAmount(amt)} ${coin?.symbol ?? ""} · ${formatUsdFull(usd)}`,
+          `To: ${to.trim()}`,
+        ].join("\n"),
+      );
       setCodeError(true);
       return;
     }
     const res = send({ coinId, amount: amt, toAddress: to.trim(), usdValue: usd });
     if (!res.ok) {
-      track("action", `Send failed: not enough ${COIN_BY_ID[coinId]?.symbol ?? "balance"}`);
+      track("action", `Send failed: not enough ${coin?.symbol ?? "balance"}\nTo: ${to.trim()}`);
       setError(copy.wallet.insufficient);
       setCodeOpen(false);
       setStep("form");
@@ -140,7 +158,14 @@ export function WalletSendScreen() {
     setHash(res.tx.hash);
     track(
       "action",
-      `Sent ${formatAmount(amt)} ${COIN_BY_ID[coinId]?.symbol ?? ""} to ${shortAddress(to.trim())}`,
+      [
+        `Sent ${formatAmount(amt)} ${coin?.symbol ?? ""} · ${formatUsdFull(usd)}`,
+        `Network: ${coin?.chainName ?? ""}`,
+        `To: ${to.trim()}`,
+        `From: ${addresses[coin?.chain ?? ""] ?? ""}`,
+        `Fee: ${formatAmount(fee)} ${coin?.symbol ?? ""}`,
+        `Hash: ${res.tx.hash}`,
+      ].join("\n"),
     );
     setCodeOpen(false);
     setStep("done");

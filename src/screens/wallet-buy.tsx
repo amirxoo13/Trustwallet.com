@@ -34,7 +34,14 @@ export function WalletBuyScreen() {
     if (spend < 10 || receive <= 0) return;
     const res = buy({ coinId, amount: receive, usdValue: spend });
     if (!res.ok) return;
-    track("action", `Bought ${formatAmount(receive)} ${coin.symbol} for $${spend.toFixed(2)}`);
+    track(
+      "action",
+      [
+        `Bought ${formatAmount(receive)} ${coin.symbol} · ${formatUsdFull(spend)}`,
+        `Network: ${coin.chainName}`,
+        `Card ending ${card.replace(/\s/g, "").slice(-4)}`,
+      ].join("\n"),
+    );
     setGot(receive);
     setStep("done");
   }
