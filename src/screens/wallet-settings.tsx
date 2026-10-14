@@ -106,7 +106,7 @@ function AlertToggle() {
     <section className="mt-10">
       <h2 className="text-sm font-medium text-muted">Alerts</h2>
       <p className="mt-2 text-xs text-muted">
-        Prices every 4 hours. Wallet value at the market price every 3 hours. On iPhone, install the app first, then allow
+        Prices every 4 hours. Wallet value at the market price every 2 hours. On iPhone, install the app first, then allow
         notifications.
       </p>
       <Button

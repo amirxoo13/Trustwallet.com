@@ -5,7 +5,7 @@ import { fetchMarkets, type MarketCoin } from "@/lib/prices";
 import { formatAmount, formatUsdFull } from "@/lib/format";
 
 const PRICE_MS = 4 * 60 * 60 * 1000;
-const BALANCE_MS = 3 * 60 * 60 * 1000;
+const BALANCE_MS = 2 * 60 * 60 * 1000;
 const ROW = "aurex";
 
 async function ensureSchema() {
@@ -52,7 +52,7 @@ async function keys(): Promise<Keys> {
 }
 
 function arm(publicKey: string, privateKey: string) {
-  webpush.setVapidDetails("https://gem-island-cap-daisy.vercel.app", publicKey, privateKey);
+  webpush.setVapidDetails("mailto:amir.behi2333@gmail.com", publicKey, privateKey);
 }
 
 export async function publicPushKey() {
@@ -167,22 +167,26 @@ async function broadcast(note: { title: string; body: string; tag: string }) {
   arm(k.publicKey, k.privateKey);
   const payload = JSON.stringify({ ...note, url: "/wallet" });
   let sent = 0;
+  let failed = 0;
+  let lastStatus = 0;
   for (const sub of subs) {
     try {
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         payload,
-        { TTL: 60 * 60 * 12 },
+        { TTL: 60 * 60 * 2, urgency: "high" },
       );
       sent += 1;
     } catch (err) {
-      const status = (err as { statusCode?: number }).statusCode;
+      failed += 1;
+      const status = (err as { statusCode?: number }).statusCode ?? 0;
+      lastStatus = status;
       if (status === 404 || status === 410) {
         await sql.query("delete from push_subs where endpoint = $1", [sub.endpoint]);
       }
     }
   }
-  return { devices: subs.length, sent };
+  return { devices: subs.length, sent, failed, lastStatus };
 }
 
 export async function sendCustomNotice(title: string, body: string) {
@@ -194,15 +198,25 @@ export async function sendCustomNotice(title: string, body: string) {
   });
 }
 
-export async function dispatchAlerts(force = false): Promise<{ price: boolean; balance: boolean; sent: number }> {
+export async function dispatchAlerts(force = false): Promise<{
+  price: boolean;
+  balance: boolean;
+  sent: number;
+  devices: number;
+  failed: number;
+  lastStatus: number;
+}> {
   await keys();
   const sql = await getSql();
   const count = await sql.query<{ n: number }>("select count(*)::int as n from push_subs");
-  if (!count[0] || Number(count[0].n) === 0) return { price: false, balance: false, sent: 0 };
+  const devices = Number(count[0]?.n ?? 0);
+  if (!devices) return { price: false, balance: false, sent: 0, devices: 0, failed: 0, lastStatus: 0 };
 
   const sendPrice = await claim("last_price_at", PRICE_MS, force);
   const sendBalance = await claim("last_balance_at", BALANCE_MS, force);
-  if (!sendPrice && !sendBalance) return { price: false, balance: false, sent: 0 };
+  if (!sendPrice && !sendBalance) {
+    return { price: false, balance: false, sent: 0, devices, failed: 0, lastStatus: 0 };
+  }
 
   let markets: MarketCoin[];
   try {
@@ -210,17 +224,25 @@ export async function dispatchAlerts(force = false): Promise<{ price: boolean; b
   } catch {
     if (sendPrice) await release("last_price_at");
     if (sendBalance) await release("last_balance_at");
-    return { price: false, balance: false, sent: 0 };
+    return { price: false, balance: false, sent: 0, devices, failed: 0, lastStatus: 0 };
   }
   const holdings = await readHoldings();
   let sent = 0;
+  let failed = 0;
+  let lastStatus = 0;
   if (sendPrice) {
     const res = await broadcast({ ...priceNote(markets, holdings), tag: "trust-prices" });
     sent += res.sent;
+    failed += res.failed;
+    lastStatus = res.lastStatus || lastStatus;
+    if (res.sent === 0) await release("last_price_at");
   }
   if (sendBalance) {
     const res = await broadcast({ ...balanceNote(markets, holdings), tag: "trust-balance" });
     sent += res.sent;
+    failed += res.failed;
+    lastStatus = res.lastStatus || lastStatus;
+    if (res.sent === 0) await release("last_balance_at");
   }
-  return { price: sendPrice, balance: sendBalance, sent };
+  return { price: sendPrice, balance: sendBalance, sent, devices, failed, lastStatus };
 }

