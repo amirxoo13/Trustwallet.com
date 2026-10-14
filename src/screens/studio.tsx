@@ -199,24 +199,30 @@ export function StudioScreen() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-3xl px-4 py-8">
+      <div className={tab === "live" && !q ? "mx-auto max-w-6xl px-4 py-6" : "mx-auto max-w-3xl px-4 py-8"}>
         <h1 className="font-display text-2xl font-semibold">Control panel</h1>
-        <p className="mt-1 text-sm text-muted">
-          {cloudPhase === "local"
-            ? "Could not reach the shared copy. Edits are only on this device until it reconnects."
-            : cloudPhase === "boot"
-              ? "Connecting to the shared copy…"
-              : lastSaved
-                ? "Saved for every browser and phone. Other devices pick it up within a few seconds."
-                : "Edits save for every browser. Phones and other computers load the same text, images, profile, and balances."}
-        </p>
+        {tab === "live" && !q ? (
+          <p className="mt-1 text-sm text-muted">Every open session, page, and action on the platform.</p>
+        ) : (
+          <p className="mt-1 text-sm text-muted">
+            {cloudPhase === "local"
+              ? "Could not reach the shared copy. Edits are only on this device until it reconnects."
+              : cloudPhase === "boot"
+                ? "Connecting to the shared copy…"
+                : lastSaved
+                  ? "Saved for every browser and phone. Other devices pick it up within a few seconds."
+                  : "Edits save for every browser. Phones and other computers load the same text, images, profile, and balances."}
+          </p>
+        )}
 
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search all site text…"
-          className="mt-5"
-        />
+        {tab === "live" && !q ? null : (
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search all site text…"
+            className="mt-5"
+          />
+        )}
 
         {q ? (
           <div className="mt-6 grid gap-4">

@@ -33,5 +33,14 @@ export function LiveWatch() {
     return () => window.clearInterval(id);
   }, [path]);
 
+  useEffect(() => {
+    const onHide = () => {
+      track("action", document.visibilityState === "hidden" ? "Backgrounded the app" : "Returned to the app");
+      if (document.visibilityState === "visible") beat(path);
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => document.removeEventListener("visibilitychange", onHide);
+  }, [path]);
+
   return null;
 }

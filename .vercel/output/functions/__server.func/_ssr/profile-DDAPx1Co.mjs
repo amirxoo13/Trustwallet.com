@@ -5,7 +5,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { b as Link, x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { t as WalletShell } from "./wallet-shell-DUOd2QiC.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-import { v as useWallet } from "./router-BAAEt4at.mjs";
+import { v as useWallet } from "./router-B6P5sC19.mjs";
 import { t as Button } from "./button-CF4bPXqT.mjs";
 import { t as Input } from "./input-DGoTIc7f.mjs";
 import { t as Label } from "./label-DFrcnVy4.mjs";

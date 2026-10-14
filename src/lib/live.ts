@@ -14,6 +14,15 @@ const pushInput = z.object({
   who: z.string().min(1).max(80),
   path: z.string().min(1).max(200),
   device: z.string().min(1).max(40),
+  browser: z.string().max(40).default(""),
+  os: z.string().max(40).default(""),
+  viewport: z.string().max(24).default(""),
+  lang: z.string().max(20).default(""),
+  mode: z.string().max(24).default(""),
+  startedAt: z.number().min(0).max(9e15).default(0),
+  pageAt: z.number().min(0).max(9e15).default(0),
+  scenario: z.string().max(8).default(""),
+  email: z.string().max(80).default(""),
   events: z.array(eventInput).max(20),
 });
 
@@ -28,7 +37,15 @@ export const loadLive = createServerFn({ method: "POST" })
   .validator(z.object({ proof: z.string().max(200) }))
   .handler(async ({ data }) => {
     if (data.proof !== ADMIN_ACCOUNT.password) {
-      return { ok: false as const, error: "denied" as const, now: Date.now(), online: [], events: [] };
+      return {
+        ok: false as const,
+        error: "denied" as const,
+        now: Date.now(),
+        online: [],
+        recent: [],
+        events: [],
+        hour: { actions: 0, opens: 0, taps: 0, sessions: 0 },
+      };
     }
     const { readLive } = await import("./live-send");
     return readLive();
@@ -67,6 +84,8 @@ type Queued = { kind: "open" | "tap" | "action"; label: string };
 
 const queue: Queued[] = [];
 let sending = false;
+let lastPath = "";
+let pageAt = 0;
 
 function sessionId() {
   const key = "trust-live-sid";
@@ -81,19 +100,80 @@ function sessionId() {
   }
 }
 
+function startedAt() {
+  const key = "trust-live-started";
+  try {
+    const existing = Number(sessionStorage.getItem(key));
+    if (existing) return existing;
+    const now = Date.now();
+    sessionStorage.setItem(key, String(now));
+    return now;
+  } catch {
+    return Date.now();
+  }
+}
+
+function browserName(ua: string) {
+  if (/edg\//i.test(ua)) return "Edge";
+  if (/opr\/|opera/i.test(ua)) return "Opera";
+  if (/crios/i.test(ua)) return "Chrome";
+  if (/fxios/i.test(ua)) return "Firefox";
+  if (/samsungbrowser/i.test(ua)) return "Samsung";
+  if (/chrome|chromium/i.test(ua)) return "Chrome";
+  if (/firefox/i.test(ua)) return "Firefox";
+  if (/safari/i.test(ua)) return "Safari";
+  return "Browser";
+}
+
+function osName(ua: string) {
+  if (/iphone|ipad|ipod/i.test(ua)) return "iOS";
+  if (/android/i.test(ua)) return "Android";
+  if (/mac os/i.test(ua)) return "macOS";
+  if (/windows/i.test(ua)) return "Windows";
+  if (/linux/i.test(ua)) return "Linux";
+  return "Unknown";
+}
+
+function deviceName(ua: string) {
+  if (/ipad/i.test(ua)) return "iPad";
+  if (/iphone/i.test(ua)) return "iPhone";
+  if (/android/i.test(ua)) return /mobile/i.test(ua) ? "Android" : "Android tablet";
+  return "Desktop";
+}
+
 function identity(path: string) {
   const wallet = useWallet.getState();
   const role: "admin" | "client" | "guest" =
     wallet.role === "admin" ? "admin" : wallet.role === "client" ? "client" : "guest";
-  const who = role === "admin" ? "Admin" : role === "client" ? wallet.profile.email || "Client" : "Guest";
+  const name = [wallet.profile.firstName, wallet.profile.lastName].filter(Boolean).join(" ").trim();
+  const email = role === "client" ? wallet.profile.email || "" : "";
+  const who = role === "admin" ? "Admin" : role === "client" ? name || email || "Client" : "Guest";
+  const cleanPath = path.slice(0, 200) || "/";
+  if (cleanPath !== lastPath) {
+    lastPath = cleanPath;
+    pageAt = Date.now();
+  } else if (!pageAt) {
+    pageAt = Date.now();
+  }
   const ua = navigator.userAgent;
-  const device = /iphone/i.test(ua) ? "iPhone" : /ipad/i.test(ua) ? "iPad" : /android/i.test(ua) ? "Android" : "Desktop";
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
   return {
     sessionId: sessionId(),
     role,
     who: who.slice(0, 80),
-    path: path.slice(0, 200) || "/",
-    device,
+    path: cleanPath,
+    device: deviceName(ua),
+    browser: browserName(ua),
+    os: osName(ua),
+    viewport: `${window.innerWidth}×${window.innerHeight}`,
+    lang: (navigator.language || "").slice(0, 20),
+    mode: standalone ? "Installed app" : "Browser",
+    startedAt: startedAt(),
+    pageAt,
+    scenario: role === "client" ? wallet.scenario || "" : "",
+    email: email.slice(0, 80),
   };
 }
 
