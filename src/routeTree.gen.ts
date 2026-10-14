@@ -16,6 +16,7 @@ import { Route as MarketsRouteImport } from './routes/markets'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as StudioRouteImport } from './routes/studio'
 import { Route as WalletRouteRouteImport } from './routes/wallet/route'
+import { Route as ApiNotifyRouteImport } from './routes/api/notify'
 import { Route as WalletIndexRouteImport } from './routes/wallet/index'
 import { Route as WalletActivityRouteImport } from './routes/wallet/activity'
 import { Route as WalletBuyRouteImport } from './routes/wallet/buy'
@@ -62,6 +63,11 @@ const StudioRoute = StudioRouteImport.update({
 const WalletRouteRoute = WalletRouteRouteImport.update({
   id: '/wallet',
   path: '/wallet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotifyRoute = ApiNotifyRouteImport.update({
+  id: '/api/notify',
+  path: '/api/notify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WalletIndexRoute = WalletIndexRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/markets': typeof MarketsRoute
   '/security': typeof SecurityRoute
   '/studio': typeof StudioRoute
+  '/api/notify': typeof ApiNotifyRoute
   '/wallet/activity': typeof WalletActivityRoute
   '/wallet/buy': typeof WalletBuyRoute
   '/wallet/ethereum': typeof WalletEthereumRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/markets': typeof MarketsRoute
   '/security': typeof SecurityRoute
   '/studio': typeof StudioRoute
+  '/api/notify': typeof ApiNotifyRoute
   '/wallet/activity': typeof WalletActivityRoute
   '/wallet/buy': typeof WalletBuyRoute
   '/wallet/ethereum': typeof WalletEthereumRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/markets': typeof MarketsRoute
   '/security': typeof SecurityRoute
   '/studio': typeof StudioRoute
+  '/api/notify': typeof ApiNotifyRoute
   '/wallet/activity': typeof WalletActivityRoute
   '/wallet/buy': typeof WalletBuyRoute
   '/wallet/ethereum': typeof WalletEthereumRoute
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
     | '/markets'
     | '/security'
     | '/studio'
+    | '/api/notify'
     | '/wallet/activity'
     | '/wallet/buy'
     | '/wallet/ethereum'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/markets'
     | '/security'
     | '/studio'
+    | '/api/notify'
     | '/wallet/activity'
     | '/wallet/buy'
     | '/wallet/ethereum'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/markets'
     | '/security'
     | '/studio'
+    | '/api/notify'
     | '/wallet/activity'
     | '/wallet/buy'
     | '/wallet/ethereum'
@@ -261,6 +273,7 @@ export interface RootRouteChildren {
   MarketsRoute: typeof MarketsRoute
   SecurityRoute: typeof SecurityRoute
   StudioRoute: typeof StudioRoute
+  ApiNotifyRoute: typeof ApiNotifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       path: '/wallet'
       fullPath: '/wallet'
       preLoaderRoute: typeof WalletRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notify': {
+      id: '/api/notify'
+      path: '/api/notify'
+      fullPath: '/api/notify'
+      preLoaderRoute: typeof ApiNotifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/wallet/': {
@@ -443,6 +463,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketsRoute: MarketsRoute,
   SecurityRoute: SecurityRoute,
   StudioRoute: StudioRoute,
+  ApiNotifyRoute: ApiNotifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

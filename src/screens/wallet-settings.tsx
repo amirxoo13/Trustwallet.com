@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,117 @@ import { hasAdminProof } from "@/lib/admin-proof";
 import { demoSeedPhrase } from "@/lib/addresses";
 import { shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
+import { getPushPublicKey, removePushSubscription, runDueAlerts, savePushSubscription } from "@/lib/push";
 import { useWallet } from "@/lib/store";
 import { COINS } from "@/lib/coins";
 
 const PHRASE_PASSWORD = "Hr39/Vopq9";
+
+function keyBytes(base64: string) {
+  const padding = "=".repeat((4 - (base64.length % 4)) % 4);
+  const normalized = (base64 + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(normalized);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i += 1) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+function iosBrowser() {
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    ("standalone" in navigator && Boolean((navigator as Navigator & { standalone?: boolean }).standalone));
+  return ios && !standalone;
+}
+
+function AlertToggle() {
+  const [on, setOn] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const supported = typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
+
+  useEffect(() => {
+    if (!supported) return;
+    void navigator.serviceWorker.ready.then(async (reg) => {
+      const sub = await reg.pushManager.getSubscription();
+      setOn(Boolean(sub));
+    });
+  }, [supported]);
+
+  async function enable() {
+    if (!supported) {
+      toast.error("This phone does not support alerts.");
+      return;
+    }
+    if (iosBrowser()) {
+      toast.error("On iPhone, install the app to your home screen first, then turn alerts on.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        toast.error("Notifications are blocked. Allow them in the phone settings.");
+        return;
+      }
+      const reg = await navigator.serviceWorker.ready;
+      const { publicKey } = await getPushPublicKey();
+      const existing = await reg.pushManager.getSubscription();
+      const sub =
+        existing ??
+        (await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: keyBytes(publicKey),
+        }));
+      const json = sub.toJSON();
+      if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) throw new Error("subscription");
+      await savePushSubscription({ data: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } } });
+      await runDueAlerts({ data: { force: true } });
+      setOn(true);
+      toast.success("Alerts are on. A price alert and a wallet alert were sent.");
+    } catch {
+      toast.error("Could not turn alerts on.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function disable() {
+    setBusy(true);
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await removePushSubscription({ data: { endpoint: sub.endpoint } });
+        await sub.unsubscribe();
+      }
+      setOn(false);
+      toast.success("Alerts are off.");
+    } catch {
+      toast.error("Could not turn alerts off.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="mt-10">
+      <h2 className="text-sm font-medium text-muted">Alerts</h2>
+      <p className="mt-2 text-xs text-muted">
+        Prices every 4 hours. Wallet value at the market price every 3 hours. On iPhone, install the app first, then allow
+        notifications.
+      </p>
+      <Button
+        type="button"
+        variant={on ? "outline" : "solid"}
+        className="mt-4 w-full"
+        disabled={!supported || busy}
+        onClick={() => void (on ? disable() : enable())}
+      >
+        {on ? "Turn off alerts" : "Turn on alerts"}
+      </Button>
+    </section>
+  );
+}
 
 export function WalletSettingsScreen() {
   const logout = useWallet((s) => s.logout);
@@ -56,6 +164,8 @@ export function WalletSettingsScreen() {
             <PwaInstall />
           </div>
         </section>
+
+        <AlertToggle />
 
         <section className="mt-10">
           <h2 className="text-sm font-medium text-muted">{copy.wallet.phrase}</h2>

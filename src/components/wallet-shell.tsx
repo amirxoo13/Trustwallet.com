@@ -13,6 +13,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { LogoMark } from "@/components/logo";
+import { AlertScheduler } from "@/components/alert-scheduler";
 import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { hasAdminProof } from "@/lib/admin-proof";
@@ -72,6 +73,7 @@ export function WalletShell({
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <AlertScheduler />
       <div className="mx-auto flex min-h-dvh max-w-6xl">
         <aside className="sticky top-0 hidden h-dvh w-[88px] shrink-0 flex-col items-center border-e border-border py-5 md:flex">
           <Link to="/wallet" className="mb-6">

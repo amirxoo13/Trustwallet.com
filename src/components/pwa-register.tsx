@@ -9,7 +9,7 @@ export function PwaRegister() {
       });
       return;
     }
-    const url = `${import.meta.env.BASE_URL}sw.js?v=5`;
+    const url = `${import.meta.env.BASE_URL}sw.js?v=6`;
     void navigator.serviceWorker
       .register(url)
       .then((reg) => {

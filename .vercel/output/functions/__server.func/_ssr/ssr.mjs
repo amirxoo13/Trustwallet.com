@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-BwL161Hb.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-DffsCCJa.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -129,6 +129,18 @@ var manifest = {
 		functionName: "loadPerpMarkets_createServerFn_handler",
 		importer: () => import("./perps-feed-DGq5td56.mjs")
 	},
+	"3d2051cb90a55435d54f5847d45a670477b6c41405b57a4cad07c56b867c46b3": {
+		functionName: "runDueAlerts_createServerFn_handler",
+		importer: () => import("./push-CPfCMBOF.mjs")
+	},
+	"7e73b1979e547dc226f32cbf3eeb8b22a3851282d4879544abad7e331e9ae7f2": {
+		functionName: "savePushSubscription_createServerFn_handler",
+		importer: () => import("./push-CPfCMBOF.mjs")
+	},
+	"88daadcad0c6b5d7f6620937b66be98e9129c194d26ab757bdca4d694d46a07e": {
+		functionName: "removePushSubscription_createServerFn_handler",
+		importer: () => import("./push-CPfCMBOF.mjs")
+	},
 	"89f56e9d5bd7a0a623c2945f0f7c9bdfbf92d6a8f76109971d9056f82e1f90f8": {
 		functionName: "loadPerpMids_createServerFn_handler",
 		importer: () => import("./perps-feed-DGq5td56.mjs")
@@ -139,15 +151,19 @@ var manifest = {
 	},
 	"9fcca3163816af2ce2dafcfcf836be156d292364a4cbfec3b98eb73d828abcbc": {
 		functionName: "loadAppState_createServerFn_handler",
-		importer: () => import("./cloud-state-BLpy6op0.mjs")
+		importer: () => import("./cloud-state-ChQuTafi.mjs")
 	},
 	"aba863cbc688183602b1be638b3b33024a9854be43db61e6965193981c2ea8a8": {
 		functionName: "loadAppStateMeta_createServerFn_handler",
-		importer: () => import("./cloud-state-BLpy6op0.mjs")
+		importer: () => import("./cloud-state-ChQuTafi.mjs")
+	},
+	"bb83a3388a34406be3a228ce59d18d083e79149f0cd8b08b6c14ed9dfc1c9c3b": {
+		functionName: "getPushPublicKey_createServerFn_handler",
+		importer: () => import("./push-CPfCMBOF.mjs")
 	},
 	"f6c8836b3c3e7799e8b55ef81110225243a1e240e9bae5adbdadee48470f5e6c": {
 		functionName: "saveAppState_createServerFn_handler",
-		importer: () => import("./cloud-state-BLpy6op0.mjs")
+		importer: () => import("./cloud-state-ChQuTafi.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1552,7 +1568,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-BGBTbSuk.mjs").then((n) => n.t),
+		import("./router-UneqD-en.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);
