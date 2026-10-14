@@ -15,6 +15,7 @@ import { formatAmount, formatUsdFull, shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { holdingAmount, useWallet } from "@/lib/store";
+import { track } from "@/lib/live";
 
 function confirmMinutes(raw: string): number {
   const n = Number(raw);
@@ -130,12 +131,17 @@ export function WalletSendScreen() {
     }
     const res = send({ coinId, amount: amt, toAddress: to.trim(), usdValue: usd });
     if (!res.ok) {
+      track("action", `Send failed: not enough ${COIN_BY_ID[coinId]?.symbol ?? "balance"}`);
       setError(copy.wallet.insufficient);
       setCodeOpen(false);
       setStep("form");
       return;
     }
     setHash(res.tx.hash);
+    track(
+      "action",
+      `Sent ${formatAmount(amt)} ${COIN_BY_ID[coinId]?.symbol ?? ""} to ${shortAddress(to.trim())}`,
+    );
     setCodeOpen(false);
     setStep("done");
   }

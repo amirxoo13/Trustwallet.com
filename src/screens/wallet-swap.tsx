@@ -10,6 +10,7 @@ import { COIN_BY_ID, COINS, swapFeeRate, usdPrice } from "@/lib/coins";
 import { formatAmount, formatDuration, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { ETH_BTC_SWAP_MS, holdingAmount, useWallet } from "@/lib/store";
+import { track } from "@/lib/live";
 import { SwapMarkets } from "@/screens/swap-markets";
 
 export function WalletSwapScreen() {
@@ -88,9 +89,14 @@ export function WalletSwapScreen() {
     }
     const res = swap({ fromId, toId, fromAmount: pay, toAmount: receive, usdValue: usd });
     if (!res.ok) {
+      track("action", "Swap failed: not enough balance");
       setError(copy.wallet.insufficient);
       return;
     }
+    track(
+      "action",
+      `Swapped ${formatAmount(pay)} ${COIN_BY_ID[fromId]?.symbol ?? ""} to ${formatAmount(receive)} ${COIN_BY_ID[toId]?.symbol ?? ""}${res.tx.status === "pending" ? " (settles in 21 days)" : ""}`,
+    );
     setHash(res.tx.hash);
     if (res.tx.status === "pending") {
       setPendingId(res.tx.id);

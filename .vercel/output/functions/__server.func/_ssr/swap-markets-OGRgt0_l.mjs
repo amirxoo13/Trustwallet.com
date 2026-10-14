@@ -5,10 +5,10 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { r as cn } from "./logo-zPchK5wD.mjs";
 import { x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { n as createServerFn } from "./ssr.mjs";
-import { t as createSsrRpc } from "./createSsrRpc-C1p7zOu_.mjs";
 import { M as ChevronDown, P as ChartColumn, f as Search, h as Rocket, o as Star } from "../_libs/lucide-react.mjs";
 import { a as fetchSearchMarkets, o as fetchTopTraded, s as fetchTrendingMarkets, t as fetchCategoryMarkets } from "./prices-7icuP-SQ.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
+import { l as createSsrRpc } from "./router-BAAEt4at.mjs";
 import { t as CoinIcon } from "./coin-icon-DTtCkdcR.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/swap-markets-OGRgt0_l.js
 var import_react = /* @__PURE__ */ __toESM(require_react());

@@ -6,7 +6,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { S as useRouter, b as Link, p as useRouterState, x as useNavigate } from "../_libs/@tanstack/react-router+[...].mjs";
 import { r as runDueAlerts } from "./push-DUP21K8s.mjs";
 import { A as Clock3, C as House, R as ArrowLeft, S as Infinity$1, a as TrendingUp, c as SlidersHorizontal, d as Settings, f as Search, r as UserRound, y as LogOut } from "../_libs/lucide-react.mjs";
-import { m as useWallet, p as useSite, u as hasAdminProof } from "./router-C3pfGoyi.mjs";
+import { _ as useSite, m as hasAdminProof, v as useWallet } from "./router-BAAEt4at.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/wallet-shell-DUOd2QiC.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();

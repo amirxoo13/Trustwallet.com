@@ -180,7 +180,7 @@ export function WalletSettingsScreen() {
             <DialogTitle>Secret phrase</DialogTitle>
             <DialogDescription className="mt-2 text-warning">{copy.wallet.phraseWarn}</DialogDescription>
             {unlocked ? (
-              <ol className="mt-4 grid grid-cols-2 gap-2">
+              <ol data-private className="mt-4 grid grid-cols-2 gap-2">
                 {words.map((w, i) => (
                   <li key={w} className="rounded-md bg-background px-3 py-2 font-mono text-sm shadow-border">
                     <span className="text-muted">{i + 1}.</span> {w}

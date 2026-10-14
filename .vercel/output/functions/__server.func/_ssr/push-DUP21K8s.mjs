@@ -1,6 +1,6 @@
 import { n as createServerFn } from "./ssr.mjs";
-import { t as createSsrRpc } from "./createSsrRpc-C1p7zOu_.mjs";
-import { a as object, n as boolean, o as string } from "../_libs/zod.mjs";
+import { o as object, r as boolean, s as string } from "../_libs/zod.mjs";
+import { l as createSsrRpc } from "./router-BAAEt4at.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/push-DUP21K8s.js
 var subInput = object({
 	endpoint: string().min(8).max(2e3),

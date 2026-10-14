@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { PersistHydrate } from "@/components/persist-hydrate";
 import { PwaRegister } from "@/components/pwa-register";
+import { LiveWatch } from "@/components/live-watch";
 import { BrandHead } from "@/components/brand-head";
 import appCss from "../styles.css?url";
 
@@ -56,6 +57,7 @@ function RootDocument() {
             <PersistHydrate />
             <BrandHead />
             <PwaRegister />
+            <LiveWatch />
             <Outlet />
             <Toaster
               theme="dark"

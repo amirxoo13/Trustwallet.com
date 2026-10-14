@@ -11,6 +11,7 @@ import { useLoginWindow } from "@/lib/login-window";
 import { useSite } from "@/lib/site-store";
 import { useWallet, type LoginError } from "@/lib/store";
 import { refreshCloud } from "@/lib/cloud-sync";
+import { track } from "@/lib/live";
 import { cn } from "@/lib/utils";
 
 export function LoginScreen() {
@@ -40,10 +41,12 @@ export function LoginScreen() {
     const res = login(email, password, firstChoice ?? scenario);
     setBusy(false);
     if (!res.ok) {
+      track("action", res.error === "scenario" ? "Login stopped: no T20, F20 or K20" : "Login failed");
       setError(res.error);
       return;
     }
     setError(null);
+    track("action", useWallet.getState().role === "admin" ? "Signed in as admin" : "Signed in as client");
     refreshCloud();
     void navigate({ to: "/wallet" });
   }

@@ -7,7 +7,7 @@ import { r as cn } from "./logo-zPchK5wD.mjs";
 import { d as Settings, f as Search, j as ChevronRight, w as History } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-DUOd2QiC.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { d as holdingAmount, m as useWallet } from "./router-C3pfGoyi.mjs";
+import { h as holdingAmount, v as useWallet } from "./router-BAAEt4at.mjs";
 import { t as Button } from "./button-CF4bPXqT.mjs";
 import { t as CoinIcon } from "./coin-icon-DTtCkdcR.mjs";
 import { t as Input } from "./input-DGoTIc7f.mjs";

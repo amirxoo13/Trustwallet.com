@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-D2pKiKUe.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-ClrVk1Q2.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -132,6 +132,14 @@ var manifest = {
 	"3d2051cb90a55435d54f5847d45a670477b6c41405b57a4cad07c56b867c46b3": {
 		functionName: "runDueAlerts_createServerFn_handler",
 		importer: () => import("./push-UIjsfv8L.mjs")
+	},
+	"688c0e3af0c7303246e9b191db7eaa9de817b0331cc83a042f6d8af51927109e": {
+		functionName: "pushLive_createServerFn_handler",
+		importer: () => import("./live-DWgKE-wB.mjs")
+	},
+	"6c4641be08904b21c4612714c98ee50a0e780f6ce071fb8b854fa3aa54ed7434": {
+		functionName: "loadLive_createServerFn_handler",
+		importer: () => import("./live-DWgKE-wB.mjs")
 	},
 	"7e73b1979e547dc226f32cbf3eeb8b22a3851282d4879544abad7e331e9ae7f2": {
 		functionName: "savePushSubscription_createServerFn_handler",
@@ -1572,7 +1580,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-C3pfGoyi.mjs").then((n) => n.t),
+		import("./router-BAAEt4at.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

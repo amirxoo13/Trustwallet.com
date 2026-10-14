@@ -15,9 +15,10 @@ import { formatAmount, formatDuration } from "@/lib/format";
 import { CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { adminProof } from "@/lib/admin-proof";
 import { sendAdminNotice } from "@/lib/push";
+import { LiveBoard } from "@/components/live-board";
 import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
 
-type Tab = "brand" | "pages" | "images" | "profile" | "balances" | "notices" | "notify";
+type Tab = "live" | "brand" | "pages" | "images" | "profile" | "balances" | "notices" | "notify";
 
 function Field({
   label,
@@ -130,7 +131,7 @@ function TextGroup({
 }
 
 export function StudioScreen() {
-  const [tab, setTab] = useState<Tab>("brand");
+  const [tab, setTab] = useState<Tab>("live");
   const [query, setQuery] = useState("");
   const site = useSite();
   const patch = useSite((s) => s.patch);
@@ -168,6 +169,7 @@ export function StudioScreen() {
   }, [q, site]);
 
   const tabs: { id: Tab; label: string }[] = [
+    { id: "live", label: "Live" },
     { id: "brand", label: "Brand" },
     { id: "pages", label: "Page text" },
     { id: "images", label: "Images" },
@@ -250,6 +252,8 @@ export function StudioScreen() {
                 </button>
               ))}
             </div>
+
+            {tab === "live" ? <LiveBoard /> : null}
 
             {tab === "brand" ? (
               <div className="mt-8 grid gap-6">

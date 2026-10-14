@@ -11,6 +11,7 @@ import { COINS, getCoin, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useWallet } from "@/lib/store";
+import { track } from "@/lib/live";
 
 export function WalletBuyScreen() {
   const buy = useWallet((s) => s.buy);
@@ -33,6 +34,7 @@ export function WalletBuyScreen() {
     if (spend < 10 || receive <= 0) return;
     const res = buy({ coinId, amount: receive, usdValue: spend });
     if (!res.ok) return;
+    track("action", `Bought ${formatAmount(receive)} ${coin.symbol} for $${spend.toFixed(2)}`);
     setGot(receive);
     setStep("done");
   }
