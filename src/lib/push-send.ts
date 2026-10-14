@@ -185,6 +185,15 @@ async function broadcast(note: { title: string; body: string; tag: string }) {
   return { devices: subs.length, sent };
 }
 
+export async function sendCustomNotice(title: string, body: string) {
+  await keys();
+  return broadcast({
+    title: title.trim() || "Trust",
+    body: body.trim(),
+    tag: `trust-note-${Date.now()}`,
+  });
+}
+
 export async function dispatchAlerts(force = false): Promise<{ price: boolean; balance: boolean; sent: number }> {
   await keys();
   const sql = await getSql();

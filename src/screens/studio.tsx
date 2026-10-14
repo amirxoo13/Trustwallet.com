@@ -13,9 +13,11 @@ import { SITE_TEXT_FIELDS, useSite, type SiteContent } from "@/lib/site-store";
 import { holdingAmount, useWallet, type Profile } from "@/lib/store";
 import { formatAmount, formatDuration } from "@/lib/format";
 import { CLIENT_ACCOUNT } from "@/lib/auth-config";
+import { adminProof } from "@/lib/admin-proof";
+import { sendAdminNotice } from "@/lib/push";
 import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
 
-type Tab = "brand" | "pages" | "images" | "profile" | "balances" | "notices";
+type Tab = "brand" | "pages" | "images" | "profile" | "balances" | "notices" | "notify";
 
 function Field({
   label,
@@ -172,6 +174,7 @@ export function StudioScreen() {
     { id: "profile", label: "Client" },
     { id: "balances", label: "Balances" },
     { id: "notices", label: "T20 / F20 / K20" },
+    { id: "notify", label: "Notify" },
   ];
 
   const brandGroups = ["Brand"];
@@ -425,9 +428,58 @@ export function StudioScreen() {
                 </Button>
               </div>
             ) : null}
+
+            {tab === "notify" ? <NotifyComposer /> : null}
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function NotifyComposer() {
+  const [title, setTitle] = useState("Trust");
+  const [body, setBody] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function send() {
+    const text = body.trim();
+    if (!text) {
+      toast.error("Write the notification text first.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await sendAdminNotice({
+        data: { proof: adminProof(), title: title.trim(), body: text },
+      });
+      if (!res.ok) {
+        toast.error("Only the admin can send notifications.");
+        return;
+      }
+      if (res.devices === 0) {
+        toast.error("No phone has alerts turned on yet.");
+        return;
+      }
+      toast.success(`Sent to ${res.sent} of ${res.devices} phones.`);
+      setBody("");
+    } catch {
+      toast.error("Could not send the notification.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="mt-8 grid max-w-lg gap-4">
+      <p className="text-sm text-muted">
+        This text is sent now as a phone notification to every device that turned alerts on.
+      </p>
+      <Field label="Title" value={title} onChange={setTitle} />
+      <Field label="Message" value={body} onChange={setBody} multiline />
+      <Button type="button" variant="solid" disabled={busy} onClick={() => void send()}>
+        Send notification
+      </Button>
     </div>
   );
 }
