@@ -1,0 +1,1 @@
+import{i as e,t}from"./react-SIfiwpqq.js";import{r as n}from"./useRouter-B4RdKobV.js";import{r}from"./logo-C5eGMwDO.js";var i=e(t(),1),a=n(),o=i.forwardRef(({className:e,...t},n)=>(0,a.jsx)(`label`,{ref:n,className:r(`text-xs font-medium tracking-wide text-muted`,e),...t}));o.displayName=`Label`;export{o as t};

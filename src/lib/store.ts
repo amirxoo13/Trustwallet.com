@@ -172,7 +172,9 @@ export const useWallet = create<WalletState>()(
         if (e === ADMIN_ACCOUNT.email.toLowerCase() && p === ADMIN_ACCOUNT.password) {
           grantAdminProof(p);
           const { issueWalletSession } = await import("@/lib/transfer");
+          const { setHoldPush, reloadSessionWallet } = await import("@/lib/cloud-sync");
           const session = await issueWalletSession({ data: { email: e, password: p } }).catch(() => null);
+          setHoldPush(true);
           set((s) => ({
             authenticated: true,
             role: "admin",
@@ -180,24 +182,38 @@ export const useWallet = create<WalletState>()(
             accountToken: session?.ok ? session.token : "",
             addresses: ensureWalletAddresses(s.addresses),
           }));
+          try {
+            await reloadSessionWallet();
+          } finally {
+            setHoldPush(false);
+          }
           return { ok: true };
         }
 
         if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
           clearAdminProof();
           const { issueWalletSession } = await import("@/lib/transfer");
+          const { setHoldPush, reloadSessionWallet } = await import("@/lib/cloud-sync");
           const session = await issueWalletSession({ data: { email: e, password: p } }).catch(() => null);
+          setHoldPush(true);
           set((s) => ({
             authenticated: true,
             role: "client",
             accountEmail: e,
             accountToken: session?.ok ? session.token : "",
-            addresses: ensureWalletAddresses(s.addresses),
+            addresses: ensureWalletAddresses({}),
+            holdings: [],
+            transactions: [],
             profile: {
-              ...s.profile,
-              email: s.profile.email || CLIENT_ACCOUNT.email,
+              ...emptyProfile(),
+              email: CLIENT_ACCOUNT.email,
             },
           }));
+          try {
+            await reloadSessionWallet();
+          } finally {
+            setHoldPush(false);
+          }
           return { ok: true };
         }
 

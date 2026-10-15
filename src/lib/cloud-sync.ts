@@ -42,7 +42,7 @@ function isPrivateClient() {
   return (
     wallet.role === "client" &&
     Boolean(wallet.accountEmail) &&
-    wallet.accountEmail !== CLIENT_ACCOUNT.email.toLowerCase()
+    wallet.accountEmail.trim().toLowerCase() !== CLIENT_ACCOUNT.email.toLowerCase()
   );
 }
 
@@ -183,6 +183,29 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
       },
     );
   });
+}
+
+let lastSession = "";
+
+function sessionKey() {
+  const wallet = useWallet.getState();
+  return `${wallet.role ?? ""}:${wallet.accountEmail.trim().toLowerCase()}`;
+}
+
+/** Load the wallet that belongs to whoever is signed in, even if the site itself did not change. */
+export async function reloadSessionWallet() {
+  if (!ready) return;
+  if (isPrivateClient()) {
+    await pullPrivateWallet();
+    lastSession = sessionKey();
+    return;
+  }
+  const api = await cloudApi();
+  const remote = await withTimeout(api.loadAppState(), 20000);
+  lastUpdatedAt = remote.updatedAt;
+  applyRemote(remote.site, remote.wallet, remote.login);
+  lastSession = sessionKey();
+  useCloud.setState({ phase: "live" });
 }
 
 function rememberLocal() {
@@ -367,6 +390,8 @@ async function pullFromCloud(force = false) {
   if (!force && typeof document !== "undefined" && document.visibilityState === "hidden") return;
   try {
     const api = await cloudApi();
+    const sessionChanged = sessionKey() !== lastSession;
+    lastSession = sessionKey();
     if (isPrivateClient()) {
       const meta = await withTimeout(api.loadAppStateMeta(), 8000);
       if (!(meta.updatedAt && meta.updatedAt === lastUpdatedAt)) {
@@ -380,7 +405,7 @@ async function pullFromCloud(force = false) {
     }
     const meta = await withTimeout(api.loadAppStateMeta(), 8000);
     if (meta.empty) return;
-    if (meta.updatedAt && meta.updatedAt === lastUpdatedAt) return;
+    if (!sessionChanged && meta.updatedAt && meta.updatedAt === lastUpdatedAt) return;
     const remote: CloudSnapshot = await withTimeout(api.loadAppState(), 8000);
     if (remote.empty) return;
     lastUpdatedAt = remote.updatedAt ?? meta.updatedAt;
