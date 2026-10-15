@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { MarketingShell } from "@/components/marketing-shell";
@@ -19,13 +19,19 @@ export function LoginScreen() {
   const loginTitle = useSite((s) => s.loginTitle);
   const loginSub = useSite((s) => s.loginSub);
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(() =>
+    typeof sessionStorage !== "undefined" && sessionStorage.getItem("trust-after-passcode") === "1" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    sessionStorage.removeItem("trust-after-passcode");
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();

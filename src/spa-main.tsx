@@ -18,7 +18,7 @@ import { PwaRegister } from "@/components/pwa-register";
 import { WalletShell } from "@/components/wallet-shell";
 import { t } from "@/lib/i18n";
 import { FeaturesScreen } from "@/screens/features";
-import { LandingScreen } from "@/screens/landing";
+import { WelcomeScreen } from "@/screens/welcome";
 import { LoginScreen } from "@/screens/login";
 import { MarketsScreen } from "@/screens/markets";
 import { SecurityScreen } from "@/screens/security";
@@ -60,7 +60,7 @@ const rootRoute = createRootRoute({
   ),
 });
 
-const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: LandingScreen });
+const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: "/", component: WelcomeScreen });
 const loginRoute = createRoute({ getParentRoute: () => rootRoute, path: "/login", component: LoginScreen });
 const marketsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/markets", component: MarketsScreen });
 const featuresRoute = createRoute({ getParentRoute: () => rootRoute, path: "/features", component: FeaturesScreen });

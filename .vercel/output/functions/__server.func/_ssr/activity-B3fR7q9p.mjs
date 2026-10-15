@@ -5,9 +5,9 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { i as formatTime, n as formatDuration, o as formatUsdFull, t as formatAmount } from "./format-DuRhJ10K.mjs";
 import { r as cn } from "./logo-B62MTmeK.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
-import { I as ArrowUpRight, V as ArrowDownLeft, _ as Plus, z as ArrowLeftRight } from "../_libs/lucide-react.mjs";
+import { F as ArrowUpRight, L as ArrowLeftRight, g as Plus, z as ArrowDownLeft } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-9PZQg6T9.mjs";
-import { _ as useWallet } from "./router-Bs5W9wEE.mjs";
+import { _ as useWallet } from "./router-eRiEB39l.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/activity-B3fR7q9p.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();
