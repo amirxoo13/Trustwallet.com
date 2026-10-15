@@ -10,9 +10,11 @@ import { PageBack } from "@/components/page-back";
 import { COINS } from "@/lib/coins";
 import { readImageFile } from "@/lib/image-file";
 import { SITE_TEXT_FIELDS, useSite, type SiteContent } from "@/lib/site-store";
-import { holdingAmount, useWallet, type Profile } from "@/lib/store";
+import { CLIENT_ACCOUNT, SCENARIO_CODES, type ScenarioCode } from "@/lib/auth-config";
+import { WALLET_CODES } from "@/lib/addresses";
+import { loadAdminWallet, saveAdminWallet } from "@/lib/admin-wallet";
+import { ensureWalletAddresses, holdingAmount, useWallet, type Profile } from "@/lib/store";
 import { formatAmount, formatDuration } from "@/lib/format";
-import { SCENARIO_CODES } from "@/lib/auth-config";
 import { adminProof } from "@/lib/admin-proof";
 import { sendAdminNotice } from "@/lib/push";
 import { LiveBoard } from "@/components/live-board";
@@ -507,6 +509,8 @@ function NotifyComposer() {
 function AccountsPanel() {
   const [rows, setRows] = useState<{ email: string; createdAt: number }[]>([]);
   const [error, setError] = useState("");
+  const [openEmail, setOpenEmail] = useState<string | null>(null);
+  const primary = CLIENT_ACCOUNT.email.toLowerCase();
 
   async function load() {
     const res = await listAccounts({ data: { proof: adminProof() } });
@@ -515,38 +519,160 @@ function AccountsPanel() {
       return;
     }
     setError("");
-    setRows(res.accounts);
+    setRows(res.accounts.filter((row) => row.email !== primary));
   }
 
   useEffect(() => {
     void load().catch(() => setError("Could not load accounts."));
   }, []);
 
+  const people = [{ email: primary, createdAt: 0 }, ...rows];
+
   return (
-    <div className="mt-8 grid max-w-lg gap-3">
-      <p className="text-sm text-muted">
-        Each extra email has its own empty wallet. The balances and profile on this panel belong only to the original client account.
-      </p>
+    <div className="mt-8 grid gap-3">
+      <p className="text-sm text-muted">Tap a user to edit that account. The main account is {primary}.</p>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      {rows.length === 0 ? <p className="text-sm text-muted">No extra accounts yet.</p> : null}
-      {rows.map((row) => (
-        <div key={row.email} className="flex items-center justify-between gap-3 rounded-lg bg-card px-3 py-3 shadow-border">
-          <div className="min-w-0">
-            <p className="truncate text-sm">{row.email}</p>
-            <p className="text-[11px] text-muted">{new Date(row.createdAt).toLocaleString()}</p>
+      {people.map((row) => (
+        <div key={row.email} className="rounded-lg bg-card shadow-border">
+          <div className="flex items-center justify-between gap-3 px-3 py-3">
+            <button type="button" className="min-w-0 text-start" onClick={() => setOpenEmail(openEmail === row.email ? null : row.email)}>
+              <p className="truncate text-sm font-medium text-primary">{row.email}</p>
+              <p className="text-[11px] text-muted">
+                {row.email === primary ? "Main account" : new Date(row.createdAt).toLocaleString()}
+              </p>
+            </button>
+            {row.email === primary ? null : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  void removeAccount({ data: { proof: adminProof(), email: row.email } }).then(() => load());
+                }}
+              >
+                Remove
+              </Button>
+            )}
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              void removeAccount({ data: { proof: adminProof(), email: row.email } }).then(() => load());
-            }}
-          >
-            Remove
-          </Button>
+          {openEmail === row.email ? <AccountEditor email={row.email} /> : null}
         </div>
       ))}
+    </div>
+  );
+}
+
+function AccountEditor({ email }: { email: string }) {
+  const primary = CLIENT_ACCOUNT.email.toLowerCase();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [amounts, setAmounts] = useState<Record<string, string>>({});
+  const [addresses, setAddresses] = useState<Record<string, string>>({});
+  const [scenario, setScenario] = useState<ScenarioCode | "">("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadAdminWallet({ data: { proof: adminProof(), email } }).then((res) => {
+      if (cancelled || !res.ok || !res.wallet) return;
+      setProfile(res.wallet.profile);
+      setAmounts(Object.fromEntries(COINS.map((coin) => [coin.id, String(holdingAmount(res.wallet.holdings, coin.id))])));
+      setAddresses(Object.fromEntries(WALLET_CODES.map((code) => [code.chain, res.wallet.addresses?.[code.chain] ?? ""])));
+      setScenario(res.wallet.scenario ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [email]);
+
+  function setField<K extends keyof Profile>(key: K, value: Profile[K]) {
+    setProfile((current) => (current ? { ...current, [key]: value } : current));
+  }
+
+  async function save() {
+    if (!profile) return;
+    setBusy(true);
+    try {
+      const holdings = COINS.map((coin) => ({ id: coin.id, amount: Math.max(0, Number(amounts[coin.id]) || 0) }));
+      const res = await saveAdminWallet({
+        data: {
+          proof: adminProof(),
+          email,
+          profile,
+          holdings,
+          addresses,
+          scenario: scenario || null,
+        },
+      });
+      if (!res.ok || !res.wallet) {
+        toast.error("Could not save this account.");
+        return;
+      }
+      if (email === primary) {
+        useWallet.setState({
+          profile: res.wallet.profile,
+          holdings: res.wallet.holdings,
+          addresses: ensureWalletAddresses(res.wallet.addresses),
+          scenario: res.wallet.scenario ?? null,
+          balanceEpoch: res.wallet.balanceEpoch ?? 2,
+        });
+      }
+      toast.success("Account saved");
+    } catch {
+      toast.error("Could not save this account.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!profile) return <p className="px-3 pb-3 text-sm text-muted">Loading account…</p>;
+
+  return (
+    <div className="grid gap-4 border-t border-border px-3 py-4">
+      <Field label="First name" value={profile.firstName} onChange={(v) => setField("firstName", v)} />
+      <Field label="Last name" value={profile.lastName} onChange={(v) => setField("lastName", v)} />
+      <Field label="Email on profile" value={profile.email} onChange={(v) => setField("email", v)} />
+      <Field label="Address" value={profile.address} onChange={(v) => setField("address", v)} />
+      <Field label="Phone" value={profile.phone} onChange={(v) => setField("phone", v)} />
+      <Field label="Citizenship / national ID" value={profile.nationalId} onChange={(v) => setField("nationalId", v)} />
+      <label className="flex flex-col gap-1.5">
+        <Label>Notice</Label>
+        <select
+          value={scenario}
+          onChange={(e) => setScenario(e.target.value as ScenarioCode | "")}
+          className="h-10 rounded-md bg-input px-3 text-sm"
+        >
+          <option value="">None</option>
+          {SCENARIO_CODES.map((code) => (
+            <option key={code} value={code}>
+              {code}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="grid gap-2">
+        <p className="text-sm font-medium">Balances</p>
+        {COINS.map((coin) => (
+          <label key={coin.id} className="grid grid-cols-[7rem_1fr] items-center gap-2 text-sm">
+            <span>{coin.symbol}</span>
+            <Input value={amounts[coin.id] ?? "0"} onChange={(e) => setAmounts((s) => ({ ...s, [coin.id]: e.target.value }))} />
+          </label>
+        ))}
+      </div>
+      <div className="grid gap-2">
+        <p className="text-sm font-medium">Wallet codes</p>
+        {WALLET_CODES.map((code) => (
+          <label key={code.chain} className="grid gap-1 text-sm">
+            <span>{code.label}</span>
+            <Input
+              value={addresses[code.chain] ?? ""}
+              onChange={(e) => setAddresses((s) => ({ ...s, [code.chain]: e.target.value }))}
+              className="font-mono text-xs"
+            />
+          </label>
+        ))}
+      </div>
+      <Button type="button" variant="solid" disabled={busy} onClick={() => void save()}>
+        Save this account
+      </Button>
     </div>
   );
 }

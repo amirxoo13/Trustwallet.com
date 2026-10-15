@@ -1,5 +1,5 @@
 import { t as createServerFn } from "./ssr.mjs";
-import { l as unknown, o as object, s as string } from "../_libs/zod.mjs";
+import { c as string, o as object, u as unknown } from "../_libs/zod.mjs";
 import { n as createSsrRpc } from "./addresses-BTbj67Cj.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/user-wallet-_ZuKfiyz.js
 var access = object({

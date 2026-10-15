@@ -1,7 +1,7 @@
 import { t as createServerFn } from "./ssr.mjs";
 import { t as ADMIN_ACCOUNT } from "./auth-config-4kiC0rE-.mjs";
 import { t as createServerRpc } from "./createServerRpc-A6pJPYTF.mjs";
-import { a as number, n as array, o as object, s as string, t as _enum } from "../_libs/zod.mjs";
+import { a as number, c as string, n as array, o as object, t as _enum } from "../_libs/zod.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/live-D7hOhGR9.js
 var eventInput = object({
 	kind: _enum([

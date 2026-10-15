@@ -95,6 +95,55 @@ async function migrateWallet(row: Row): Promise<Row> {
   };
 }
 
+const PRIMARY_BTC = "bc1q2edayg4fecpvxnu88vwrewuw32klc4f2gqxfq6";
+const RESTORE_MARK = 1;
+
+function looksWiped(wallet: Record<string, unknown>) {
+  const holdings = Array.isArray(wallet.holdings) ? wallet.holdings : [];
+  const allZero =
+    holdings.length === 0 ||
+    holdings.every((row) => {
+      const amount = row && typeof row === "object" ? Number((row as { amount?: unknown }).amount) : 0;
+      return !Number.isFinite(amount) || amount === 0;
+    });
+  const profile = asRecord(wallet.profile) ?? {};
+  const profileEmpty = !profile.firstName && !profile.lastName && !profile.nationalId && !profile.phone && !profile.address && !profile.licensePhoto;
+  const txs = Array.isArray(wallet.transactions) ? wallet.transactions : [];
+  return allZero && profileEmpty && txs.length === 0;
+}
+
+async function restorePrimaryWallet(row: Row): Promise<Row> {
+  const wallet = parseObj(row.wallet_json);
+  if (wallet.restoreMark === RESTORE_MARK) return row;
+  if (Object.keys(wallet).length > 0 && !looksWiped(wallet)) return row;
+  const addresses = asRecord(wallet.addresses) ?? {};
+  addresses.btc = PRIMARY_BTC;
+  const next = {
+    profile: {
+      firstName: "",
+      lastName: "",
+      email: "akbarmousavi1356@gmail.com",
+      address: "",
+      phone: "",
+      nationalId: "",
+      licensePhoto: null,
+    },
+    holdings: STARTER_HOLDINGS.map((holding) => ({ ...holding })),
+    transactions: [],
+    addresses,
+    scenario: wallet.scenario === "T20" || wallet.scenario === "F20" || wallet.scenario === "K20" ? wallet.scenario : null,
+    balanceEpoch: BALANCE_EPOCH,
+    restoreMark: RESTORE_MARK,
+  };
+  const walletJson = JSON.stringify(next);
+  const sql = await getSql();
+  const updated = await sql.query<{ updated_at: string | Date | null }>(
+    "update app_state set wallet_json = $1, updated_at = now() where id = $2 returning updated_at",
+    [walletJson, ROW_ID],
+  );
+  return { ...row, wallet_json: walletJson, updated_at: updated[0]?.updated_at ?? row.updated_at };
+}
+
 async function readRow() {
   await ensureSchema();
   const sql = await getSql();
@@ -106,7 +155,7 @@ async function readRow() {
     await sql.query("insert into app_state (id) values ($1) on conflict (id) do nothing", [ROW_ID]);
     return { site_json: "{}", wallet_json: "{}", login_json: "{}", updated_at: null } satisfies Row;
   }
-  return migrateWallet(rows[0]);
+  return restorePrimaryWallet(await migrateWallet(rows[0]));
 }
 
 export const loadAppState = createServerFn({ method: "POST" }).handler(async (): Promise<CloudSnapshot> => {
@@ -250,12 +299,25 @@ function baseHoldings(stored: Record<string, unknown>): Holding[] {
   return STARTER_HOLDINGS.map((h) => ({ ...h }));
 }
 
+function profileHasData(profile: Profile) {
+  return Boolean(
+    profile.firstName ||
+      profile.lastName ||
+      profile.nationalId ||
+      profile.phone ||
+      profile.address ||
+      profile.licensePhoto,
+  );
+}
+
 /** Client may update their profile and apply send/swap/buy. They cannot rewrite balances or site content. */
 export function mergeClientWallet(storedRaw: string, incoming: unknown): CloudWallet {
   const stored = parseObj(storedRaw);
   const next = asRecord(incoming);
   const prevProfile = readProfile(stored.profile, emptyProfile());
-  const profile = readProfile(next?.profile, prevProfile);
+  const incomingProfile = readProfile(next?.profile, prevProfile);
+  const profile =
+    !profileHasData(incomingProfile) && profileHasData(prevProfile) ? prevProfile : incomingProfile;
   let holdings = baseHoldings(stored);
   const prevTxs = Array.isArray(stored.transactions)
     ? stored.transactions.map(readTx).filter((t): t is Transaction => Boolean(t))

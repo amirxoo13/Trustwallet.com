@@ -1,17 +1,5 @@
 import { n as TSS_SERVER_FUNCTION, r as getServerFnById } from "./ssr.mjs";
 import { c as randomHex, s as randomBase58 } from "./format-DuRhJ10K.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/rolldown-runtime-D7D4PA-g.js
-var __defProp = Object.defineProperty;
-var __exportAll = (all, no_symbols) => {
-	let target = {};
-	for (var name in all) __defProp(target, name, {
-		get: all[name],
-		enumerable: true
-	});
-	if (!no_symbols) __defProp(target, Symbol.toStringTag, { value: "Module" });
-	return target;
-};
-//#endregion
 //#region node_modules/.nitro/vite/services/ssr/assets/addresses-BTbj67Cj.js
 var createSsrRpc = (functionId) => {
 	const url = "/_serverFn/" + functionId;
@@ -141,4 +129,4 @@ function demoSeedPhrase() {
 	return [...SEED_WORDS];
 }
 //#endregion
-export { generateWalletCodes as a, generateAddress as i, createSsrRpc as n, validateAddress as o, demoSeedPhrase as r, __exportAll as s, WALLET_CODES as t };
+export { generateWalletCodes as a, generateAddress as i, createSsrRpc as n, validateAddress as o, demoSeedPhrase as r, WALLET_CODES as t };

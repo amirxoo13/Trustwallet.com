@@ -6,7 +6,7 @@ import { n as CLIENT_ACCOUNT } from "./auth-config-4kiC0rE-.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { t as WalletShell } from "./wallet-shell-9PZQg6T9.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-import { g as useWallet } from "./router-BbAxlGxk.mjs";
+import { _ as useWallet } from "./router-Bs5W9wEE.mjs";
 import { t as Button } from "./button-D-wMd01I.mjs";
 import { t as Input } from "./input-CeaJU0B2.mjs";
 import { t as Label } from "./label-CjemIted.mjs";

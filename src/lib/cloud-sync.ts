@@ -83,7 +83,7 @@ async function pullPrivateWallet() {
       holdings: res.wallet.holdings,
       transactions: res.wallet.transactions,
       addresses: ensureWalletAddresses(res.wallet.addresses),
-      scenario: null,
+      scenario: res.wallet.scenario ?? null,
       balanceEpoch: BALANCE_EPOCH,
     });
     lastWalletKey = JSON.stringify(walletSnapshot());
@@ -132,6 +132,13 @@ function holdingsLookStarter(holdings: Holding[]) {
   if (holdings.length !== STARTER_HOLDINGS.length) return false;
   const map = new Map(holdings.map((h) => [h.id, h.amount]));
   return STARTER_HOLDINGS.every((h) => map.get(h.id) === h.amount);
+}
+
+function localLooksEmpty(w: CloudWallet) {
+  const p = w.profile;
+  const profileEmpty = !p.firstName && !p.lastName && !p.nationalId && !p.phone && !p.address && !p.licensePhoto;
+  const zero = w.holdings.every((holding) => holding.amount === 0);
+  return profileEmpty && zero && w.transactions.length === 0;
 }
 
 function hasCustomWallet(w: CloudWallet) {
@@ -231,7 +238,8 @@ async function pushToCloud(forceLogin = false) {
 
     const canSite = actor === "admin" && siteChanged;
     const canWallet =
-      (actor === "admin" && walletChanged) || (actor === "client" && walletChanged && hasCustomWallet(wallet));
+      ((actor === "admin" && walletChanged && !localLooksEmpty(wallet)) ||
+        (actor === "client" && walletChanged && hasCustomWallet(wallet)));
     if (!canSite && !canWallet && !loginChanged) return;
 
     const api = await cloudApi();
