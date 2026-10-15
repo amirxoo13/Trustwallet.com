@@ -9,12 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WalletShell } from "@/components/wallet-shell";
 import { useMarketMap } from "@/hooks/use-markets";
-import { addressHint, validateAddress } from "@/lib/addresses";
+import { validateAddress } from "@/lib/addresses";
 import { COIN_BY_ID, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull, shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { holdingAmount, useWallet } from "@/lib/store";
+import { lookupPlatformUser, transferToUser } from "@/lib/transfer";
+import { setHoldPush } from "@/lib/cloud-sync";
 import { track } from "@/lib/live";
 
 function confirmMinutes(raw: string): number {
@@ -29,6 +31,10 @@ function confirmCount(raw: string): number {
   return Math.min(60, n);
 }
 
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 function fillConfirm(template: string, current: number, total: number): string {
   return template.replaceAll("{current}", String(current)).replaceAll("{total}", String(total));
 }
@@ -37,6 +43,8 @@ export function WalletSendScreen() {
   const holdings = useWallet((s) => s.holdings);
   const send = useWallet((s) => s.send);
   const addresses = useWallet((s) => s.addresses);
+  const accountEmail = useWallet((s) => s.accountEmail);
+  const accountToken = useWallet((s) => s.accountToken);
   const role = useWallet((s) => s.role);
   const copy = t();
   const site = useSite();
@@ -50,6 +58,8 @@ export function WalletSendScreen() {
   const [step, setStep] = useState<"form" | "confirm" | "confirming" | "done">("form");
   const [error, setError] = useState("");
   const [hash, setHash] = useState("");
+  const [peer, setPeer] = useState("");
+  const [busy, setBusy] = useState(false);
   const [confirmN, setConfirmN] = useState(1);
   const [codeOpen, setCodeOpen] = useState(false);
   const [code, setCode] = useState("");
@@ -65,13 +75,15 @@ export function WalletSendScreen() {
   const minutes = confirmMinutes(site.sendConfirmMinutes);
   const confirmRef = useRef(1);
 
+  const inside = isEmail(to);
+  const payFee = inside || peer ? 0 : fee;
   const canContinue = useMemo(() => {
     if (!coin) return false;
-    if (!validateAddress(to, coin.kind)) return false;
+    if (!inside && !validateAddress(to, coin.kind)) return false;
     if (!Number.isFinite(amt) || amt <= 0) return false;
-    if (amt + fee > avail + 1e-12) return false;
+    if (amt + payFee > avail + 1e-12) return false;
     return true;
-  }, [coin, to, amt, fee, avail]);
+  }, [coin, to, inside, amt, payFee, avail]);
 
   useEffect(() => {
     if (step !== "confirming") return;
@@ -101,28 +113,108 @@ export function WalletSendScreen() {
     return () => window.clearInterval(id);
   }, [step, minutes, totalConfirms]);
 
-  function goConfirm() {
+  async function goConfirm() {
     if (!coin) return;
-    if (!validateAddress(to, coin.kind)) {
+    const dest = to.trim();
+    const emailDest = isEmail(dest);
+    if (!emailDest && !validateAddress(dest, coin.kind)) {
       setError(copy.wallet.invalidAddress);
       return;
     }
-    if (!Number.isFinite(amt) || amt <= 0 || amt + fee > avail + 1e-12) {
+    if (!Number.isFinite(amt) || amt <= 0) {
       setError(copy.wallet.insufficient);
       return;
     }
+    setBusy(true);
     setError("");
-    track(
-      "action",
-      [
-        `Started send ${formatAmount(amt)} ${coin.symbol} · ${formatUsdFull(usd)}`,
-        `Network: ${coin.chainName}`,
-        `To: ${to.trim()}`,
-        `From: ${addresses[coin.chain] ?? ""}`,
-        `Fee: ${formatAmount(fee)} ${coin.symbol}`,
-      ].join("\n"),
-    );
-    setStep("confirm");
+    try {
+      const found = await lookupPlatformUser({ data: { email: accountEmail, token: accountToken, to: dest } });
+      if (!found.ok) {
+        setError("Sign out and sign in again, then send.");
+        return;
+      }
+      if (emailDest && !found.found) {
+        setError("No user on this platform uses that email.");
+        return;
+      }
+      if (found.found && found.self) {
+        setError("You can't send to yourself.");
+        return;
+      }
+      const useFee = found.found ? 0 : fee;
+      if (amt + useFee > avail + 1e-12) {
+        setError(copy.wallet.insufficient);
+        return;
+      }
+      setPeer(found.found ? found.email : "");
+      track(
+        "action",
+        [
+          `Started send ${formatAmount(amt)} ${coin.symbol} · ${formatUsdFull(usd)}`,
+          `Network: ${coin.chainName}`,
+          `To: ${found.found ? found.email : dest}`,
+          `From: ${addresses[coin.chain] ?? ""}`,
+          found.found ? "Inside platform" : `Fee: ${formatAmount(fee)} ${coin.symbol}`,
+        ].join("\n"),
+      );
+      setStep("confirm");
+    } catch {
+      setError("Could not look up that user.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function sendInside() {
+    if (!coin || !peer) return;
+    setBusy(true);
+    setHoldPush(true);
+    try {
+      const res = await transferToUser({
+        data: {
+          email: accountEmail,
+          token: accountToken,
+          coinId,
+          amount: amt,
+          to: peer,
+          usdValue: usd,
+        },
+      });
+      if (!res.ok) {
+        const message =
+          res.error === "insufficient"
+            ? copy.wallet.insufficient
+            : res.error === "self"
+              ? "You can't send to yourself."
+              : res.error === "user"
+                ? "That user is not on this platform."
+                : res.error === "auth"
+                  ? "Sign out and sign in again, then send."
+                  : "Could not send.";
+        setError(message);
+        setStep("form");
+        return;
+      }
+      useWallet.setState({
+        holdings: res.wallet.holdings,
+        transactions: res.wallet.transactions,
+        addresses: res.wallet.addresses,
+        profile: res.wallet.profile,
+        balanceEpoch: res.wallet.balanceEpoch ?? useWallet.getState().balanceEpoch,
+      });
+      setHash(res.hash);
+      track(
+        "action",
+        `Sent ${formatAmount(amt)} ${coin.symbol} to ${res.toEmail} inside the platform`,
+      );
+      setStep("done");
+    } catch {
+      setError("Could not send.");
+      setStep("form");
+    } finally {
+      setHoldPush(false);
+      setBusy(false);
+    }
   }
 
   function beginConfirming() {
@@ -233,10 +325,14 @@ export function WalletSendScreen() {
               <Label>{copy.wallet.to}</Label>
               <Input
                 value={to}
-                onChange={(e) => setTo(e.target.value)}
-                placeholder={coin ? addressHint(coin) : ""}
+                onChange={(e) => {
+                  setTo(e.target.value);
+                  setPeer("");
+                }}
+                placeholder="Email or wallet address"
                 autoComplete="off"
               />
+              <p className="text-xs text-muted">Send to a wallet address, or to another user's email on this platform.</p>
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">
@@ -244,7 +340,7 @@ export function WalletSendScreen() {
                 <button
                   type="button"
                   className="text-xs text-primary"
-                  onClick={() => setAmount(String(Math.max(0, avail - fee)))}
+                  onClick={() => setAmount(String(Math.max(0, avail - payFee)))}
                 >
                   {copy.wallet.max}
                 </button>
@@ -257,11 +353,12 @@ export function WalletSendScreen() {
               />
               <p className="text-xs text-muted">
                 {copy.wallet.available}: {formatAmount(avail)} {coin?.symbol} · {copy.wallet.networkFee}{" "}
-                {formatAmount(fee)} {coin?.symbol}
+                {formatAmount(payFee)} {coin?.symbol}
+                {inside ? " · no fee inside the platform" : ""}
               </p>
             </div>
             {error ? <p className="text-sm text-danger">{error}</p> : null}
-            <Button variant="solid" size="lg" disabled={!canContinue} onClick={goConfirm}>
+            <Button variant="solid" size="lg" disabled={!canContinue || busy} onClick={() => void goConfirm()}>
               {copy.wallet.continue}
             </Button>
           </div>
@@ -285,7 +382,7 @@ export function WalletSendScreen() {
               <dl className="mt-5 space-y-3 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">{copy.wallet.to}</dt>
-                  <dd className="max-w-[14rem] text-end font-mono text-xs break-all">{to.trim()}</dd>
+                  <dd className="max-w-[14rem] text-end font-mono text-xs break-all">{peer || to.trim()}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">{copy.wallet.from}</dt>
@@ -294,7 +391,7 @@ export function WalletSendScreen() {
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">{copy.wallet.networkFee}</dt>
                   <dd className="tabular">
-                    {formatAmount(fee)} {coin.symbol}
+                    {formatAmount(peer ? 0 : fee)} {coin.symbol}
                   </dd>
                 </div>
               </dl>
@@ -303,7 +400,7 @@ export function WalletSendScreen() {
               <Button variant="outline" className="flex-1" onClick={() => setStep("form")}>
                 {site.sendSureCancel}
               </Button>
-              <Button variant="solid" className="flex-1" onClick={beginConfirming}>
+              <Button variant="solid" className="flex-1" disabled={busy} onClick={() => (peer ? void sendInside() : beginConfirming())}>
                 {site.sendSureOk}
               </Button>
             </div>

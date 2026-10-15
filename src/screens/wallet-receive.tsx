@@ -71,7 +71,7 @@ export function WalletReceiveScreen() {
           </div>
           {address ? <AddressQr value={address} size={200} /> : null}
           <p className="mt-5 text-center text-xs text-muted">
-            {copy.wallet.qrHint} {coin.chainName}
+            {copy.wallet.qrHint} {coin.chainName}. Another user on this platform can also send to this address or to your sign-in email.
           </p>
           <p className="mt-4 max-w-full break-all text-center font-mono text-xs leading-relaxed">{address}</p>
           <div className="mt-5 flex w-full gap-2">

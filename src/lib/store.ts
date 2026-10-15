@@ -169,11 +169,13 @@ export const useWallet = create<WalletState>()(
 
         if (e === ADMIN_ACCOUNT.email.toLowerCase() && p === ADMIN_ACCOUNT.password) {
           grantAdminProof(p);
+          const { issueWalletSession } = await import("@/lib/transfer");
+          const session = await issueWalletSession({ data: { email: e, password: p } }).catch(() => null);
           set((s) => ({
             authenticated: true,
             role: "admin",
             accountEmail: e,
-            accountToken: "",
+            accountToken: session?.ok ? session.token : "",
             addresses: ensureWalletAddresses(s.addresses),
           }));
           return { ok: true };
@@ -181,11 +183,13 @@ export const useWallet = create<WalletState>()(
 
         if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
           clearAdminProof();
+          const { issueWalletSession } = await import("@/lib/transfer");
+          const session = await issueWalletSession({ data: { email: e, password: p } }).catch(() => null);
           set((s) => ({
             authenticated: true,
             role: "client",
             accountEmail: e,
-            accountToken: "",
+            accountToken: session?.ok ? session.token : "",
             addresses: ensureWalletAddresses(s.addresses),
             profile: {
               ...s.profile,
