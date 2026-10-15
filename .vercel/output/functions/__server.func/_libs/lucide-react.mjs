@@ -512,6 +512,34 @@ var Rocket = createLucideIcon("rocket", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var ScanLine = createLucideIcon("scan-line", [
+	["path", {
+		d: "M3 7V5a2 2 0 0 1 2-2h2",
+		key: "aa7l1z"
+	}],
+	["path", {
+		d: "M17 3h2a2 2 0 0 1 2 2v2",
+		key: "4qcy5o"
+	}],
+	["path", {
+		d: "M21 17v2a2 2 0 0 1-2 2h-2",
+		key: "6vwrx8"
+	}],
+	["path", {
+		d: "M7 21H5a2 2 0 0 1-2-2v-2",
+		key: "ioqczr"
+	}],
+	["path", {
+		d: "M7 12h10",
+		key: "b7w52i"
+	}]
+]);
+/**
+* @license lucide-react v0.510.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Scan = createLucideIcon("scan", [
 	["path", {
 		d: "M3 7V5a2 2 0 0 1 2-2h2",
@@ -767,4 +795,4 @@ var X = createLucideIcon("x", [["path", {
 	key: "d8bk6v"
 }]]);
 //#endregion
-export { ChevronLeft as A, Eye as C, Copy as D, CreditCard as E, ArrowUpRight as F, ArrowLeft as I, ArrowLeftRight as L, Check as M, ChartColumn as N, Clock3 as O, ChartLine as P, ArrowDown as R, History as S, DollarSign as T, Menu as _, TrendingUp as a, Infinity$1 as b, SlidersHorizontal as c, Settings as d, Search as f, Plus as g, RefreshCw as h, TriangleAlert as i, ChevronDown as j, ChevronRight as k, Shield as l, Rocket as m, Wallet as n, Star as o, Scan as p, UserRound as r, Sparkles as s, X as t, ShieldCheck as u, LogOut as v, EyeOff as w, House as x, Info as y, ArrowDownLeft as z };
+export { ChevronRight as A, ArrowDownLeft as B, History as C, CreditCard as D, DollarSign as E, ChartLine as F, ArrowUpRight as I, ArrowLeft as L, ChevronDown as M, Check as N, Copy as O, ChartColumn as P, ArrowLeftRight as R, House as S, EyeOff as T, Plus as _, TrendingUp as a, Info as b, SlidersHorizontal as c, Settings as d, Search as f, RefreshCw as g, Rocket as h, TriangleAlert as i, ChevronLeft as j, Clock3 as k, Shield as l, ScanLine as m, Wallet as n, Star as o, Scan as p, UserRound as r, Sparkles as s, X as t, ShieldCheck as u, Menu as v, Eye as w, Infinity$1 as x, LogOut as y, ArrowDown as z };

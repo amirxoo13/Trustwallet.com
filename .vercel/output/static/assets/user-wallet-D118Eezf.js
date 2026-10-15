@@ -1,1 +1,0 @@
-import{a as e,ct as t}from"./index-CFwrrIAi.js";var n=e({method:`POST`}).handler(t(`6603960311799039959ec4798f963eec073d7f063e137fb243639220cbe56851`)),r=e({method:`POST`}).handler(t(`f8756a4396611e96f9afaa78d95ec562ca08a184a111bce0a5c44bb03dc7b136`));export{n as loadPrivateWallet,r as savePrivateWallet};

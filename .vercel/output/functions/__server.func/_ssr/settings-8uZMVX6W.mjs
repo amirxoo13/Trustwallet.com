@@ -9,7 +9,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { i as savePushSubscription, n as removePushSubscription, r as runDueAlerts, t as getPushPublicKey } from "./push-0EsqHe5h.mjs";
 import { t as WalletShell } from "./wallet-shell-9PZQg6T9.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-import { _ as useWallet, p as hasAdminProof } from "./router-eRiEB39l.mjs";
+import { _ as useWallet, p as hasAdminProof } from "./router-DCZgHlBM.mjs";
 import { t as Button } from "./button-D-wMd01I.mjs";
 import { t as Input } from "./input-CeaJU0B2.mjs";
 import { i as DialogTitle, n as DialogContent, r as DialogDescription, t as Dialog } from "./dialog-pWswszkh.mjs";

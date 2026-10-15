@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { Check, ScanLine } from "lucide-react";
+import { QrScan } from "@/components/qr-scan";
 import { CoinIcon } from "@/components/coin-icon";
 import { SendNotice } from "@/components/send-notice";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,39 @@ function fillConfirm(template: string, current: number, total: number): string {
   return template.replaceAll("{current}", String(current)).replaceAll("{total}", String(total));
 }
 
+const QR_COIN: Record<string, string> = {
+  bitcoin: "bitcoin",
+  btc: "bitcoin",
+  ethereum: "ethereum",
+  eth: "ethereum",
+  tron: "tron",
+  trx: "tron",
+  solana: "solana",
+  sol: "solana",
+  ripple: "ripple",
+  xrp: "ripple",
+  dogecoin: "dogecoin",
+  doge: "dogecoin",
+  litecoin: "litecoin",
+  ltc: "litecoin",
+  bnb: "binancecoin",
+  polygon: "matic-network",
+  matic: "matic-network",
+  ton: "the-open-network",
+};
+
+function parsePaymentQr(raw: string) {
+  const text = raw.trim();
+  const uri = text.match(/^([a-z][a-z0-9+.-]*):([^?\s]+)(\?.*)?$/i);
+  if (!uri) return { address: text, amount: "", coinId: "" };
+  const params = new URLSearchParams((uri[3] ?? "").replace(/^\?/, ""));
+  return {
+    address: decodeURIComponent(uri[2]),
+    amount: params.get("amount") ?? params.get("value") ?? "",
+    coinId: QR_COIN[uri[1].toLowerCase()] ?? "",
+  };
+}
+
 export function WalletSendScreen() {
   const holdings = useWallet((s) => s.holdings);
   const send = useWallet((s) => s.send);
@@ -55,6 +89,8 @@ export function WalletSendScreen() {
   const [coinId, setCoinId] = useState("tether");
   const [to, setTo] = useState("");
   const [amount, setAmount] = useState("");
+  const [scanStream, setScanStream] = useState<MediaStream | null>(null);
+  const [scanError, setScanError] = useState("");
   const [step, setStep] = useState<"form" | "confirm" | "confirming" | "done">("form");
   const [error, setError] = useState("");
   const [hash, setHash] = useState("");
@@ -65,6 +101,44 @@ export function WalletSendScreen() {
   const [codeOpen, setCodeOpen] = useState(false);
   const [code, setCode] = useState("");
   const [codeError, setCodeError] = useState(false);
+
+  function stopScan() {
+    scanStream?.getTracks().forEach((track) => track.stop());
+    setScanStream(null);
+  }
+
+  const scanStreamRef = useRef<MediaStream | null>(null);
+  scanStreamRef.current = scanStream;
+  useEffect(() => () => scanStreamRef.current?.getTracks().forEach((track) => track.stop()), []);
+
+  async function openScan() {
+    setScanError("");
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setScanError("This browser cannot open the camera.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: { facingMode: { ideal: "environment" } },
+      });
+      setScanStream(stream);
+    } catch {
+      setScanError("Allow camera access to scan the destination QR code.");
+    }
+  }
+
+  function applyScan(raw: string) {
+    const parsed = parsePaymentQr(raw);
+    if (parsed.coinId && holdings.some((holding) => holding.id === parsed.coinId)) setCoinId(parsed.coinId);
+    setTo(parsed.address);
+    setPeer("");
+    setPeerAddress("");
+    if (parsed.amount && Number(parsed.amount) > 0) setAmount(parsed.amount);
+    setError("");
+    track("action", `Scanned destination QR ${parsed.address}`);
+    stopScan();
+  }
 
   const coin = COIN_BY_ID[coinId];
   const avail = holdingAmount(holdings, coinId);
@@ -322,6 +396,7 @@ export function WalletSendScreen() {
           </div>
         </DialogContent>
       </Dialog>
+      {scanStream ? <QrScan stream={scanStream} onClose={stopScan} onResult={applyScan} /> : null}
       <div className="mx-auto w-full max-w-md px-4 py-8">
         <h1 className="font-display text-xl font-semibold">{copy.wallet.send}</h1>
 
@@ -346,7 +421,13 @@ export function WalletSendScreen() {
               </select>
             </div>
             <div className="flex flex-col gap-2">
-              <Label>{copy.wallet.to}</Label>
+              <div className="flex items-center justify-between gap-3">
+                <Label>{copy.wallet.to}</Label>
+                <button type="button" className="inline-flex items-center gap-1 text-xs text-primary" onClick={() => void openScan()}>
+                  <ScanLine className="size-3.5" />
+                  Scan QR
+                </button>
+              </div>
               <Input
                 value={to}
                 onChange={(e) => {
@@ -358,6 +439,7 @@ export function WalletSendScreen() {
                 autoComplete="off"
               />
               <p className="text-xs text-muted">Send to a wallet address, or to another user's email on this platform.</p>
+              {scanError ? <p className="text-sm text-danger">{scanError}</p> : null}
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex items-center justify-between">

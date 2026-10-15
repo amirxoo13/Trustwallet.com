@@ -6,7 +6,7 @@ import { t as createServerFn } from "./ssr.mjs";
 import { a as formatUsd, r as formatPct } from "./format-DuRhJ10K.mjs";
 import { n as createSsrRpc } from "./addresses-BTbj67Cj.mjs";
 import { r as cn } from "./logo-B62MTmeK.mjs";
-import { N as ChartColumn, f as Search, j as ChevronDown, m as Rocket, o as Star } from "../_libs/lucide-react.mjs";
+import { M as ChevronDown, P as ChartColumn, f as Search, h as Rocket, o as Star } from "../_libs/lucide-react.mjs";
 import { a as fetchSearchMarkets, o as fetchTopTraded, s as fetchTrendingMarkets, t as fetchCategoryMarkets } from "./prices-7icuP-SQ.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
 import { t as CoinIcon } from "./coin-icon-C4QmQwF8.mjs";

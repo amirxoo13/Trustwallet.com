@@ -4,10 +4,10 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { a as formatUsd, o as formatUsdFull, r as formatPct } from "./format-DuRhJ10K.mjs";
 import { n as persist, r as create, t as createJSONStorage } from "../_libs/zustand.mjs";
 import { r as cn } from "./logo-B62MTmeK.mjs";
-import { S as History, d as Settings, f as Search, k as ChevronRight } from "../_libs/lucide-react.mjs";
+import { A as ChevronRight, C as History, d as Settings, f as Search } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-9PZQg6T9.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { _ as useWallet, m as holdingAmount } from "./router-eRiEB39l.mjs";
+import { _ as useWallet, m as holdingAmount } from "./router-DCZgHlBM.mjs";
 import { t as Button } from "./button-D-wMd01I.mjs";
 import { t as CoinIcon } from "./coin-icon-C4QmQwF8.mjs";
 import { t as Input } from "./input-CeaJU0B2.mjs";

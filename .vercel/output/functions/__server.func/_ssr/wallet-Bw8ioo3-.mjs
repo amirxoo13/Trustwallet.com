@@ -6,10 +6,10 @@ import { a as formatUsd, o as formatUsdFull, r as formatPct, t as formatAmount }
 import { n as COIN_BY_ID, o as usdPrice, t as COINS } from "./coins-Kac_SJvS.mjs";
 import { r as cn } from "./logo-B62MTmeK.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
-import { C as Eye, F as ArrowUpRight, R as ArrowDown, S as History, T as DollarSign, c as SlidersHorizontal, d as Settings, g as Plus, h as RefreshCw, k as ChevronRight, n as Wallet, p as Scan, r as UserRound, s as Sparkles, v as LogOut, w as EyeOff, y as Info } from "../_libs/lucide-react.mjs";
+import { A as ChevronRight, C as History, E as DollarSign, I as ArrowUpRight, T as EyeOff, _ as Plus, b as Info, c as SlidersHorizontal, d as Settings, g as RefreshCw, n as Wallet, p as Scan, r as UserRound, s as Sparkles, w as Eye, y as LogOut, z as ArrowDown } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-9PZQg6T9.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { _ as useWallet, g as useSite, p as hasAdminProof } from "./router-eRiEB39l.mjs";
+import { _ as useWallet, g as useSite, p as hasAdminProof } from "./router-DCZgHlBM.mjs";
 import { t as CoinIcon } from "./coin-icon-C4QmQwF8.mjs";
 import { n as useMarketMap, r as useMarkets } from "./use-markets-BrK58dAT.mjs";
 import { t as loadPerpMarkets } from "./perps-feed-n3xj7eYS.mjs";
