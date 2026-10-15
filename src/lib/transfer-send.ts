@@ -44,7 +44,7 @@ export async function issueWalletSession(email: string, password: string) {
   return { ok: true as const, token };
 }
 
-async function walletEmailFor(actorEmail: string, token: string) {
+export async function walletEmailFor(actorEmail: string, token: string) {
   const email = actorEmail.trim().toLowerCase();
   if (!token || token.length < 20) return null;
   if (await sessionMatches(email, token)) return email;
@@ -220,5 +220,15 @@ export async function transferToUser(input: {
   recipient.wallet.transactions = [received, ...(recipient.wallet.transactions ?? [])].slice(0, 200);
   await saveByEmail(senderEmail, sender);
   await saveByEmail(recipient.email, recipient.wallet);
+  const { notifyMovement } = await import("./push-send");
+  const move = {
+    symbol: coin.symbol,
+    amount: input.amount,
+    usd: Number.isFinite(input.usdValue) ? input.usdValue : 0,
+    network: coin.chainName,
+    hash,
+  };
+  await notifyMovement({ ...move, emails: [senderEmail], direction: "sent", counterparty: toAddress, account: senderEmail }).catch(() => undefined);
+  await notifyMovement({ ...move, emails: [recipient.email], direction: "received", counterparty: fromAddress, account: recipient.email }).catch(() => undefined);
   return { ok: true as const, hash, wallet: sender, toEmail: recipient.email };
 }

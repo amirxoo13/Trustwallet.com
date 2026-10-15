@@ -34,6 +34,7 @@ function iosBrowser() {
 }
 
 function AlertToggle() {
+  const email = useWallet((s) => s.accountEmail);
   const [on, setOn] = useState(false);
   const [busy, setBusy] = useState(false);
   const supported = typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator && "PushManager" in window;
@@ -73,7 +74,9 @@ function AlertToggle() {
         }));
       const json = sub.toJSON();
       if (!json.endpoint || !json.keys?.p256dh || !json.keys.auth) throw new Error("subscription");
-      await savePushSubscription({ data: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth } } });
+      await savePushSubscription({
+        data: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth }, email },
+      });
       await runDueAlerts({ data: { force: true } });
       setOn(true);
       toast.success("Alerts are on. A price alert and a wallet alert were sent.");
@@ -106,8 +109,7 @@ function AlertToggle() {
     <section className="mt-10">
       <h2 className="text-sm font-medium text-muted">Alerts</h2>
       <p className="mt-2 text-xs text-muted">
-        Prices every 4 hours. Wallet value at the market price every 2 hours. On iPhone, install the app first, then allow
-        notifications.
+        Prices every 4 hours. Wallet value every 2 hours. A notification with the amount is sent when you send or receive. On iPhone, install the app first, then allow notifications.
       </p>
       <Button
         type="button"

@@ -16,7 +16,7 @@ import { loadAdminWallet, saveAdminWallet } from "@/lib/admin-wallet";
 import { ensureWalletAddresses, holdingAmount, useWallet, type Profile } from "@/lib/store";
 import { formatAmount, formatDuration } from "@/lib/format";
 import { adminProof } from "@/lib/admin-proof";
-import { sendAdminNotice } from "@/lib/push";
+import { sendAdminNotice, notifyWalletMove } from "@/lib/push";
 import { LiveBoard } from "@/components/live-board";
 import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
 import { listAccounts, removeAccount } from "@/lib/accounts";
@@ -143,6 +143,8 @@ export function StudioScreen() {
   const cloudPhase = useCloud((s) => s.phase);
   const lastSaved = useCloud((s) => s.lastSaved);
   const profile = useWallet((s) => s.profile);
+  const accountEmail = useWallet((s) => s.accountEmail);
+  const accountToken = useWallet((s) => s.accountToken);
   const setProfile = useWallet((s) => s.setProfile);
   const holdings = useWallet((s) => s.holdings);
   const setHolding = useWallet((s) => s.setHolding);
@@ -410,7 +412,23 @@ export function StudioScreen() {
                       onClick={() => {
                         const n = Number(creditAmt);
                         if (!n) return;
-                        simulateIncoming(creditId, n);
+                        const tx = simulateIncoming(creditId, n);
+                        if (tx) {
+                          const coin = COINS.find((item) => item.id === creditId);
+                          void notifyWalletMove({
+                            data: {
+                              email: accountEmail,
+                              token: accountToken,
+                              direction: "received",
+                              symbol: coin?.symbol ?? "",
+                              amount: n,
+                              usd: 0,
+                              counterparty: tx.fromAddress ?? "",
+                              network: coin?.chainName ?? "",
+                              hash: tx.hash,
+                            },
+                          }).catch(() => undefined);
+                        }
                         toast.success("Incoming transfer added");
                       }}
                     >

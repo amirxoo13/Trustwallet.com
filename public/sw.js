@@ -1,4 +1,4 @@
-const CACHE = "trust-shell-v2";
+const CACHE = "trust-shell-v3";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -68,6 +68,8 @@ self.addEventListener("push", (event) => {
       icon: "./icon-192.png",
       badge: "./icon-192.png",
       tag,
+      renotify: true,
+      lang: "en",
       data: { url },
     }),
   );

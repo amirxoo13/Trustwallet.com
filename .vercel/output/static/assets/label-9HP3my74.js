@@ -1,0 +1,1 @@
+import{i as e,r as t,s as n}from"./useRouter-B64lGpJS.js";import{r}from"./logo-F4rqU7n8.js";var i=n(e(),1),a=t(),o=i.forwardRef(({className:e,...t},n)=>(0,a.jsx)(`label`,{ref:n,className:r(`text-xs font-medium tracking-wide text-muted`,e),...t}));o.displayName=`Label`;export{o as t};

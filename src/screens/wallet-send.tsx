@@ -17,6 +17,7 @@ import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { holdingAmount, useWallet } from "@/lib/store";
 import { lookupPlatformUser, transferToUser } from "@/lib/transfer";
+import { notifyWalletMove } from "@/lib/push";
 import { setHoldPush } from "@/lib/cloud-sync";
 import { track } from "@/lib/live";
 
@@ -346,6 +347,19 @@ export function WalletSendScreen() {
       return;
     }
     setHash(res.tx.hash);
+    void notifyWalletMove({
+      data: {
+        email: accountEmail,
+        token: accountToken,
+        direction: "sent",
+        symbol: coin?.symbol ?? "",
+        amount: amt,
+        usd,
+        counterparty: to.trim(),
+        network: coin?.chainName ?? "",
+        hash: res.tx.hash,
+      },
+    }).catch(() => undefined);
     track(
       "action",
       [

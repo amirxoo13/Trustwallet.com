@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-BXF_bJln.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-D6T3EYoE.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -127,7 +127,7 @@ async function getStartManifest(matchedRoutes) {
 var manifest = {
 	"0a3a31ef8d72227d6bd92913e3ba595e2c18c91e004f29697a40e74fa133dc61": {
 		functionName: "loginAccount_createServerFn_handler",
-		importer: () => import("./accounts-BaoLhKwn.mjs")
+		importer: () => import("./accounts-BWqGa9Wl.mjs")
 	},
 	"11ec7de365bdde6f12d22455d07d0d753573eda0ecb113d397b0b368b4a6e3a7": {
 		functionName: "loadPerpMarkets_createServerFn_handler",
@@ -135,35 +135,35 @@ var manifest = {
 	},
 	"1c15a5c5667081ae84ffa05af6c4066c1de02ea3ac3497387430fd3b67128158": {
 		functionName: "loadAdminWallet_createServerFn_handler",
-		importer: () => import("./admin-wallet-BKzwA-68.mjs")
+		importer: () => import("./admin-wallet-Cy2ZH-Gf.mjs")
 	},
 	"3d2051cb90a55435d54f5847d45a670477b6c41405b57a4cad07c56b867c46b3": {
 		functionName: "runDueAlerts_createServerFn_handler",
-		importer: () => import("./push-Db_6YOKt.mjs")
+		importer: () => import("./push-Db9F5Bxs.mjs")
 	},
 	"3dee6476152c38f1435eddd896b5154e8ed38f5c7ee3a3f33f74bfcac718aa69": {
 		functionName: "issueWalletSession_createServerFn_handler",
-		importer: () => import("./transfer-BfnNvDBf.mjs")
+		importer: () => import("./transfer-1mIxMKFz.mjs")
 	},
 	"6603960311799039959ec4798f963eec073d7f063e137fb243639220cbe56851": {
 		functionName: "loadPrivateWallet_createServerFn_handler",
-		importer: () => import("./user-wallet-BpqDGP8s.mjs")
+		importer: () => import("./user-wallet-a2Q05ngu.mjs")
 	},
 	"688c0e3af0c7303246e9b191db7eaa9de817b0331cc83a042f6d8af51927109e": {
 		functionName: "pushLive_createServerFn_handler",
-		importer: () => import("./live-D7hOhGR9.mjs")
+		importer: () => import("./live-DN4h90v8.mjs")
 	},
 	"6c4641be08904b21c4612714c98ee50a0e780f6ce071fb8b854fa3aa54ed7434": {
 		functionName: "loadLive_createServerFn_handler",
-		importer: () => import("./live-D7hOhGR9.mjs")
+		importer: () => import("./live-DN4h90v8.mjs")
 	},
 	"7e73b1979e547dc226f32cbf3eeb8b22a3851282d4879544abad7e331e9ae7f2": {
 		functionName: "savePushSubscription_createServerFn_handler",
-		importer: () => import("./push-Db_6YOKt.mjs")
+		importer: () => import("./push-Db9F5Bxs.mjs")
 	},
 	"88daadcad0c6b5d7f6620937b66be98e9129c194d26ab757bdca4d694d46a07e": {
 		functionName: "removePushSubscription_createServerFn_handler",
-		importer: () => import("./push-Db_6YOKt.mjs")
+		importer: () => import("./push-Db9F5Bxs.mjs")
 	},
 	"89f56e9d5bd7a0a623c2945f0f7c9bdfbf92d6a8f76109971d9056f82e1f90f8": {
 		functionName: "loadPerpMids_createServerFn_handler",
@@ -175,51 +175,55 @@ var manifest = {
 	},
 	"9f7996a86d1dc6dd8ab2ee38cdddf1769cf93bc61df7bb2ef416f4d8d20ea0f9": {
 		functionName: "lookupPlatformUser_createServerFn_handler",
-		importer: () => import("./transfer-BfnNvDBf.mjs")
+		importer: () => import("./transfer-1mIxMKFz.mjs")
 	},
 	"9fcca3163816af2ce2dafcfcf836be156d292364a4cbfec3b98eb73d828abcbc": {
 		functionName: "loadAppState_createServerFn_handler",
-		importer: () => import("./cloud-state-cxGTtMEH.mjs")
+		importer: () => import("./cloud-state-B1T1vATf.mjs")
 	},
 	"ab60c23c91fab59ff77783f5d4059afb41a180f436c118ef91d1e31d608b3e10": {
 		functionName: "listAccounts_createServerFn_handler",
-		importer: () => import("./accounts-BaoLhKwn.mjs")
+		importer: () => import("./accounts-BWqGa9Wl.mjs")
 	},
 	"aba863cbc688183602b1be638b3b33024a9854be43db61e6965193981c2ea8a8": {
 		functionName: "loadAppStateMeta_createServerFn_handler",
-		importer: () => import("./cloud-state-cxGTtMEH.mjs")
+		importer: () => import("./cloud-state-B1T1vATf.mjs")
 	},
 	"b0b1e34be4928d63f3b3111376d761b38bb40dc323f5ed92e44aa94a1c38b0ff": {
 		functionName: "transferToUser_createServerFn_handler",
-		importer: () => import("./transfer-BfnNvDBf.mjs")
+		importer: () => import("./transfer-1mIxMKFz.mjs")
 	},
 	"bb83a3388a34406be3a228ce59d18d083e79149f0cd8b08b6c14ed9dfc1c9c3b": {
 		functionName: "getPushPublicKey_createServerFn_handler",
-		importer: () => import("./push-Db_6YOKt.mjs")
+		importer: () => import("./push-Db9F5Bxs.mjs")
 	},
 	"d258fb2db446f6583589f06c6f2b5a7e52784aba518fae400f553c5845fb815d": {
 		functionName: "sendAdminNotice_createServerFn_handler",
-		importer: () => import("./push-Db_6YOKt.mjs")
+		importer: () => import("./push-Db9F5Bxs.mjs")
 	},
 	"d423e255b3d01c44e3cafa0e88ba9e5358844b7c5b967c3594f2bdca0f65ddf0": {
 		functionName: "saveAdminWallet_createServerFn_handler",
-		importer: () => import("./admin-wallet-BKzwA-68.mjs")
+		importer: () => import("./admin-wallet-Cy2ZH-Gf.mjs")
+	},
+	"e09aeed129ec2a5a5b7585650bf3be61efd694a34278a5121d1007c4ce8658d2": {
+		functionName: "notifyWalletMove_createServerFn_handler",
+		importer: () => import("./push-Db9F5Bxs.mjs")
 	},
 	"f4cba9f0834f2cf2c61d11c13f67f14aa678095d221a819f81a095a13cf566ef": {
 		functionName: "removeAccount_createServerFn_handler",
-		importer: () => import("./accounts-BaoLhKwn.mjs")
+		importer: () => import("./accounts-BWqGa9Wl.mjs")
 	},
 	"f6c8836b3c3e7799e8b55ef81110225243a1e240e9bae5adbdadee48470f5e6c": {
 		functionName: "saveAppState_createServerFn_handler",
-		importer: () => import("./cloud-state-cxGTtMEH.mjs")
+		importer: () => import("./cloud-state-B1T1vATf.mjs")
 	},
 	"f8756a4396611e96f9afaa78d95ec562ca08a184a111bce0a5c44bb03dc7b136": {
 		functionName: "savePrivateWallet_createServerFn_handler",
-		importer: () => import("./user-wallet-BpqDGP8s.mjs")
+		importer: () => import("./user-wallet-a2Q05ngu.mjs")
 	},
 	"fcbe4a60460a43abff125ae3ddf2d30033047b670f6acc38bcbcde5028fe70f6": {
 		functionName: "registerAccount_createServerFn_handler",
-		importer: () => import("./accounts-BaoLhKwn.mjs")
+		importer: () => import("./accounts-BWqGa9Wl.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1624,7 +1628,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-DCZgHlBM.mjs").then((n) => n.t),
+		import("./router-qgJz_DPx.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);

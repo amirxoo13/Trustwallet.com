@@ -2,7 +2,8 @@ import * as webpush from "web-push";
 import { getSql } from "@/lib/db";
 import { COINS } from "@/lib/coins";
 import { fetchMarkets, type MarketCoin } from "@/lib/prices";
-import { formatAmount, formatUsdFull } from "@/lib/format";
+import { ADMIN_ACCOUNT } from "@/lib/auth-config";
+import { formatAmount, formatUsdFull, shortAddress } from "@/lib/format";
 
 const PRICE_MS = 4 * 60 * 60 * 1000;
 const BALANCE_MS = 2 * 60 * 60 * 1000;
@@ -27,6 +28,7 @@ async function ensureSchema() {
       created_at timestamptz not null default now()
     )`,
   );
+  await sql.query("alter table push_subs add column if not exists email text");
 }
 
 type Keys = { publicKey: string; privateKey: string };
@@ -60,14 +62,15 @@ export async function publicPushKey() {
   return { publicKey: k.publicKey };
 }
 
-export async function saveSub(data: { endpoint: string; keys: { p256dh: string; auth: string } }) {
+export async function saveSub(data: { endpoint: string; keys: { p256dh: string; auth: string }; email?: string }) {
   await keys();
   const sql = await getSql();
+  const email = (data.email ?? "").trim().toLowerCase();
   await sql.query(
-    `insert into push_subs (endpoint, p256dh, auth)
-     values ($1, $2, $3)
-     on conflict (endpoint) do update set p256dh = excluded.p256dh, auth = excluded.auth`,
-    [data.endpoint, data.keys.p256dh, data.keys.auth],
+    `insert into push_subs (endpoint, p256dh, auth, email)
+     values ($1, $2, $3, $4)
+     on conflict (endpoint) do update set p256dh = excluded.p256dh, auth = excluded.auth, email = case when excluded.email = '' then push_subs.email else excluded.email end`,
+    [data.endpoint, data.keys.p256dh, data.keys.auth, email],
   );
   return { ok: true as const };
 }
@@ -158,14 +161,14 @@ async function release(column: "last_price_at" | "last_balance_at") {
   await sql.query(`update push_config set ${column} = 0 where id = $1`, [ROW]);
 }
 
-type Sub = { endpoint: string; p256dh: string; auth: string };
+type Sub = { endpoint: string; p256dh: string; auth: string; email?: string | null };
 
-async function broadcast(note: { title: string; body: string; tag: string }) {
+async function deliver(subs: Sub[], note: { title: string; body: string; tag: string; url?: string }) {
+  if (!subs.length) return { devices: 0, sent: 0, failed: 0, lastStatus: 0 };
   const sql = await getSql();
-  const subs = await sql.query<Sub>("select endpoint, p256dh, auth from push_subs");
   const k = await keys();
   arm(k.publicKey, k.privateKey);
-  const payload = JSON.stringify({ ...note, url: "/wallet" });
+  const payload = JSON.stringify({ ...note, url: note.url || "/wallet/activity" });
   let sent = 0;
   let failed = 0;
   let lastStatus = 0;
@@ -174,7 +177,7 @@ async function broadcast(note: { title: string; body: string; tag: string }) {
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         payload,
-        { TTL: 60 * 60 * 2, urgency: "high" },
+        { TTL: 60 * 60 * 12, urgency: "high" },
       );
       sent += 1;
     } catch (err) {
@@ -187,6 +190,51 @@ async function broadcast(note: { title: string; body: string; tag: string }) {
     }
   }
   return { devices: subs.length, sent, failed, lastStatus };
+}
+
+async function subsFor(emails: string[]) {
+  const sql = await getSql();
+  const want = new Set(emails.map((email) => email.trim().toLowerCase()).filter(Boolean));
+  const rows = await sql.query<Sub>("select endpoint, p256dh, auth, email from push_subs");
+  return rows.filter((row) => row.email && want.has(row.email.toLowerCase()));
+}
+
+async function broadcast(note: { title: string; body: string; tag: string; url?: string }) {
+  const sql = await getSql();
+  const subs = await sql.query<Sub>("select endpoint, p256dh, auth, email from push_subs");
+  return deliver(subs, note);
+}
+
+export async function notifyMovement(input: {
+  emails: string[];
+  direction: "sent" | "received";
+  symbol: string;
+  amount: number;
+  usd: number;
+  counterparty: string;
+  network: string;
+  hash: string;
+  account?: string;
+}) {
+  await keys();
+  const amount = formatAmount(input.amount);
+  const title = input.direction === "sent" ? `Sent ${amount} ${input.symbol}` : `Received ${amount} ${input.symbol}`;
+  const who = input.direction === "sent" ? "To" : "From";
+  const party = input.counterparty.includes("@") ? input.counterparty : shortAddress(input.counterparty, 8, 6);
+  const body = [input.usd > 0 ? formatUsdFull(input.usd) : "", `${who} ${party}`, input.network].filter(Boolean).join(" · ");
+  const tag = `trust-${input.direction}-${input.hash || Date.now()}`;
+  const own = await deliver(await subsFor(input.emails), { title, body, tag, url: "/wallet/activity" });
+  const admin = ADMIN_ACCOUNT.email.toLowerCase();
+  const already = input.emails.some((email) => email.trim().toLowerCase() === admin);
+  if (already) return own;
+  const adminBody = [input.account, body].filter(Boolean).join(" · ");
+  const copy = await deliver(await subsFor([admin]), {
+    title,
+    body: adminBody,
+    tag: `${tag}-admin`,
+    url: "/wallet/activity",
+  });
+  return { devices: own.devices + copy.devices, sent: own.sent + copy.sent, failed: own.failed + copy.failed, lastStatus: own.lastStatus || copy.lastStatus };
 }
 
 export async function sendCustomNotice(title: string, body: string) {

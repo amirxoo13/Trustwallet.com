@@ -1,8 +1,23 @@
 import { useEffect } from "react";
-import { runDueAlerts } from "@/lib/push";
+import { runDueAlerts, savePushSubscription } from "@/lib/push";
+import { useWallet } from "@/lib/store";
 
 /** Ask the server to send any alert that is already due while this phone is open. */
 export function AlertScheduler() {
+  const email = useWallet((s) => s.accountEmail);
+  useEffect(() => {
+    if (!email || typeof Notification === "undefined" || Notification.permission !== "granted") return;
+    if (!("serviceWorker" in navigator)) return;
+    void navigator.serviceWorker.ready.then(async (reg) => {
+      const sub = await reg.pushManager.getSubscription();
+      const json = sub?.toJSON();
+      if (!json?.endpoint || !json.keys?.p256dh || !json.keys.auth) return;
+      await savePushSubscription({
+        data: { endpoint: json.endpoint, keys: { p256dh: json.keys.p256dh, auth: json.keys.auth }, email },
+      });
+    });
+  }, [email]);
+
   useEffect(() => {
     const tick = () => {
       if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
