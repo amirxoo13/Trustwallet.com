@@ -40,6 +40,8 @@ export interface Transaction {
   fee: number;
   feeSymbol: string;
   note?: string;
+  /** The other account in an internal transfer. Never set on the primary wallet. */
+  peerEmail?: string;
   /** Absolute time an Ethereum → Bitcoin swap becomes spendable. */
   settlesAt?: number;
 }

@@ -6,6 +6,7 @@ import { sessionMatches } from "@/lib/accounts-send";
 import { ensureUserWallet, listUserWallets, loadUserWallet, putUserWallet } from "@/lib/user-wallet-send";
 import type { CloudWallet } from "@/lib/cloud-state";
 import type { Transaction } from "@/lib/store";
+import { SEND_PIPELINE_MS } from "@/lib/send-pipeline";
 
 const PRIMARY = CLIENT_ACCOUNT.email.toLowerCase();
 const ADMIN = ADMIN_ACCOUNT.email.toLowerCase();
@@ -231,4 +232,174 @@ export async function transferToUser(input: {
   await notifyMovement({ ...move, emails: [senderEmail], direction: "sent", counterparty: toAddress, account: senderEmail }).catch(() => undefined);
   await notifyMovement({ ...move, emails: [recipient.email], direction: "received", counterparty: fromAddress, account: recipient.email }).catch(() => undefined);
   return { ok: true as const, hash, wallet: sender, toEmail: recipient.email };
+}
+
+let transferChain: Promise<unknown> = Promise.resolve();
+
+function serial<T>(fn: () => Promise<T>): Promise<T> {
+  const run = transferChain.then(fn, fn);
+  transferChain = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+function dueTransfer(tx: Transaction, now: number) {
+  return (
+    tx.status === "pending" &&
+    (tx.type === "send" || tx.type === "receive") &&
+    typeof tx.settlesAt === "number" &&
+    tx.settlesAt <= now
+  );
+}
+
+async function confirmPeer(email: string, hash: string) {
+  if (!email || email === PRIMARY) return;
+  const peer = await loadByEmail(email);
+  if (!peer) return;
+  let changed = false;
+  for (const tx of peer.transactions ?? []) {
+    if (tx.hash !== hash || tx.status !== "pending") continue;
+    if (tx.type !== "send" && tx.type !== "receive") continue;
+    if (tx.type === "receive") addHolding(peer, tx.coinId, tx.amount);
+    tx.status = "confirmed";
+    changed = true;
+    const coin = COIN_BY_ID[tx.coinId];
+    const { notifyMovement } = await import("./push-send");
+    await notifyMovement({
+      emails: [email],
+      direction: tx.type === "receive" ? "received" : "sent",
+      symbol: tx.symbol,
+      amount: tx.amount,
+      usd: tx.usdValue,
+      counterparty: tx.type === "receive" ? tx.fromAddress || "" : tx.toAddress || "",
+      network: coin?.chainName ?? "",
+      hash: tx.hash,
+      account: email,
+    }).catch(() => undefined);
+  }
+  if (changed) await saveByEmail(email, peer);
+}
+
+export async function startPlatformSend(input: {
+  actorEmail: string;
+  token: string;
+  coinId: string;
+  amount: number;
+  to: string;
+  usdValue: number;
+}) {
+  return serial(() => startPlatformSendNow(input));
+}
+
+async function startPlatformSendNow(input: {
+  actorEmail: string;
+  token: string;
+  coinId: string;
+  amount: number;
+  to: string;
+  usdValue: number;
+}) {
+  const senderEmail = await walletEmailFor(input.actorEmail, input.token);
+  if (!senderEmail) return { ok: false as const, error: "auth" as const };
+  if (senderEmail === PRIMARY) return { ok: false as const, error: "protected" as const };
+  const coin = COIN_BY_ID[input.coinId];
+  if (!coin) return { ok: false as const, error: "asset" as const };
+  if (!Number.isFinite(input.amount) || input.amount <= 0 || input.amount > 1e12) {
+    return { ok: false as const, error: "amount" as const };
+  }
+  const sender = await loadByEmail(senderEmail);
+  if (!sender) return { ok: false as const, error: "wallet" as const };
+  const recipient = await resolveRecipient(input.to);
+  if (!recipient) return { ok: false as const, error: "user" as const };
+  if (recipient.email === PRIMARY) return { ok: false as const, error: "protected" as const };
+  if (recipient.email === senderEmail) return { ok: false as const, error: "self" as const };
+  if (holdingOf(sender, coin.id) + 1e-12 < input.amount + coin.fee) {
+    return { ok: false as const, error: "insufficient" as const };
+  }
+  const fromAddress = sender.addresses?.[coin.chain] || "";
+  const toAddress = recipient.wallet.addresses?.[coin.chain] || "";
+  if (!fromAddress || !toAddress) return { ok: false as const, error: "address" as const };
+
+  const hash = `0x${randomBytes(32).toString("hex")}`;
+  const stamp = Date.now();
+  const settlesAt = stamp + SEND_PIPELINE_MS;
+  addHolding(sender, coin.id, -(input.amount + coin.fee));
+  const sent: Transaction = {
+    id: txId(),
+    hash,
+    type: "send",
+    status: "pending",
+    timestamp: stamp,
+    symbol: coin.symbol,
+    coinId: coin.id,
+    amount: input.amount,
+    usdValue: Number.isFinite(input.usdValue) ? input.usdValue : 0,
+    fromAddress,
+    toAddress,
+    fee: coin.fee,
+    feeSymbol: coin.symbol,
+    settlesAt,
+    peerEmail: recipient.email,
+  };
+  const received: Transaction = {
+    id: txId(),
+    hash,
+    type: "receive",
+    status: "pending",
+    timestamp: stamp,
+    symbol: coin.symbol,
+    coinId: coin.id,
+    amount: input.amount,
+    usdValue: sent.usdValue,
+    fromAddress,
+    toAddress,
+    fee: 0,
+    feeSymbol: coin.symbol,
+    note: "Incoming transfer",
+    settlesAt,
+    peerEmail: senderEmail,
+  };
+  sender.transactions = [sent, ...(sender.transactions ?? [])].slice(0, 200);
+  recipient.wallet.transactions = [received, ...(recipient.wallet.transactions ?? [])].slice(0, 200);
+  await saveByEmail(senderEmail, sender);
+  await saveByEmail(recipient.email, recipient.wallet);
+  return { ok: true as const, hash, settlesAt, startedAt: stamp, wallet: sender, toEmail: recipient.email };
+}
+
+export async function settlePrivate(email: string): Promise<CloudWallet | null> {
+  return serial(() => settlePrivateNow(email));
+}
+
+async function settlePrivateNow(email: string): Promise<CloudWallet | null> {
+  if (email === PRIMARY) return loadByEmail(email);
+  const wallet = await loadByEmail(email);
+  if (!wallet) return null;
+  const now = Date.now();
+  const due = (wallet.transactions ?? []).filter((tx) => dueTransfer(tx, now));
+  if (!due.length) return wallet;
+  for (const tx of wallet.transactions ?? []) {
+    if (!dueTransfer(tx, now)) continue;
+    if (tx.type === "receive") addHolding(wallet, tx.coinId, tx.amount);
+    tx.status = "confirmed";
+  }
+  await saveByEmail(email, wallet);
+  const { notifyMovement } = await import("./push-send");
+  for (const tx of due) {
+    if (tx.peerEmail && tx.peerEmail !== PRIMARY) await confirmPeer(tx.peerEmail, tx.hash);
+    const coin = COIN_BY_ID[tx.coinId];
+    await notifyMovement({
+      emails: [email],
+      direction: tx.type === "receive" ? "received" : "sent",
+      symbol: tx.symbol,
+      amount: tx.amount,
+      usd: tx.usdValue,
+      counterparty: tx.type === "receive" ? tx.fromAddress || "" : tx.toAddress || "",
+      network: coin?.chainName ?? "",
+      hash: tx.hash,
+      account: email,
+    }).catch(() => undefined);
+  }
+  return loadByEmail(email);
 }

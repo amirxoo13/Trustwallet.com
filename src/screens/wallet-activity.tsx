@@ -62,6 +62,9 @@ export function WalletActivityScreen() {
                             : ""}
                       </p>
                     ) : null}
+                    {tx.status === "pending" && tx.settlesAt && tx.type !== "swap" ? (
+                      <p className="mt-1 text-xs text-muted">Pending · {formatDuration(Math.max(0, tx.settlesAt - now))}</p>
+                    ) : null}
                     {tx.type === "receive" && tx.fromAddress ? (
                       <p className="mt-1 font-mono text-[11px] break-all text-muted">From {tx.fromAddress}</p>
                     ) : tx.toAddress ? (

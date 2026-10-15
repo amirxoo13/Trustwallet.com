@@ -263,6 +263,7 @@ function readTx(raw: unknown): Transaction | null {
     fee,
     feeSymbol: typeof row.feeSymbol === "string" ? row.feeSymbol.slice(0, 16) : "",
     note: typeof row.note === "string" ? row.note.slice(0, 200) : undefined,
+    peerEmail: typeof row.peerEmail === "string" ? row.peerEmail.slice(0, 80).toLowerCase() : undefined,
     settlesAt: typeof row.settlesAt === "number" && Number.isFinite(row.settlesAt) ? row.settlesAt : undefined,
   };
 }
@@ -337,6 +338,9 @@ export function mergeClientWallet(storedRaw: string, incoming: unknown): CloudWa
     if (!incoming) return prev;
     if (prev.status === "pending" && incoming.status === "confirmed" && prev.type === "swap" && prev.toCoinId && prev.toAmount) {
       holdings = addHolding(holdings, prev.toCoinId, prev.toAmount);
+      return { ...prev, status: "confirmed" as const };
+    }
+    if (prev.status === "pending" && incoming.status === "confirmed" && prev.type === "send") {
       return { ...prev, status: "confirmed" as const };
     }
     return prev;

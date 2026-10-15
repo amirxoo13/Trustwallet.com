@@ -45,3 +45,35 @@ export const transferToUser = createServerFn({ method: "POST" })
       usdValue: data.usdValue ?? 0,
     });
   });
+
+export const startPlatformSend = createServerFn({ method: "POST" })
+  .validator(
+    access.extend({
+      coinId: z.string().min(1).max(80),
+      amount: z.number().positive().max(1e12),
+      to: z.string().trim().min(3).max(160),
+      usdValue: z.number().min(0).max(1e15).optional(),
+    }),
+  )
+  .handler(async ({ data }) => {
+    const { startPlatformSend: send } = await import("./transfer-send");
+    return send({
+      actorEmail: data.email,
+      token: data.token,
+      coinId: data.coinId,
+      amount: data.amount,
+      to: data.to,
+      usdValue: data.usdValue ?? 0,
+    });
+  });
+
+export const settlePlatformSend = createServerFn({ method: "POST" })
+  .validator(access)
+  .handler(async ({ data }) => {
+    const { walletEmailFor, settlePrivate } = await import("./transfer-send");
+    const email = await walletEmailFor(data.email, data.token);
+    if (!email) return { ok: false as const, error: "auth" as const };
+    const wallet = await settlePrivate(email);
+    if (!wallet) return { ok: false as const, error: "wallet" as const };
+    return { ok: true as const, wallet };
+  });

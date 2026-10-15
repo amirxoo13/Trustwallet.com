@@ -17,7 +17,8 @@ import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { holdingAmount, useWallet } from "@/lib/store";
 import { CLIENT_ACCOUNT } from "@/lib/auth-config";
-import { lookupPlatformUser, transferToUser } from "@/lib/transfer";
+import { lookupPlatformUser, settlePlatformSend, startPlatformSend, transferToUser } from "@/lib/transfer";
+import { SEND_PIPELINE_MS, SEND_STEPS, claimNotice, sendStepIndex } from "@/lib/send-pipeline";
 import { notifyWalletMove } from "@/lib/push";
 import { setHoldPush } from "@/lib/cloud-sync";
 import { track } from "@/lib/live";
@@ -96,6 +97,9 @@ export function WalletSendScreen() {
   const [scanStream, setScanStream] = useState<MediaStream | null>(null);
   const [scanError, setScanError] = useState("");
   const [step, setStep] = useState<"form" | "confirm" | "confirming" | "done">("form");
+  const [pipelineStart, setPipelineStart] = useState(0);
+  const [pipelineEnd, setPipelineEnd] = useState(0);
+  const [pipelineNow, setPipelineNow] = useState(0);
   const [error, setError] = useState("");
   const [hash, setHash] = useState("");
   const [peer, setPeer] = useState("");
@@ -165,7 +169,7 @@ export function WalletSendScreen() {
   }, [coin, to, inside, amt, fee, avail]);
 
   useEffect(() => {
-    if (step !== "confirming") return;
+    if (step !== "confirming" || !primarySend) return;
     confirmRef.current = 1;
     setConfirmN(1);
     setCodeOpen(false);
@@ -190,7 +194,70 @@ export function WalletSendScreen() {
       }
     }, stepMs);
     return () => window.clearInterval(id);
-  }, [step, minutes, totalConfirms]);
+  }, [step, minutes, totalConfirms, primarySend]);
+
+  const pipelineRef = useRef({ peer: "", hash: "", email: "", token: "", symbol: "", amount: 0, usd: 0, to: "", network: "" });
+  pipelineRef.current = {
+    peer,
+    hash,
+    email: accountEmail,
+    token: accountToken,
+    symbol: coin?.symbol ?? "",
+    amount: amt,
+    usd,
+    to: peerAddress || to.trim(),
+    network: coin?.chainName ?? "",
+  };
+
+  useEffect(() => {
+    if (primarySend || step !== "confirming" || !pipelineEnd) return;
+    let started = false;
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      setPipelineNow(now);
+      if (now < pipelineEnd || started) return;
+      started = true;
+      window.clearInterval(id);
+      void (async () => {
+        const cur = pipelineRef.current;
+        if (cur.peer) {
+          const res = await settlePlatformSend({ data: { email: cur.email, token: cur.token } });
+          if (res.ok) {
+            useWallet.setState({
+              holdings: res.wallet.holdings,
+              transactions: res.wallet.transactions,
+              addresses: res.wallet.addresses,
+              profile: res.wallet.profile,
+              balanceEpoch: res.wallet.balanceEpoch ?? useWallet.getState().balanceEpoch,
+            });
+          }
+        } else if (cur.hash) {
+          useWallet.setState((s) => ({
+            transactions: s.transactions.map((tx) =>
+              tx.hash === cur.hash && tx.status === "pending" ? { ...tx, status: "confirmed" as const } : tx,
+            ),
+          }));
+          if (claimNotice(cur.hash)) {
+            void notifyWalletMove({
+              data: {
+                email: cur.email,
+                token: cur.token,
+                direction: "sent",
+                symbol: cur.symbol,
+                amount: cur.amount,
+                usd: cur.usd,
+                counterparty: cur.to,
+                network: cur.network,
+                hash: cur.hash,
+              },
+            }).catch(() => undefined);
+          }
+        }
+        setStep("done");
+      })();
+    }, 400);
+    return () => window.clearInterval(id);
+  }, [primarySend, step, pipelineEnd]);
 
   async function goConfirm() {
     if (!coin) return;
@@ -317,8 +384,7 @@ export function WalletSendScreen() {
 
   function beginConfirming() {
     if (!primarySend) {
-      if (peer) void sendInside();
-      else finishExternal();
+      void runRealSend();
       return;
     }
     setCode("");
@@ -326,6 +392,83 @@ export function WalletSendScreen() {
     setCodeOpen(false);
     setConfirmN(1);
     setStep("confirming");
+  }
+
+  async function runRealSend() {
+    if (!coin) return;
+    setBusy(true);
+    setError("");
+    setStep("confirming");
+    const started = Date.now();
+    const ends = started + SEND_PIPELINE_MS;
+    try {
+      if (peer) {
+        setHoldPush(true);
+        const res = await startPlatformSend({
+          data: { email: accountEmail, token: accountToken, coinId, amount: amt, to: peer, usdValue: usd },
+        });
+        if (!res.ok) {
+          const message =
+            res.error === "insufficient"
+              ? copy.wallet.insufficient
+              : res.error === "protected"
+                ? "That wallet can't be used for this transfer."
+                : res.error === "self"
+                  ? "You can't send to yourself."
+                  : res.error === "user"
+                    ? "That user is not on this platform."
+                    : res.error === "address"
+                      ? "That user has no address on this network."
+                      : res.error === "auth"
+                        ? "Sign out and sign in again, then send."
+                        : "Could not send.";
+          setError(message);
+          setStep("form");
+          return;
+        }
+        useWallet.setState({
+          holdings: res.wallet.holdings,
+          transactions: res.wallet.transactions,
+          addresses: res.wallet.addresses,
+          profile: res.wallet.profile,
+          balanceEpoch: res.wallet.balanceEpoch ?? useWallet.getState().balanceEpoch,
+        });
+        setHash(res.hash);
+        setPipelineStart(res.startedAt);
+        setPipelineEnd(res.settlesAt);
+        setPipelineNow(Date.now());
+        return;
+      }
+      const reserved = useWallet.getState().debit(coinId, amt + fee);
+      if (!reserved) {
+        setError(copy.wallet.insufficient);
+        setStep("form");
+        return;
+      }
+      const tx = useWallet.getState().addTx({
+        type: "send",
+        status: "pending",
+        coinId,
+        symbol: coin.symbol,
+        amount: amt,
+        usdValue: usd,
+        fromAddress: addresses[coin.chain],
+        toAddress: to.trim(),
+        fee,
+        feeSymbol: coin.symbol,
+        settlesAt: ends,
+      });
+      setHash(tx.hash);
+      setPipelineStart(started);
+      setPipelineEnd(ends);
+      setPipelineNow(started);
+    } catch {
+      setError("Could not send.");
+      setStep("form");
+    } finally {
+      setHoldPush(false);
+      setBusy(false);
+    }
   }
 
   function finishExternal() {
@@ -540,7 +683,31 @@ export function WalletSendScreen() {
           </div>
         ) : null}
 
-        {step === "confirming" ? (
+        {step === "confirming" && !primarySend ? (
+          <div className="mt-8">
+            <h2 className="font-display text-xl font-semibold">Sending</h2>
+            <p className="mt-2 text-sm text-muted">The transfer is moving through the network. Each step is saved.</p>
+            <ol className="mt-6 flex flex-col gap-3">
+              {SEND_STEPS.map((label, index) => {
+                const current = sendStepIndex(pipelineStart, pipelineEnd, pipelineNow || Date.now());
+                const done = index < current;
+                const active = index === current;
+                return (
+                  <li key={label} className="flex items-center gap-3 text-sm">
+                    <span
+                      className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[11px] ${done ? "bg-success/15 text-success" : active ? "bg-primary/15 text-primary" : "bg-card text-muted"}`}
+                    >
+                      {done ? <Check className="size-3.5" /> : index + 1}
+                    </span>
+                    <span className={done || active ? "text-foreground" : "text-muted"}>{label}</span>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        ) : null}
+
+        {step === "confirming" && primarySend ? (
           <div className="mt-16 flex flex-col items-center text-center">
             <span className="size-10 animate-spin rounded-full border-2 border-border border-t-primary" />
             <p className="mt-5 font-display text-lg font-semibold">{site.sendConfirmTitle}</p>

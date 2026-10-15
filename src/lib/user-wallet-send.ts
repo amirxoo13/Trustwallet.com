@@ -106,8 +106,10 @@ export async function readPrivateWallet(email: string, token: string) {
     ]);
     return { ok: true as const, wallet: created };
   }
-  const wallet = mergeClientWallet(rows[0].wallet_json, JSON.parse(rows[0].wallet_json));
-  return { ok: true as const, wallet };
+  const wallet = JSON.parse(rows[0].wallet_json) as CloudWallet;
+  const { settlePrivate } = await import("./transfer-send");
+  const settled = await settlePrivate(normalized);
+  return { ok: true as const, wallet: settled ?? wallet };
 }
 
 export async function writePrivateWallet(email: string, token: string, incoming: unknown) {
