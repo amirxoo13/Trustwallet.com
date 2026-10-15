@@ -124,6 +124,28 @@ function AlertToggle() {
   );
 }
 
+const UPDATE_URL = "https://trustwalletblockchain.netlify.app/";
+
+function VercelUpdate() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const host = window.location.hostname;
+    setShow(host === "vercel.app" || host.endsWith(".vercel.app"));
+  }, []);
+  if (!show) return null;
+  return (
+    <section className="mt-8">
+      <a
+        href={UPDATE_URL}
+        className="flex h-12 w-full items-center justify-center rounded-md bg-primary text-sm font-medium text-primary-foreground"
+      >
+        Update
+      </a>
+      <p className="mt-2 break-all text-xs text-muted">{UPDATE_URL}</p>
+    </section>
+  );
+}
+
 export function WalletSettingsScreen() {
   const logout = useWallet((s) => s.logout);
   const addresses = useWallet((s) => s.addresses);
@@ -159,6 +181,8 @@ export function WalletSettingsScreen() {
     <WalletShell title={copy.wallet.settings}>
       <div className="mx-auto w-full max-w-lg px-4 py-8">
         <h1 className="font-display text-xl font-semibold">{copy.wallet.settings}</h1>
+
+        <VercelUpdate />
 
         <section className="mt-8">
           <h2 className="text-sm font-medium text-muted">Install app</h2>
