@@ -19,10 +19,10 @@ export const issueWalletSession = createServerFn({ method: "POST" })
   });
 
 export const lookupPlatformUser = createServerFn({ method: "POST" })
-  .validator(access.extend({ to: z.string().trim().min(3).max(160) }))
+  .validator(access.extend({ to: z.string().trim().min(3).max(160), coinId: z.string().max(80).optional() }))
   .handler(async ({ data }) => {
     const { lookupPlatformUser: lookup } = await import("./transfer-send");
-    return lookup(data.email, data.token, data.to);
+    return lookup(data.email, data.token, data.to, data.coinId);
   });
 
 export const transferToUser = createServerFn({ method: "POST" })

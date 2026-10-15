@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight, Plus } from "lucide-react";
 import { WalletShell } from "@/components/wallet-shell";
-import { formatAmount, formatDuration, formatTime, formatUsdFull, shortAddress } from "@/lib/format";
+import { formatAmount, formatDuration, formatTime, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useWallet, type TxType } from "@/lib/store";
 import { cn } from "@/lib/utils";
@@ -62,8 +62,15 @@ export function WalletActivityScreen() {
                             : ""}
                       </p>
                     ) : null}
-                    {tx.toAddress ? (
-                      <p className="mt-1 font-mono text-[11px] text-muted">{shortAddress(tx.toAddress, 10, 8)}</p>
+                    {tx.type === "receive" && tx.fromAddress ? (
+                      <p className="mt-1 font-mono text-[11px] break-all text-muted">From {tx.fromAddress}</p>
+                    ) : tx.toAddress ? (
+                      <p className="mt-1 font-mono text-[11px] break-all text-muted">{tx.toAddress}</p>
+                    ) : null}
+                    {tx.fee ? (
+                      <p className="mt-1 text-[11px] text-muted">
+                        Fee {formatAmount(tx.fee)} {tx.feeSymbol || tx.symbol}
+                      </p>
                     ) : null}
                     <p className="mt-1 break-all font-mono text-[10px] text-muted">{tx.hash}</p>
                   </div>

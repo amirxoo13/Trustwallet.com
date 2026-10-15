@@ -1,1 +1,0 @@
-import{M as e,a as t}from"./index-C8h34Ce9.js";var n=t({method:`POST`}).handler(e(`6603960311799039959ec4798f963eec073d7f063e137fb243639220cbe56851`)),r=t({method:`POST`}).handler(e(`f8756a4396611e96f9afaa78d95ec562ca08a184a111bce0a5c44bb03dc7b136`));export{n as loadPrivateWallet,r as savePrivateWallet};

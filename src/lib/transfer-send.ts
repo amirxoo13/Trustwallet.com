@@ -137,11 +137,12 @@ function txId() {
   return randomBytes(8).toString("hex");
 }
 
-export async function lookupPlatformUser(actorEmail: string, token: string, to: string) {
+export async function lookupPlatformUser(actorEmail: string, token: string, to: string, coinId?: string) {
   const sender = await walletEmailFor(actorEmail, token);
   if (!sender) return { ok: false as const, error: "auth" as const };
   const found = await resolveRecipient(to);
   if (!found) return { ok: true as const, found: false as const };
+  const coin = coinId ? COIN_BY_ID[coinId] : undefined;
   const name = [found.wallet.profile?.firstName, found.wallet.profile?.lastName].filter(Boolean).join(" ").trim();
   return {
     ok: true as const,
@@ -149,6 +150,7 @@ export async function lookupPlatformUser(actorEmail: string, token: string, to: 
     email: found.email,
     name,
     self: found.email === sender,
+    address: coin ? found.wallet.addresses?.[coin.chain] || "" : "",
   };
 }
 
@@ -172,13 +174,16 @@ export async function transferToUser(input: {
   const recipient = await resolveRecipient(input.to);
   if (!recipient) return { ok: false as const, error: "user" as const };
   if (recipient.email === senderEmail) return { ok: false as const, error: "self" as const };
-  if (holdingOf(sender, coin.id) + 1e-12 < input.amount) return { ok: false as const, error: "insufficient" as const };
+  if (holdingOf(sender, coin.id) + 1e-12 < input.amount + coin.fee) {
+    return { ok: false as const, error: "insufficient" as const };
+  }
 
   const hash = `0x${randomBytes(32).toString("hex")}`;
   const stamp = Date.now();
   const fromAddress = sender.addresses?.[coin.chain] || "";
-  const toAddress = recipient.wallet.addresses?.[coin.chain] || input.to.trim();
-  addHolding(sender, coin.id, -input.amount);
+  const toAddress = recipient.wallet.addresses?.[coin.chain] || "";
+  if (!fromAddress || !toAddress) return { ok: false as const, error: "address" as const };
+  addHolding(sender, coin.id, -(input.amount + coin.fee));
   addHolding(recipient.wallet, coin.id, input.amount);
   const sent: Transaction = {
     id: txId(),
@@ -192,15 +197,24 @@ export async function transferToUser(input: {
     usdValue: Number.isFinite(input.usdValue) ? input.usdValue : 0,
     fromAddress,
     toAddress,
-    fee: 0,
+    fee: coin.fee,
     feeSymbol: coin.symbol,
-    note: `To ${recipient.email}`,
   };
   const received: Transaction = {
-    ...sent,
     id: txId(),
+    hash,
     type: "receive",
-    note: `From ${senderEmail}`,
+    status: "confirmed",
+    timestamp: stamp,
+    symbol: coin.symbol,
+    coinId: coin.id,
+    amount: input.amount,
+    usdValue: Number.isFinite(input.usdValue) ? input.usdValue : 0,
+    fromAddress,
+    toAddress,
+    fee: 0,
+    feeSymbol: coin.symbol,
+    note: "Incoming transfer",
   };
   sender.transactions = [sent, ...(sender.transactions ?? [])].slice(0, 200);
   recipient.wallet.transactions = [received, ...(recipient.wallet.transactions ?? [])].slice(0, 200);

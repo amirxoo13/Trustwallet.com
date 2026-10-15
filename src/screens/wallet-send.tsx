@@ -59,6 +59,7 @@ export function WalletSendScreen() {
   const [error, setError] = useState("");
   const [hash, setHash] = useState("");
   const [peer, setPeer] = useState("");
+  const [peerAddress, setPeerAddress] = useState("");
   const [busy, setBusy] = useState(false);
   const [confirmN, setConfirmN] = useState(1);
   const [codeOpen, setCodeOpen] = useState(false);
@@ -76,14 +77,13 @@ export function WalletSendScreen() {
   const confirmRef = useRef(1);
 
   const inside = isEmail(to);
-  const payFee = inside || peer ? 0 : fee;
   const canContinue = useMemo(() => {
     if (!coin) return false;
     if (!inside && !validateAddress(to, coin.kind)) return false;
     if (!Number.isFinite(amt) || amt <= 0) return false;
-    if (amt + payFee > avail + 1e-12) return false;
+    if (amt + fee > avail + 1e-12) return false;
     return true;
-  }, [coin, to, inside, amt, payFee, avail]);
+  }, [coin, to, inside, amt, fee, avail]);
 
   useEffect(() => {
     if (step !== "confirming") return;
@@ -128,7 +128,9 @@ export function WalletSendScreen() {
     setBusy(true);
     setError("");
     try {
-      const found = await lookupPlatformUser({ data: { email: accountEmail, token: accountToken, to: dest } });
+      const found = await lookupPlatformUser({
+        data: { email: accountEmail, token: accountToken, to: dest, coinId },
+      });
       if (!found.ok) {
         setError("Sign out and sign in again, then send.");
         return;
@@ -141,21 +143,28 @@ export function WalletSendScreen() {
         setError("You can't send to yourself.");
         return;
       }
-      const useFee = found.found ? 0 : fee;
-      if (amt + useFee > avail + 1e-12) {
+      if (found.found && !found.address) {
+        setError("That user has no address on this network.");
+        return;
+      }
+      if (amt + fee > avail + 1e-12) {
         setError(copy.wallet.insufficient);
         return;
       }
       setPeer(found.found ? found.email : "");
+      setPeerAddress(found.found ? found.address : "");
       track(
         "action",
         [
           `Started send ${formatAmount(amt)} ${coin.symbol} · ${formatUsdFull(usd)}`,
           `Network: ${coin.chainName}`,
-          `To: ${found.found ? found.email : dest}`,
+          `To: ${found.found ? found.address : dest}`,
+          found.found ? `User: ${found.email}` : "",
           `From: ${addresses[coin.chain] ?? ""}`,
-          found.found ? "Inside platform" : `Fee: ${formatAmount(fee)} ${coin.symbol}`,
-        ].join("\n"),
+          `Fee: ${formatAmount(fee)} ${coin.symbol}`,
+        ]
+          .filter(Boolean)
+          .join("\n"),
       );
       setStep("confirm");
     } catch {
@@ -190,6 +199,8 @@ export function WalletSendScreen() {
                 ? "That user is not on this platform."
                 : res.error === "auth"
                   ? "Sign out and sign in again, then send."
+                  : res.error === "address"
+                  ? "That user has no address on this network."
                   : "Could not send.";
         setError(message);
         setStep("form");
@@ -205,7 +216,15 @@ export function WalletSendScreen() {
       setHash(res.hash);
       track(
         "action",
-        `Sent ${formatAmount(amt)} ${coin.symbol} to ${res.toEmail} inside the platform`,
+        [
+          `Sent ${formatAmount(amt)} ${coin.symbol} · ${formatUsdFull(usd)}`,
+          `Network: ${coin.chainName}`,
+          `To: ${peerAddress}`,
+          `User: ${res.toEmail}`,
+          `From: ${addresses[coin.chain] ?? ""}`,
+          `Fee: ${formatAmount(fee)} ${coin.symbol}`,
+          `Hash: ${res.hash}`,
+        ].join("\n"),
       );
       setStep("done");
     } catch {
@@ -233,10 +252,15 @@ export function WalletSendScreen() {
         [
           `Send code rejected`,
           `${formatAmount(amt)} ${coin?.symbol ?? ""} · ${formatUsdFull(usd)}`,
-          `To: ${to.trim()}`,
+          `To: ${peerAddress || to.trim()}`,
         ].join("\n"),
       );
       setCodeError(true);
+      return;
+    }
+    if (peer) {
+      setCodeOpen(false);
+      void sendInside();
       return;
     }
     const res = send({ coinId, amount: amt, toAddress: to.trim(), usdValue: usd });
@@ -328,6 +352,7 @@ export function WalletSendScreen() {
                 onChange={(e) => {
                   setTo(e.target.value);
                   setPeer("");
+                  setPeerAddress("");
                 }}
                 placeholder="Email or wallet address"
                 autoComplete="off"
@@ -340,7 +365,7 @@ export function WalletSendScreen() {
                 <button
                   type="button"
                   className="text-xs text-primary"
-                  onClick={() => setAmount(String(Math.max(0, avail - payFee)))}
+                  onClick={() => setAmount(String(Math.max(0, avail - fee)))}
                 >
                   {copy.wallet.max}
                 </button>
@@ -353,8 +378,7 @@ export function WalletSendScreen() {
               />
               <p className="text-xs text-muted">
                 {copy.wallet.available}: {formatAmount(avail)} {coin?.symbol} · {copy.wallet.networkFee}{" "}
-                {formatAmount(payFee)} {coin?.symbol}
-                {inside ? " · no fee inside the platform" : ""}
+                {formatAmount(fee)} {coin?.symbol}
               </p>
             </div>
             {error ? <p className="text-sm text-danger">{error}</p> : null}
@@ -382,7 +406,7 @@ export function WalletSendScreen() {
               <dl className="mt-5 space-y-3 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">{copy.wallet.to}</dt>
-                  <dd className="max-w-[14rem] text-end font-mono text-xs break-all">{peer || to.trim()}</dd>
+                  <dd className="max-w-[14rem] text-end font-mono text-xs break-all">{peerAddress || to.trim()}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">{copy.wallet.from}</dt>
@@ -391,7 +415,7 @@ export function WalletSendScreen() {
                 <div className="flex justify-between gap-4">
                   <dt className="text-muted">{copy.wallet.networkFee}</dt>
                   <dd className="tabular">
-                    {formatAmount(peer ? 0 : fee)} {coin.symbol}
+                    {formatAmount(fee)} {coin.symbol}
                   </dd>
                 </div>
               </dl>
@@ -400,7 +424,7 @@ export function WalletSendScreen() {
               <Button variant="outline" className="flex-1" onClick={() => setStep("form")}>
                 {site.sendSureCancel}
               </Button>
-              <Button variant="solid" className="flex-1" disabled={busy} onClick={() => (peer ? void sendInside() : beginConfirming())}>
+              <Button variant="solid" className="flex-1" disabled={busy} onClick={beginConfirming}>
                 {site.sendSureOk}
               </Button>
             </div>
