@@ -1,4 +1,4 @@
-import { n as createServerFn } from "./ssr.mjs";
+import { t as createServerFn } from "./ssr.mjs";
 import { t as ADMIN_ACCOUNT } from "./auth-config-4kiC0rE-.mjs";
 import { t as createServerRpc } from "./createServerRpc-A6pJPYTF.mjs";
 import { o as object, r as boolean, s as string } from "../_libs/zod.mjs";

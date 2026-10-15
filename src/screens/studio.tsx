@@ -525,7 +525,7 @@ function AccountsPanel() {
   return (
     <div className="mt-8 grid max-w-lg gap-3">
       <p className="text-sm text-muted">
-        Anyone can create an account from the sign-in page. They enter the same wallet. Passwords are not shown here.
+        Each extra email has its own empty wallet. The balances and profile on this panel belong only to the original client account.
       </p>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
       {rows.length === 0 ? <p className="text-sm text-muted">No extra accounts yet.</p> : null}

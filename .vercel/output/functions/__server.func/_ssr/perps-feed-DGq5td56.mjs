@@ -1,4 +1,4 @@
-import { n as createServerFn } from "./ssr.mjs";
+import { t as createServerFn } from "./ssr.mjs";
 import { t as createServerRpc } from "./createServerRpc-A6pJPYTF.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/perps-feed-DGq5td56.js
 function num(v) {

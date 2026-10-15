@@ -67,6 +67,7 @@ interface WalletState {
   scenario: ScenarioCode | null;
   /** Email used to sign in. Kept off the shared profile so each login stays distinct. */
   accountEmail: string;
+  accountToken: string;
   hideBalances: boolean;
   addresses: WalletAddresses;
   holdings: Holding[];
@@ -155,6 +156,7 @@ export const useWallet = create<WalletState>()(
       role: null,
       scenario: null,
       accountEmail: "",
+      accountToken: "",
       hideBalances: false,
       addresses: {},
       holdings: STARTER_HOLDINGS.map((h) => ({ ...h })),
@@ -171,34 +173,44 @@ export const useWallet = create<WalletState>()(
             authenticated: true,
             role: "admin",
             accountEmail: e,
+            accountToken: "",
             addresses: ensureWalletAddresses(s.addresses),
           }));
           return { ok: true };
         }
 
-        const enterClient = () => {
+        if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
           clearAdminProof();
           set((s) => ({
             authenticated: true,
             role: "client",
             accountEmail: e,
+            accountToken: "",
             addresses: ensureWalletAddresses(s.addresses),
             profile: {
               ...s.profile,
-              email: s.profile.email || e,
+              email: s.profile.email || CLIENT_ACCOUNT.email,
             },
           }));
-        };
-
-        if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
-          enterClient();
           return { ok: true };
         }
 
         const { loginAccount } = await import("@/lib/accounts");
         const registered = await loginAccount({ data: { email: e, password: p } });
         if (registered.ok) {
-          enterClient();
+          clearAdminProof();
+          set({
+            authenticated: true,
+            role: "client",
+            accountEmail: e,
+            accountToken: registered.token,
+            scenario: null,
+            holdings: COINS.map((coin) => ({ id: coin.id, amount: 0 })),
+            transactions: [],
+            addresses: {},
+            profile: emptyProfile(e),
+            balanceEpoch: BALANCE_EPOCH,
+          });
           return { ok: true };
         }
 
@@ -206,7 +218,7 @@ export const useWallet = create<WalletState>()(
       },
       logout: () => {
         clearAdminProof();
-        set({ authenticated: false, role: null });
+        set({ authenticated: false, role: null, accountToken: "" });
       },
       toggleHideBalances: () => set((s) => ({ hideBalances: !s.hideBalances })),
       setProfile: (profile) => set({ profile }),
@@ -418,6 +430,7 @@ export const useWallet = create<WalletState>()(
         role: s.role,
         scenario: s.scenario,
         accountEmail: s.accountEmail,
+        accountToken: s.accountToken,
         hideBalances: s.hideBalances,
         addresses: s.addresses,
         holdings: s.holdings,

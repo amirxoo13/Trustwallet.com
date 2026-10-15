@@ -105,7 +105,7 @@ var HEADERS = { TSS_SHELL: "X-TSS_SHELL" };
 * the dev styles URL for route-scoped CSS collection.
 */
 async function getStartManifest(matchedRoutes) {
-	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-WyNw5PDA.mjs");
+	const { tsrStartManifest } = await import("../_tanstack-start-manifest_v-Bh3LNyWu.mjs");
 	const startManifest = tsrStartManifest();
 	let routes = startManifest.routes;
 	routes[rootRouteId];
@@ -127,7 +127,7 @@ async function getStartManifest(matchedRoutes) {
 var manifest = {
 	"0a3a31ef8d72227d6bd92913e3ba595e2c18c91e004f29697a40e74fa133dc61": {
 		functionName: "loginAccount_createServerFn_handler",
-		importer: () => import("./accounts-BtOuCVP8.mjs")
+		importer: () => import("./accounts-BxGQgkxi.mjs")
 	},
 	"11ec7de365bdde6f12d22455d07d0d753573eda0ecb113d397b0b368b4a6e3a7": {
 		functionName: "loadPerpMarkets_createServerFn_handler",
@@ -136,6 +136,10 @@ var manifest = {
 	"3d2051cb90a55435d54f5847d45a670477b6c41405b57a4cad07c56b867c46b3": {
 		functionName: "runDueAlerts_createServerFn_handler",
 		importer: () => import("./push-9ST8THb_.mjs")
+	},
+	"6603960311799039959ec4798f963eec073d7f063e137fb243639220cbe56851": {
+		functionName: "loadPrivateWallet_createServerFn_handler",
+		importer: () => import("./user-wallet-ZX0kkJrx.mjs")
 	},
 	"688c0e3af0c7303246e9b191db7eaa9de817b0331cc83a042f6d8af51927109e": {
 		functionName: "pushLive_createServerFn_handler",
@@ -167,7 +171,7 @@ var manifest = {
 	},
 	"ab60c23c91fab59ff77783f5d4059afb41a180f436c118ef91d1e31d608b3e10": {
 		functionName: "listAccounts_createServerFn_handler",
-		importer: () => import("./accounts-BtOuCVP8.mjs")
+		importer: () => import("./accounts-BxGQgkxi.mjs")
 	},
 	"aba863cbc688183602b1be638b3b33024a9854be43db61e6965193981c2ea8a8": {
 		functionName: "loadAppStateMeta_createServerFn_handler",
@@ -183,15 +187,19 @@ var manifest = {
 	},
 	"f4cba9f0834f2cf2c61d11c13f67f14aa678095d221a819f81a095a13cf566ef": {
 		functionName: "removeAccount_createServerFn_handler",
-		importer: () => import("./accounts-BtOuCVP8.mjs")
+		importer: () => import("./accounts-BxGQgkxi.mjs")
 	},
 	"f6c8836b3c3e7799e8b55ef81110225243a1e240e9bae5adbdadee48470f5e6c": {
 		functionName: "saveAppState_createServerFn_handler",
 		importer: () => import("./cloud-state-B6fzTsbF.mjs")
 	},
+	"f8756a4396611e96f9afaa78d95ec562ca08a184a111bce0a5c44bb03dc7b136": {
+		functionName: "savePrivateWallet_createServerFn_handler",
+		importer: () => import("./user-wallet-ZX0kkJrx.mjs")
+	},
 	"fcbe4a60460a43abff125ae3ddf2d30033047b670f6acc38bcbcde5028fe70f6": {
 		functionName: "registerAccount_createServerFn_handler",
-		importer: () => import("./accounts-BtOuCVP8.mjs")
+		importer: () => import("./accounts-BxGQgkxi.mjs")
 	}
 };
 async function getServerFnById(id, access) {
@@ -1596,7 +1604,7 @@ var getBaseManifest = getProdBaseManifest;
 var createEarlyHintsForRequest = createEarlyHintsCollector;
 async function loadEntries() {
 	const [routerEntry, startEntry, pluginAdapters] = await Promise.all([
-		import("./router-ery-WKQQ.mjs").then((n) => n.t),
+		import("./router-B9Cliijw.mjs").then((n) => n.t),
 		import("./start-5Z2QO8AU.mjs"),
 		import("./empty-plugin-adapters-D9UWiqvJ.mjs")
 	]);
@@ -2061,4 +2069,4 @@ function createServerEntry(entry) {
 }
 var server_default = createServerEntry({ fetch });
 //#endregion
-export { ssr_exports as i, createServerFn as n, getServerFnById as r, TSS_SERVER_FUNCTION as t };
+export { createServerEntry, server_default as default, ssr_exports as i, TSS_SERVER_FUNCTION as n, getServerFnById as r, createServerFn as t };

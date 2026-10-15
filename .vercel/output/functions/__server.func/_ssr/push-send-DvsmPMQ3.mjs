@@ -1,6 +1,6 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { t as getSql } from "./db-je3bFDRl.mjs";
 import { o as formatUsdFull, t as formatAmount } from "./format-DuRhJ10K.mjs";
+import { t as getSql } from "./db-je3bFDRl.mjs";
 import { t as COINS } from "./coins-Kac_SJvS.mjs";
 import { i as fetchMarkets } from "./prices-7icuP-SQ.mjs";
 import { t as require_src } from "../_libs/web-push.mjs";

@@ -18,8 +18,7 @@ export const loginAccount = createServerFn({ method: "POST" })
   .validator(credentials)
   .handler(async ({ data }) => {
     const { matchAccount } = await import("./accounts-send");
-    const ok = await matchAccount(data.email, data.password);
-    return { ok };
+    return matchAccount(data.email, data.password);
   });
 
 export const listAccounts = createServerFn({ method: "POST" })

@@ -1,1 +1,0 @@
-import{E as e}from"./index-Dm4EJ7z_.js";var t=e(`arrow-down-left`,[[`path`,{d:`M17 7 7 17`,key:`15tmo1`}],[`path`,{d:`M17 17H7V7`,key:`1org7z`}]]);export{t};

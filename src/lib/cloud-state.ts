@@ -251,7 +251,7 @@ function baseHoldings(stored: Record<string, unknown>): Holding[] {
 }
 
 /** Client may update their profile and apply send/swap/buy. They cannot rewrite balances or site content. */
-function mergeClientWallet(storedRaw: string, incoming: unknown): CloudWallet {
+export function mergeClientWallet(storedRaw: string, incoming: unknown): CloudWallet {
   const stored = parseObj(storedRaw);
   const next = asRecord(incoming);
   const prevProfile = readProfile(stored.profile, emptyProfile());

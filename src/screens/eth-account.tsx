@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { WalletShell } from "@/components/wallet-shell";
 import { Button } from "@/components/ui/button";
+import { CLIENT_ACCOUNT } from "@/lib/auth-config";
+import { useWallet } from "@/lib/store";
 
 const ADDRESS = "0x7a91e803Db0E58b6Fecc4E42c86B366778475E3c";
 const ETH_BALANCE = "80,001.289956746261423 ETH";
@@ -9,7 +12,24 @@ const ETH_VALUE = "$201,520,849.36";
 const ETH_PRICE = "@ $2,518.97/ETH";
 
 export function EthAccountScreen() {
+  const accountEmail = useWallet((s) => s.accountEmail);
+  const role = useWallet((s) => s.role);
+  const allowed = role === "admin" || accountEmail === CLIENT_ACCOUNT.email.toLowerCase();
   const [copied, setCopied] = useState(false);
+
+  if (!allowed) {
+    return (
+      <WalletShell title="Ethereum">
+        <div className="mx-auto w-full max-w-lg px-4 py-8">
+          <h1 className="font-display text-2xl font-semibold">Ethereum</h1>
+          <p className="mt-3 text-sm text-muted">This account is empty.</p>
+          <Button asChild variant="outline" className="mt-6">
+            <Link to="/wallet">Back</Link>
+          </Button>
+        </div>
+      </WalletShell>
+    );
+  }
 
   async function copyAddress() {
     try {

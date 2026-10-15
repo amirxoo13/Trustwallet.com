@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { PwaInstall } from "@/components/pwa-install";
 import { WalletShell } from "@/components/wallet-shell";
 import { hasAdminProof } from "@/lib/admin-proof";
-import { demoSeedPhrase } from "@/lib/addresses";
+import { WALLET_CODES, demoSeedPhrase } from "@/lib/addresses";
 import { shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { getPushPublicKey, removePushSubscription, runDueAlerts, savePushSubscription } from "@/lib/push";
@@ -207,6 +207,40 @@ export function WalletSettingsScreen() {
             )}
           </DialogContent>
         </Dialog>
+
+        <section className="mt-10">
+          <h2 className="text-sm font-medium text-muted">Wallet codes</h2>
+          <p className="mt-2 text-xs text-muted">13 codes generated for this account only.</p>
+          <div className="mt-3 grid gap-2">
+            {WALLET_CODES.map((spec) => {
+              const code = addresses[spec.chain] || "";
+              return (
+                <div key={spec.chain} className="rounded-xl bg-card px-4 py-3 shadow-border">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm">{spec.label}</span>
+                    <button
+                      type="button"
+                      className="text-xs text-primary"
+                      data-private
+                      onClick={() => {
+                        if (!code) return;
+                        void navigator.clipboard.writeText(code).then(
+                          () => toast.success("Code copied"),
+                          () => toast.error("Could not copy the code."),
+                        );
+                      }}
+                    >
+                      Copy
+                    </button>
+                  </div>
+                  <p data-private className="mt-1 font-mono text-[12px] leading-relaxed break-all">
+                    {code || "Generating…"}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
         <section className="mt-10">
           <h2 className="text-sm font-medium text-muted">{copy.wallet.addresses}</h2>

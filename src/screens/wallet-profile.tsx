@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { WalletShell } from "@/components/wallet-shell";
+import { CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { t } from "@/lib/i18n";
 import { useWallet, type Profile } from "@/lib/store";
 
@@ -54,6 +55,9 @@ export function WalletProfileScreen() {
   const profile = useWallet((s) => s.profile);
   const setProfile = useWallet((s) => s.setProfile);
   const logout = useWallet((s) => s.logout);
+  const accountEmail = useWallet((s) => s.accountEmail);
+  const role = useWallet((s) => s.role);
+  const ownWallet = role === "admin" || accountEmail === CLIENT_ACCOUNT.email.toLowerCase();
   const copy = t();
   const navigate = useNavigate();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -116,21 +120,25 @@ export function WalletProfileScreen() {
             {copy.wallet.logout}
           </Button>
         </div>
-        <div className="mt-6 flex flex-col gap-3">
-          {EXPLORERS.map((item) => (
-            <Button key={item.name} asChild variant="outline" size="lg" className="w-full">
-              <a href={item.href} target="_blank" rel="noopener noreferrer">
-                {item.name}
-              </a>
+        {ownWallet ? (
+          <div className="mt-6 flex flex-col gap-3">
+            {EXPLORERS.map((item) => (
+              <Button key={item.name} asChild variant="outline" size="lg" className="w-full">
+                <a href={item.href} target="_blank" rel="noopener noreferrer">
+                  {item.name}
+                </a>
+              </Button>
+            ))}
+          </div>
+        ) : null}
+        {ownWallet ? (
+          <section className="mt-8">
+            <h2 className="text-sm font-medium text-muted">Second account</h2>
+            <Button asChild variant="solid" size="lg" className="mt-3 w-full">
+              <Link to="/wallet/ethereum">Ethereum</Link>
             </Button>
-          ))}
-        </div>
-        <section className="mt-8">
-          <h2 className="text-sm font-medium text-muted">Second account</h2>
-          <Button asChild variant="solid" size="lg" className="mt-3 w-full">
-            <Link to="/wallet/ethereum">Ethereum</Link>
-          </Button>
-        </section>
+          </section>
+        ) : null}
         <div className="mt-6 grid gap-4">
           <label className="flex flex-col gap-2">
             <Label>{copy.profile.first}</Label>

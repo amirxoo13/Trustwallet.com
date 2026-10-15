@@ -64,6 +64,28 @@ export function addressHint(coin: CoinMeta): string {
   }
 }
 
+export const WALLET_CODES: { chain: string; label: string; kind: AddressKind }[] = [
+  { chain: "btc", label: "Bitcoin", kind: "btc" },
+  { chain: "eth", label: "Ethereum", kind: "evm" },
+  { chain: "trc20", label: "USDT TRC20", kind: "tron" },
+  { chain: "bnb", label: "BNB Smart Chain", kind: "evm" },
+  { chain: "sol", label: "Solana", kind: "sol" },
+  { chain: "xrp", label: "XRP", kind: "xrp" },
+  { chain: "ada", label: "Cardano", kind: "btc" },
+  { chain: "doge", label: "Dogecoin", kind: "btc" },
+  { chain: "ton", label: "TON", kind: "ton" },
+  { chain: "trx", label: "TRON", kind: "tron" },
+  { chain: "avax", label: "Avalanche", kind: "evm" },
+  { chain: "ltc", label: "Litecoin", kind: "btc" },
+  { chain: "pol", label: "Polygon", kind: "evm" },
+];
+
+export function generateWalletCodes(): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const spec of WALLET_CODES) out[spec.chain] = generateAddress(spec.kind);
+  return out;
+}
+
 const SEED_WORDS = [
   "unfold",
   "unusual",

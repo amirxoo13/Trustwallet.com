@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { BALANCE_EPOCH, STARTER_HOLDINGS } from "@/lib/coins";
+import { CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { hasAdminProof, adminProof } from "@/lib/admin-proof";
 import { SITE_DEFAULTS, renameAurexToTrust, useSite, type SiteContent } from "@/lib/site-store";
 import { useLoginWindow } from "@/lib/login-window";
@@ -30,6 +31,66 @@ let lastLoginKey = "";
 let lastUpdatedAt: string | null = null;
 let quietUntil = 0;
 let inflight: Promise<void> | null = null;
+let holdPush = false;
+
+export function setHoldPush(next: boolean) {
+  holdPush = next;
+}
+
+function isPrivateClient() {
+  const wallet = useWallet.getState();
+  return (
+    wallet.role === "client" &&
+    Boolean(wallet.accountEmail) &&
+    wallet.accountEmail !== CLIENT_ACCOUNT.email.toLowerCase()
+  );
+}
+
+function blankPrivateState() {
+  const email = useWallet.getState().accountEmail;
+  useWallet.setState({
+    holdings: STARTER_HOLDINGS.map((holding) => ({ id: holding.id, amount: 0 })),
+    transactions: [],
+    addresses: {},
+    scenario: null,
+    profile: {
+      firstName: "",
+      lastName: "",
+      email,
+      address: "",
+      phone: "",
+      nationalId: "",
+      licensePhoto: null,
+    },
+    balanceEpoch: BALANCE_EPOCH,
+  });
+}
+
+async function pullPrivateWallet() {
+  const wallet = useWallet.getState();
+  if (!wallet.accountToken) {
+    useWallet.setState({ authenticated: false, role: null, accountToken: "" });
+    blankPrivateState();
+    return;
+  }
+  const { loadPrivateWallet } = await import("@/lib/user-wallet");
+  const res = await loadPrivateWallet({ data: { email: wallet.accountEmail, token: wallet.accountToken } });
+  if (!res.ok || !res.wallet) return;
+  applying = true;
+  try {
+    useWallet.setState({
+      profile: res.wallet.profile,
+      holdings: res.wallet.holdings,
+      transactions: res.wallet.transactions,
+      addresses: ensureWalletAddresses(res.wallet.addresses),
+      scenario: null,
+      balanceEpoch: BALANCE_EPOCH,
+    });
+    lastWalletKey = JSON.stringify(walletSnapshot());
+  } finally {
+    applying = false;
+  }
+}
 
 function siteSnapshot(): SiteContent {
   const s = useSite.getState();
@@ -125,7 +186,7 @@ function rememberLocal() {
 
 async function pushToCloud(forceLogin = false) {
   if (forceLogin) pendingForce = true;
-  if (!ready || applying || pushing) return;
+  if (!ready || applying || pushing || holdPush) return;
   pushing = true;
   const force = pendingForce;
   pendingForce = false;
@@ -141,6 +202,32 @@ async function pushToCloud(forceLogin = false) {
     const walletChanged = walletKey !== lastWalletKey;
     const loginChanged = loginKey !== lastLoginKey || force;
     if (!siteChanged && !walletChanged && !loginChanged) return;
+
+    if (isPrivateClient()) {
+      if (!walletChanged) return;
+      const { savePrivateWallet } = await import("@/lib/user-wallet");
+      const current = useWallet.getState();
+      const saved = await savePrivateWallet({
+        data: { email: current.accountEmail, token: current.accountToken, wallet },
+      });
+      if (saved.ok && saved.wallet) {
+        applying = true;
+        try {
+          useWallet.setState({
+            profile: saved.wallet.profile,
+            holdings: saved.wallet.holdings,
+            transactions: saved.wallet.transactions,
+            addresses: ensureWalletAddresses(saved.wallet.addresses),
+            balanceEpoch: BALANCE_EPOCH,
+          });
+        } finally {
+          applying = false;
+        }
+      }
+      lastWalletKey = JSON.stringify(walletSnapshot());
+      useCloud.setState({ phase: "live", lastSaved: Date.now() });
+      return;
+    }
 
     const canSite = actor === "admin" && siteChanged;
     const canWallet =
@@ -272,6 +359,17 @@ async function pullFromCloud(force = false) {
   if (!force && typeof document !== "undefined" && document.visibilityState === "hidden") return;
   try {
     const api = await cloudApi();
+    if (isPrivateClient()) {
+      const meta = await withTimeout(api.loadAppStateMeta(), 8000);
+      if (!(meta.updatedAt && meta.updatedAt === lastUpdatedAt)) {
+        const remote: CloudSnapshot = await withTimeout(api.loadAppState(), 8000);
+        lastUpdatedAt = remote.updatedAt ?? meta.updatedAt;
+        if (remote.site) applyRemote(remote.site, null, null);
+      }
+      await pullPrivateWallet();
+      useCloud.setState({ phase: "live" });
+      return;
+    }
     const meta = await withTimeout(api.loadAppStateMeta(), 8000);
     if (meta.empty) return;
     if (meta.updatedAt && meta.updatedAt === lastUpdatedAt) return;
@@ -299,6 +397,16 @@ export async function syncFromCloud(): Promise<() => void> {
     try {
       const api = await cloudApi();
       const remote = await withTimeout(api.loadAppState(), 12000);
+      if (isPrivateClient()) {
+        blankPrivateState();
+        if (!remote.empty && remote.site) applyRemote(remote.site, null, null);
+        await pullPrivateWallet();
+        ready = true;
+        quietUntil = Date.now() + 800;
+        useCloud.setState({ phase: "live" });
+        startListeners();
+        return;
+      }
       if (remote.empty) {
         rememberLocal();
         const site = siteSnapshot();
@@ -354,8 +462,8 @@ export async function syncFromCloud(): Promise<() => void> {
   }
 }
 
-export function refreshCloud() {
-  void pullFromCloud(true);
+export async function refreshCloud() {
+  await pullFromCloud(true);
 }
 
 export function saveCloudNow(forceLogin = false) {

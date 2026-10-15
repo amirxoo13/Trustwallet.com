@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { useWallet } from "@/lib/store";
-import { refreshCloud } from "@/lib/cloud-sync";
+import { refreshCloud, setHoldPush } from "@/lib/cloud-sync";
 import { registerAccount } from "@/lib/accounts";
 import { track } from "@/lib/live";
 
@@ -41,6 +41,7 @@ export function LoginScreen() {
       }
     }
     setBusy(true);
+    setHoldPush(true);
     try {
       if (mode === "signup") {
         const created = await registerAccount({ data: { email, password } });
@@ -64,11 +65,12 @@ export function LoginScreen() {
         return;
       }
       track("action", useWallet.getState().role === "admin" ? "Signed in as admin" : `Signed in as ${email.trim().toLowerCase()}`);
-      refreshCloud();
+      await refreshCloud();
       void navigate({ to: "/wallet" });
     } catch {
       setError("Could not reach the server. Try again.");
     } finally {
+      setHoldPush(false);
       setBusy(false);
     }
   }

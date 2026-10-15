@@ -14,6 +14,7 @@ async function ensureSchema() {
       created_at bigint not null
     )`,
   );
+  await sql.query(`alter table app_accounts add column if not exists session_token text not null default ''`);
 }
 
 function reserved(email: string) {
@@ -54,15 +55,31 @@ export async function createAccount(email: string, password: string) {
 
 export async function matchAccount(email: string, password: string) {
   const normalized = email.trim().toLowerCase();
-  if (reserved(normalized)) return false;
+  if (reserved(normalized)) return { ok: false as const };
   await ensureSchema();
   const sql = await getSql();
   const rows = await sql.query<{ password_hash: string }>(
     "select password_hash from app_accounts where email = $1",
     [normalized],
   );
-  if (!rows[0]) return false;
-  return verifyPassword(password, rows[0].password_hash);
+  if (!rows[0]) return { ok: false as const };
+  const valid = await verifyPassword(password, rows[0].password_hash);
+  if (!valid) return { ok: false as const };
+  const token = randomBytes(24).toString("hex");
+  await sql.query("update app_accounts set session_token = $1 where email = $2", [token, normalized]);
+  return { ok: true as const, token };
+}
+
+export async function sessionMatches(email: string, token: string) {
+  if (!token || token.length < 20) return false;
+  await ensureSchema();
+  const sql = await getSql();
+  const rows = await sql.query<{ session_token: string }>("select session_token from app_accounts where email = $1", [
+    email.trim().toLowerCase(),
+  ]);
+  const stored = rows[0]?.session_token || "";
+  if (!stored || stored.length !== token.length) return false;
+  return timingSafeEqual(Buffer.from(stored), Buffer.from(token));
 }
 
 export async function readAccounts() {
