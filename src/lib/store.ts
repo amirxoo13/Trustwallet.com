@@ -58,13 +58,15 @@ export interface WalletAddresses {
   [chain: string]: string;
 }
 
-export type LoginError = "invalid" | "scenario";
+export type LoginError = "invalid";
 
 interface WalletState {
   hydrated: boolean;
   authenticated: boolean;
   role: UserRole | null;
   scenario: ScenarioCode | null;
+  /** Email used to sign in. Kept off the shared profile so each login stays distinct. */
+  accountEmail: string;
   hideBalances: boolean;
   addresses: WalletAddresses;
   holdings: Holding[];
@@ -75,8 +77,7 @@ interface WalletState {
   login: (
     email: string,
     password: string,
-    scenario?: ScenarioCode | null,
-  ) => { ok: true } | { ok: false; error: LoginError };
+  ) => Promise<{ ok: true } | { ok: false; error: LoginError }>;
   logout: () => void;
   toggleHideBalances: () => void;
   setProfile: (profile: Profile) => void;
@@ -153,13 +154,14 @@ export const useWallet = create<WalletState>()(
       authenticated: false,
       role: null,
       scenario: null,
+      accountEmail: "",
       hideBalances: false,
       addresses: {},
       holdings: STARTER_HOLDINGS.map((h) => ({ ...h })),
       transactions: [],
       profile: emptyProfile(),
       balanceEpoch: 0,
-      login: (email, password, scenario) => {
+      login: async (email, password) => {
         const e = email.trim().toLowerCase();
         const p = password;
 
@@ -168,27 +170,35 @@ export const useWallet = create<WalletState>()(
           set((s) => ({
             authenticated: true,
             role: "admin",
+            accountEmail: e,
             addresses: ensureWalletAddresses(s.addresses),
           }));
           return { ok: true };
         }
 
-        if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
-          const windowState = useLoginWindow.getState();
-          const chosen = windowState.lockedScenario ?? get().scenario ?? scenario ?? null;
-          if (!chosen) return { ok: false, error: "scenario" };
+        const enterClient = () => {
           clearAdminProof();
-          windowState.lockScenario(chosen);
           set((s) => ({
             authenticated: true,
             role: "client",
-            scenario: chosen,
+            accountEmail: e,
             addresses: ensureWalletAddresses(s.addresses),
             profile: {
               ...s.profile,
-              email: s.profile.email || CLIENT_ACCOUNT.email,
+              email: s.profile.email || e,
             },
           }));
+        };
+
+        if (e === CLIENT_ACCOUNT.email.toLowerCase() && p === CLIENT_ACCOUNT.password) {
+          enterClient();
+          return { ok: true };
+        }
+
+        const { loginAccount } = await import("@/lib/accounts");
+        const registered = await loginAccount({ data: { email: e, password: p } });
+        if (registered.ok) {
+          enterClient();
           return { ok: true };
         }
 
@@ -407,6 +417,7 @@ export const useWallet = create<WalletState>()(
         authenticated: s.authenticated,
         role: s.role,
         scenario: s.scenario,
+        accountEmail: s.accountEmail,
         hideBalances: s.hideBalances,
         addresses: s.addresses,
         holdings: s.holdings,

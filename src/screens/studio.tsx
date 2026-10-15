@@ -12,13 +12,15 @@ import { readImageFile } from "@/lib/image-file";
 import { SITE_TEXT_FIELDS, useSite, type SiteContent } from "@/lib/site-store";
 import { holdingAmount, useWallet, type Profile } from "@/lib/store";
 import { formatAmount, formatDuration } from "@/lib/format";
-import { CLIENT_ACCOUNT } from "@/lib/auth-config";
+import { SCENARIO_CODES } from "@/lib/auth-config";
 import { adminProof } from "@/lib/admin-proof";
 import { sendAdminNotice } from "@/lib/push";
 import { LiveBoard } from "@/components/live-board";
 import { saveCloudNow, useCloud } from "@/lib/cloud-sync";
+import { listAccounts, removeAccount } from "@/lib/accounts";
+import { useLoginWindow } from "@/lib/login-window";
 
-type Tab = "live" | "brand" | "pages" | "images" | "profile" | "balances" | "notices" | "notify";
+type Tab = "live" | "brand" | "pages" | "images" | "profile" | "balances" | "notices" | "notify" | "accounts";
 
 function Field({
   label,
@@ -177,6 +179,7 @@ export function StudioScreen() {
     { id: "balances", label: "Balances" },
     { id: "notices", label: "T20 / F20 / K20" },
     { id: "notify", label: "Notify" },
+    { id: "accounts", label: "Accounts" },
   ];
 
   const brandGroups = ["Brand"];
@@ -304,7 +307,7 @@ export function StudioScreen() {
             {tab === "profile" ? (
               <div>
                 <p className="mt-8 text-sm text-muted">
-                  Client wallet — {CLIENT_ACCOUNT.email}. Every field and photo saves immediately. The client sees this on their profile.
+                  Client wallet. Every signed-in email sees this same profile. Fields and photos save immediately.
                 </p>
                 <ProfileEditor profile={profile} onSave={setProfile} />
               </div>
@@ -421,25 +424,32 @@ export function StudioScreen() {
                 <TextGroup group="Send notices" fields={SITE_TEXT_FIELDS} site={site} set={set} />
                 <TextGroup group="Send confirmation" fields={SITE_TEXT_FIELDS} site={site} set={set} />
                 <p className="text-xs text-muted">
-                  T20, F20, or K20 opens when the client taps Send, using the code from their first login. After they
-                  confirm the wallet address, confirmations run for the minutes you set. The code box opens on the last
-                  confirmation. Use {"{current}"} and {"{total}"} in the confirming line.
+                  The send notice is chosen here, not by the person signing in. After they confirm the wallet address,
+                  confirmations run for the minutes you set. The code box opens on the last confirmation. Use {"{current}"}{" "}
+                  and {"{total}"} in the confirming line.
                 </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    useWallet.getState().clearScenario();
-                    saveCloudNow(true);
-                    toast.success("T20 / F20 / K20 will show again on next client login");
-                  }}
-                >
-                  Show T20 / F20 / K20 on next client login
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {SCENARIO_CODES.map((code) => (
+                    <Button
+                      key={code}
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        useLoginWindow.getState().lockScenario(code);
+                        useWallet.setState({ scenario: code });
+                        saveCloudNow(true);
+                        toast.success(`${code} is now the send notice`);
+                      }}
+                    >
+                      Use {code}
+                    </Button>
+                  ))}
+                </div>
               </div>
             ) : null}
 
             {tab === "notify" ? <NotifyComposer /> : null}
+            {tab === "accounts" ? <AccountsPanel /> : null}
           </>
         )}
       </div>
@@ -490,6 +500,53 @@ function NotifyComposer() {
       <Button type="button" variant="solid" disabled={busy} onClick={() => void send()}>
         Send notification
       </Button>
+    </div>
+  );
+}
+
+function AccountsPanel() {
+  const [rows, setRows] = useState<{ email: string; createdAt: number }[]>([]);
+  const [error, setError] = useState("");
+
+  async function load() {
+    const res = await listAccounts({ data: { proof: adminProof() } });
+    if (!res.ok) {
+      setError("Could not load accounts.");
+      return;
+    }
+    setError("");
+    setRows(res.accounts);
+  }
+
+  useEffect(() => {
+    void load().catch(() => setError("Could not load accounts."));
+  }, []);
+
+  return (
+    <div className="mt-8 grid max-w-lg gap-3">
+      <p className="text-sm text-muted">
+        Anyone can create an account from the sign-in page. They enter the same wallet. Passwords are not shown here.
+      </p>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+      {rows.length === 0 ? <p className="text-sm text-muted">No extra accounts yet.</p> : null}
+      {rows.map((row) => (
+        <div key={row.email} className="flex items-center justify-between gap-3 rounded-lg bg-card px-3 py-3 shadow-border">
+          <div className="min-w-0">
+            <p className="truncate text-sm">{row.email}</p>
+            <p className="text-[11px] text-muted">{new Date(row.createdAt).toLocaleString()}</p>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              void removeAccount({ data: { proof: adminProof(), email: row.email } }).then(() => load());
+            }}
+          >
+            Remove
+          </Button>
+        </div>
+      ))}
     </div>
   );
 }

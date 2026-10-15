@@ -146,8 +146,8 @@ function identity(path: string) {
   const role: "admin" | "client" | "guest" =
     wallet.role === "admin" ? "admin" : wallet.role === "client" ? "client" : "guest";
   const name = [wallet.profile.firstName, wallet.profile.lastName].filter(Boolean).join(" ").trim();
-  const email = role === "client" ? wallet.profile.email || "" : "";
-  const who = role === "admin" ? "Admin" : role === "client" ? name || email || "Client" : "Guest";
+  const email = role === "client" ? wallet.accountEmail || wallet.profile.email || "" : "";
+  const who = role === "admin" ? "Admin" : role === "client" ? email || name || "Client" : "Guest";
   const cleanPath = path.slice(0, 200) || "/";
   if (cleanPath !== lastPath) {
     lastPath = cleanPath;

@@ -1,6 +1,6 @@
 import { n as createServerFn } from "./ssr.mjs";
 import { l as unknown, o as object, r as boolean, s as string, t as _enum } from "../_libs/zod.mjs";
-import { l as createSsrRpc } from "./router-CsPoWHrR.mjs";
+import { y as createSsrRpc } from "./router-ery-WKQQ.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/cloud-state-Dkf4UzHB.js
 var loadAppState = createServerFn({ method: "POST" }).handler(createSsrRpc("9fcca3163816af2ce2dafcfcf836be156d292364a4cbfec3b98eb73d828abcbc"));
 var saveInput = object({

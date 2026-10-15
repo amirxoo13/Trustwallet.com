@@ -5,60 +5,84 @@ import { MarketingShell } from "@/components/marketing-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SCENARIO_CODES, type ScenarioCode } from "@/lib/auth-config";
 import { t } from "@/lib/i18n";
-import { useLoginWindow } from "@/lib/login-window";
 import { useSite } from "@/lib/site-store";
-import { useWallet, type LoginError } from "@/lib/store";
+import { useWallet } from "@/lib/store";
 import { refreshCloud } from "@/lib/cloud-sync";
+import { registerAccount } from "@/lib/accounts";
 import { track } from "@/lib/live";
-import { cn } from "@/lib/utils";
 
 export function LoginScreen() {
   const login = useWallet((s) => s.login);
-  const savedScenario = useWallet((s) => s.scenario);
-  const walletHydrated = useWallet((s) => s.hydrated);
-  const lockedScenario = useLoginWindow((s) => s.lockedScenario);
-  const windowHydrated = useLoginWindow((s) => s.hydrated);
   const copy = t();
   const brandName = useSite((s) => s.brandName);
   const loginTitle = useSite((s) => s.loginTitle);
   const loginSub = useSite((s) => s.loginSub);
   const navigate = useNavigate();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
-  const [error, setError] = useState<LoginError | null>(null);
+  const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [scenario, setScenario] = useState<ScenarioCode | null>(null);
 
-  const firstChoice = lockedScenario ?? savedScenario;
-  const showCodes = walletHydrated && windowHydrated && !firstChoice;
-
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setBusy(true);
-    const res = login(email, password, firstChoice ?? scenario);
-    setBusy(false);
-    if (!res.ok) {
-      track("action", res.error === "scenario" ? "Login stopped: no T20, F20 or K20" : "Login failed");
-      setError(res.error);
-      return;
+    setError("");
+    if (mode === "signup") {
+      if (password.length < 8) {
+        setError("Use at least 8 characters.");
+        return;
+      }
+      if (password !== confirm) {
+        setError("Passwords do not match.");
+        return;
+      }
     }
-    setError(null);
-    track("action", useWallet.getState().role === "admin" ? "Signed in as admin" : "Signed in as client");
-    refreshCloud();
-    void navigate({ to: "/wallet" });
+    setBusy(true);
+    try {
+      if (mode === "signup") {
+        const created = await registerAccount({ data: { email, password } });
+        if (!created.ok) {
+          track("action", "Signup failed");
+          setError(
+            created.error === "taken"
+              ? "That email is already registered."
+              : created.error === "weak"
+                ? "Use at least 8 characters."
+                : "Enter a valid email.",
+          );
+          return;
+        }
+        track("action", `Created account ${email.trim().toLowerCase()}`);
+      }
+      const res = await login(email, password);
+      if (!res.ok) {
+        track("action", "Login failed");
+        setError(copy.login.error);
+        return;
+      }
+      track("action", useWallet.getState().role === "admin" ? "Signed in as admin" : `Signed in as ${email.trim().toLowerCase()}`);
+      refreshCloud();
+      void navigate({ to: "/wallet" });
+    } catch {
+      setError("Could not reach the server. Try again.");
+    } finally {
+      setBusy(false);
+    }
   }
-
-  const errorText = error === "scenario" ? "Select T20, F20 or K20 to continue." : error ? copy.login.error : null;
 
   return (
     <MarketingShell>
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
         <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">{brandName}</p>
-        <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight">{loginTitle}</h1>
-        <p className="mt-2 text-sm text-muted">{loginSub}</p>
+        <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight">
+          {mode === "signup" ? "Create account" : loginTitle}
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          {mode === "signup" ? "Use any email. No code is required." : loginSub}
+        </p>
 
         <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -78,11 +102,12 @@ export function LoginScreen() {
               <Input
                 id="password"
                 type={show ? "text" : "password"}
-                autoComplete="current-password"
+                autoComplete={mode === "signup" ? "new-password" : "current-password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pe-12"
                 required
+                minLength={mode === "signup" ? 8 : 1}
               />
               <button
                 type="button"
@@ -94,33 +119,35 @@ export function LoginScreen() {
               </button>
             </div>
           </div>
-
-          {showCodes ? (
-          <div>
-            <p className="mb-2 text-xs font-medium text-muted">Select a code</p>
-            <div className="grid grid-cols-3 gap-2">
-              {SCENARIO_CODES.map((code) => (
-                <button
-                  key={code}
-                  type="button"
-                  onClick={() => setScenario(code)}
-                  className={cn(
-                    "flex h-12 items-center justify-center rounded-md font-mono text-sm tracking-wide shadow-border",
-                    scenario === code ? "bg-foreground text-background" : "bg-card text-foreground hover:bg-card-elevated",
-                  )}
-                >
-                  {code}
-                </button>
-              ))}
+          {mode === "signup" ? (
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="confirm">Confirm password</Label>
+              <Input
+                id="confirm"
+                type={show ? "text" : "password"}
+                autoComplete="new-password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
             </div>
-          </div>
           ) : null}
 
-          {errorText ? <p className="text-sm text-danger">{errorText}</p> : null}
+          {error ? <p className="text-sm text-danger">{error}</p> : null}
           <Button type="submit" variant="solid" size="lg" disabled={busy}>
-            {copy.login.submit}
+            {mode === "signup" ? "Create account" : copy.login.submit}
           </Button>
         </form>
+        <button
+          type="button"
+          className="mt-4 text-sm text-muted hover:text-foreground"
+          onClick={() => {
+            setMode((m) => (m === "signin" ? "signup" : "signin"));
+            setError("");
+          }}
+        >
+          {mode === "signup" ? "Already have an account? Sign in" : "Create an account with another email"}
+        </button>
         <p className="mt-6 text-center text-sm text-muted">
           <Link to="/" className="hover:text-foreground">
             ← {brandName}
