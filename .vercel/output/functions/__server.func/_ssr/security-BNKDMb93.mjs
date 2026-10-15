@@ -1,5 +1,5 @@
 import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react.mjs";
-import { g as useSite } from "./router-qgJz_DPx.mjs";
+import { g as useSite } from "./router-BfvW9RjH.mjs";
 import { t as MarketingShell } from "./marketing-shell-Shsl0BUn.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/security-BNKDMb93.js
 var import_jsx_runtime = require_jsx_runtime();

@@ -7,7 +7,7 @@ import { r as cn } from "./logo-DhxVwH3M.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { B as ArrowDownLeft, I as ArrowUpRight, R as ArrowLeftRight, _ as Plus } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-c9oaUsyD.mjs";
-import { _ as useWallet } from "./router-qgJz_DPx.mjs";
+import { _ as useWallet } from "./router-BfvW9RjH.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/activity-Br0mnOli.js
 var import_react = /* @__PURE__ */ __toESM(require_react());
 var import_jsx_runtime = require_jsx_runtime();

@@ -5,7 +5,7 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { n as CLIENT_ACCOUNT } from "./auth-config-BPsn-XvC.mjs";
 import { t as WalletShell } from "./wallet-shell-c9oaUsyD.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
-import { _ as useWallet } from "./router-qgJz_DPx.mjs";
+import { _ as useWallet } from "./router-BfvW9RjH.mjs";
 import { t as Button } from "./button-vhTG8j-Q.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/ethereum-DjpUeZaq.js
 var import_react = /* @__PURE__ */ __toESM(require_react());

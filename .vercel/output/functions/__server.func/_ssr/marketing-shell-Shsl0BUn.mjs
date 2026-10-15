@@ -5,7 +5,7 @@ import { n as require_jsx_runtime } from "../_libs/radix-ui__react-context+react
 import { n as LogoWord, r as cn } from "./logo-DhxVwH3M.mjs";
 import { t } from "./i18n-CodmchUZ.mjs";
 import { t as X, v as Menu } from "../_libs/lucide-react.mjs";
-import { _ as useWallet, g as useSite, p as hasAdminProof } from "./router-qgJz_DPx.mjs";
+import { _ as useWallet, g as useSite, p as hasAdminProof } from "./router-BfvW9RjH.mjs";
 import { t as Button } from "./button-vhTG8j-Q.mjs";
 import { t as PageBack } from "./page-back-D_IQHyRT.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/marketing-shell-Shsl0BUn.js

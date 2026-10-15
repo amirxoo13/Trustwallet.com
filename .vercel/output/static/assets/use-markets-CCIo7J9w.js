@@ -1,1 +1,0 @@
-import{t as e}from"./useQuery-BxKgT2vP.js";import{c as t,i as n,n as r}from"./prices-kH_7VeUY.js";function i(){return e({queryKey:[`markets`],queryFn:n,staleTime:3e4,refetchInterval:6e4,retry:2})}function a(){let e=i();return e.data?t(e.data):{}}function o(t,n){return e({queryKey:[`chart`,t,n],queryFn:()=>r(t,n),enabled:!!t,staleTime:6e4,retry:1})}export{a as n,i as r,o as t};

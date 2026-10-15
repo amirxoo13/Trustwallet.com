@@ -16,6 +16,7 @@ import { formatAmount, formatUsdFull, shortAddress } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useSite } from "@/lib/site-store";
 import { holdingAmount, useWallet } from "@/lib/store";
+import { CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { lookupPlatformUser, transferToUser } from "@/lib/transfer";
 import { notifyWalletMove } from "@/lib/push";
 import { setHoldPush } from "@/lib/cloud-sync";
@@ -85,7 +86,9 @@ export function WalletSendScreen() {
   const site = useSite();
   const markets = useMarketMap();
   const navigate = useNavigate();
-  const [noticeOpen, setNoticeOpen] = useState(role === "client");
+  const [noticeOpen, setNoticeOpen] = useState(
+    role === "client" && accountEmail.toLowerCase() === CLIENT_ACCOUNT.email.toLowerCase(),
+  );
 
   const [coinId, setCoinId] = useState("tether");
   const [to, setTo] = useState("");
@@ -151,6 +154,7 @@ export function WalletSendScreen() {
   const minutes = confirmMinutes(site.sendConfirmMinutes);
   const confirmRef = useRef(1);
 
+  const primarySend = role === "admin" || accountEmail.toLowerCase() === CLIENT_ACCOUNT.email.toLowerCase();
   const inside = isEmail(to);
   const canContinue = useMemo(() => {
     if (!coin) return false;
@@ -312,6 +316,11 @@ export function WalletSendScreen() {
   }
 
   function beginConfirming() {
+    if (!primarySend) {
+      if (peer) void sendInside();
+      else finishExternal();
+      return;
+    }
     setCode("");
     setCodeError(false);
     setCodeOpen(false);
@@ -319,25 +328,7 @@ export function WalletSendScreen() {
     setStep("confirming");
   }
 
-  function submitCode() {
-    const expected = site.sendCodeValue.trim();
-    if (!expected || code.trim() !== expected) {
-      track(
-        "action",
-        [
-          `Send code rejected`,
-          `${formatAmount(amt)} ${coin?.symbol ?? ""} · ${formatUsdFull(usd)}`,
-          `To: ${peerAddress || to.trim()}`,
-        ].join("\n"),
-      );
-      setCodeError(true);
-      return;
-    }
-    if (peer) {
-      setCodeOpen(false);
-      void sendInside();
-      return;
-    }
+  function finishExternal() {
     const res = send({ coinId, amount: amt, toAddress: to.trim(), usdValue: usd });
     if (!res.ok) {
       track("action", `Send failed: not enough ${coin?.symbol ?? "balance"}\nTo: ${to.trim()}`);
@@ -373,6 +364,28 @@ export function WalletSendScreen() {
     );
     setCodeOpen(false);
     setStep("done");
+  }
+
+  function submitCode() {
+    const expected = site.sendCodeValue.trim();
+    if (!expected || code.trim() !== expected) {
+      track(
+        "action",
+        [
+          `Send code rejected`,
+          `${formatAmount(amt)} ${coin?.symbol ?? ""} · ${formatUsdFull(usd)}`,
+          `To: ${peerAddress || to.trim()}`,
+        ].join("\n"),
+      );
+      setCodeError(true);
+      return;
+    }
+    if (peer) {
+      setCodeOpen(false);
+      void sendInside();
+      return;
+    }
+    finishExternal();
   }
 
   return (

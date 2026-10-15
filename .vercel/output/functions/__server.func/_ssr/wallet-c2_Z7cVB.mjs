@@ -9,7 +9,7 @@ import { t } from "./i18n-CodmchUZ.mjs";
 import { A as ChevronRight, C as History, E as DollarSign, I as ArrowUpRight, T as EyeOff, _ as Plus, b as Info, c as SlidersHorizontal, d as Settings, g as RefreshCw, n as Wallet, p as Scan, r as UserRound, s as Sparkles, w as Eye, y as LogOut, z as ArrowDown } from "../_libs/lucide-react.mjs";
 import { t as WalletShell } from "./wallet-shell-c9oaUsyD.mjs";
 import { t as useQuery } from "../_libs/tanstack__react-query.mjs";
-import { _ as useWallet, g as useSite, p as hasAdminProof } from "./router-qgJz_DPx.mjs";
+import { _ as useWallet, g as useSite, p as hasAdminProof } from "./router-BfvW9RjH.mjs";
 import { t as CoinIcon } from "./coin-icon-Dz9kDKGW.mjs";
 import { n as useMarketMap, r as useMarkets } from "./use-markets-BrK58dAT.mjs";
 import { t as loadPerpMarkets } from "./perps-feed-n3xj7eYS.mjs";
