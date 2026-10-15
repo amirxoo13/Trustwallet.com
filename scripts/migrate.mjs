@@ -18,7 +18,9 @@ import { dirname, join } from "node:path";
 import pg from "pg";
 import { pendingMigrations } from "./migration-plan.mjs";
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl = ["DATABASE_URL", "DATADASE_URL", "NETLIFY_DATABASE_URL", "NETLIFY_DB_URL"]
+  .map((key) => process.env[key]?.trim())
+  .find(Boolean);
 if (!databaseUrl) {
   console.log(
     "[migrate] DATABASE_URL not set — skipping (the PGLite fallback migrates itself).",
@@ -42,7 +44,11 @@ async function main() {
     return;
   }
 
-  const pool = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  const pool = new pg.Pool({
+    connectionString: databaseUrl,
+    max: 1,
+    ssl: /sslmode=require|neon\.tech/i.test(databaseUrl) ? { rejectUnauthorized: false } : undefined,
+  });
   const client = await pool.connect();
   try {
     await client.query(

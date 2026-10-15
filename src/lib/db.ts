@@ -5,10 +5,17 @@ export type DbSource = "neon" | "pglite";
 
 // An empty/whitespace DATABASE_URL (an easy misconfig in deploy UIs) must mean
 // "unset" — otherwise production would silently run on the PGLite fallback.
-const rawDatabaseUrl =
-  typeof process !== "undefined" ? process.env.DATABASE_URL : undefined;
-const databaseUrl =
-  rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
+// DATADASE_URL is accepted because that is the name saved on Netlify.
+function readDatabaseUrl() {
+  const keys = ["DATABASE_URL", "DATADASE_URL", "NETLIFY_DATABASE_URL", "NETLIFY_DB_URL"] as const;
+  for (const key of keys) {
+    const value = typeof process !== "undefined" ? process.env[key] : undefined;
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return undefined;
+}
+
+const databaseUrl = readDatabaseUrl();
 
 /**
  * Active backend: real **Neon** when `DATABASE_URL` is set (deployed / configured
@@ -93,7 +100,10 @@ function createNeonSql(): Promise<Sql> {
     types.setTypeParser(OID_INT8, Number);
     types.setTypeParser(OID_DATE, identity);
     types.setTypeParser(OID_INTERVAL, identity);
-    const pool = new Pool({ connectionString: databaseUrl });
+    const pool = new Pool({
+      connectionString: databaseUrl,
+      ssl: databaseUrl && /sslmode=require|neon\.tech/i.test(databaseUrl) ? { rejectUnauthorized: false } : undefined,
+    });
     return toSql(async <T>(text: string, params: unknown[]) => {
       const res = await pool.query(text, params);
       return res.rows as T[];
