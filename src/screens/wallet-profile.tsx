@@ -126,7 +126,7 @@ export function WalletProfileScreen() {
             size="sm"
             onClick={() => {
               logout();
-              void navigate({ to: "/" });
+              void navigate({ to: "/login" });
             }}
           >
             {copy.wallet.logout}
@@ -215,7 +215,7 @@ export function WalletProfileScreen() {
           className="mt-3 w-full"
           onClick={() => {
             logout();
-            void navigate({ to: "/" });
+            void navigate({ to: "/login" });
           }}
         >
           {copy.wallet.logout}

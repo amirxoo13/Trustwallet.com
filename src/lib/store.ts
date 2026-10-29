@@ -9,7 +9,7 @@ import {
 import { generateAddress } from "@/lib/addresses";
 import { COINS, STARTER_HOLDINGS, BALANCE_EPOCH, getCoin, swapFeeRate } from "@/lib/coins";
 import { hasAdminProof, grantAdminProof, clearAdminProof } from "@/lib/admin-proof";
-import { clearSessionUnlock } from "@/lib/device-lock";
+import { clearSavedLogin, clearSessionUnlock, useDeviceAuth } from "@/lib/device-lock";
 import { useLoginWindow } from "@/lib/login-window";
 
 export type TxType = "send" | "receive" | "swap" | "buy";
@@ -241,7 +241,14 @@ export const useWallet = create<WalletState>()(
       },
       logout: () => {
         clearAdminProof();
+        clearSavedLogin();
         clearSessionUnlock();
+        try {
+          sessionStorage.setItem("trust-email-login", "1");
+        } catch {
+          /* ignore */
+        }
+        if (useDeviceAuth.getState().pending) useDeviceAuth.getState().finish(false);
         set({ authenticated: false, role: null, accountToken: "" });
       },
       toggleHideBalances: () => set((s) => ({ hideBalances: !s.hideBalances })),

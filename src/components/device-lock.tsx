@@ -146,7 +146,7 @@ export function DeviceLockHost() {
         </button>
       ) : pending.purpose === "unlock" ? (
         <button type="button" className="mt-3 text-sm text-white/75" onClick={() => finish(false)}>
-          Use email instead
+          Switch account
         </button>
       ) : (
         <div className="mt-3 h-5" />

@@ -125,7 +125,7 @@ export function WalletShell({
             className="mt-1 flex size-14 items-center justify-center rounded-lg text-muted"
             onClick={() => {
               logout();
-              void navigate({ to: "/" });
+              void navigate({ to: "/login" });
             }}
             aria-label={copy.wallet.logout}
           >

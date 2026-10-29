@@ -36,18 +36,20 @@ export function LoginScreen() {
 
   useEffect(() => {
     sessionStorage.removeItem("trust-after-passcode");
-    const stored = getSavedLogin();
-    if (stored) {
-      setEmail(stored.email);
-      setPassword(stored.password);
-      setRemembered(true);
-    }
     if (started.current) return;
     if (sessionStorage.getItem("trust-email-login") === "1") {
       sessionStorage.removeItem("trust-email-login");
+      setEmail("");
+      setPassword("");
+      setRemembered(false);
+      setEmailMode(true);
       return;
     }
+    const stored = getSavedLogin();
     if (!stored) return;
+    setEmail(stored.email);
+    setPassword(stored.password);
+    setRemembered(true);
     started.current = true;
     setEmailMode(false);
     void requestDeviceAuth("unlock").then(async (ok) => {

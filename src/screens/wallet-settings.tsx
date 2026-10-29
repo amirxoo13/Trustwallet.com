@@ -299,7 +299,7 @@ export function WalletSettingsScreen() {
           className="mt-3 w-full"
           onClick={() => {
             logout();
-            void navigate({ to: "/" });
+            void navigate({ to: "/login" });
           }}
         >
           {copy.wallet.logout}

@@ -248,7 +248,7 @@ export function WalletHomeScreen() {
                     className="flex h-11 w-full items-center gap-2 rounded-lg px-3 text-sm text-danger"
                     onClick={() => {
                       logout();
-                      void navigate({ to: "/" });
+                      void navigate({ to: "/login" });
                     }}
                   >
                     <LogOut className="size-4" />
