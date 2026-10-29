@@ -1,6 +1,7 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { getSql } from "@/lib/db";
 import { COIN_BY_ID } from "@/lib/coins";
+import { generateAddress } from "@/lib/addresses";
 import { ADMIN_ACCOUNT, CLIENT_ACCOUNT } from "@/lib/auth-config";
 import { sessionMatches } from "@/lib/accounts-send";
 import { ensureUserWallet, listUserWallets, loadUserWallet, putUserWallet } from "@/lib/user-wallet-send";
@@ -91,9 +92,23 @@ async function saveByEmail(email: string, wallet: CloudWallet) {
   await putUserWallet(email, wallet);
 }
 
+function sameAddress(left: string, right: string) {
+  if (left === right) return true;
+  if (left.startsWith("0x") && right.startsWith("0x")) return left.toLowerCase() === right.toLowerCase();
+  return false;
+}
+
 function ownsAddress(wallet: CloudWallet | null, address: string) {
   if (!wallet?.addresses) return false;
-  return Object.values(wallet.addresses).some((value) => value === address);
+  return Object.values(wallet.addresses).some((value) => sameAddress(value, address));
+}
+
+function addressOn(wallet: CloudWallet, chain: string, kind: Parameters<typeof generateAddress>[0]) {
+  const current = wallet.addresses?.[chain] || "";
+  if (current) return current;
+  const created = generateAddress(kind);
+  wallet.addresses = { ...(wallet.addresses ?? {}), [chain]: created };
+  return created;
 }
 
 async function knownEmail(email: string) {
@@ -181,9 +196,8 @@ export async function transferToUser(input: {
 
   const hash = `0x${randomBytes(32).toString("hex")}`;
   const stamp = Date.now();
-  const fromAddress = sender.addresses?.[coin.chain] || "";
-  const toAddress = recipient.wallet.addresses?.[coin.chain] || "";
-  if (!fromAddress || !toAddress) return { ok: false as const, error: "address" as const };
+  const fromAddress = addressOn(sender, coin.chain, coin.kind);
+  const toAddress = addressOn(recipient.wallet, coin.chain, coin.kind);
   addHolding(sender, coin.id, -(input.amount + coin.fee));
   addHolding(recipient.wallet, coin.id, input.amount);
   const sent: Transaction = {
@@ -255,7 +269,7 @@ function dueTransfer(tx: Transaction, now: number) {
 }
 
 async function confirmPeer(email: string, hash: string) {
-  if (!email || email === PRIMARY) return;
+  if (!email) return;
   const peer = await loadByEmail(email);
   if (!peer) return;
   let changed = false;
@@ -303,7 +317,6 @@ async function startPlatformSendNow(input: {
 }) {
   const senderEmail = await walletEmailFor(input.actorEmail, input.token);
   if (!senderEmail) return { ok: false as const, error: "auth" as const };
-  if (senderEmail === PRIMARY) return { ok: false as const, error: "protected" as const };
   const coin = COIN_BY_ID[input.coinId];
   if (!coin) return { ok: false as const, error: "asset" as const };
   if (!Number.isFinite(input.amount) || input.amount <= 0 || input.amount > 1e12) {
@@ -313,14 +326,12 @@ async function startPlatformSendNow(input: {
   if (!sender) return { ok: false as const, error: "wallet" as const };
   const recipient = await resolveRecipient(input.to);
   if (!recipient) return { ok: false as const, error: "user" as const };
-  if (recipient.email === PRIMARY) return { ok: false as const, error: "protected" as const };
   if (recipient.email === senderEmail) return { ok: false as const, error: "self" as const };
   if (holdingOf(sender, coin.id) + 1e-12 < input.amount + coin.fee) {
     return { ok: false as const, error: "insufficient" as const };
   }
-  const fromAddress = sender.addresses?.[coin.chain] || "";
-  const toAddress = recipient.wallet.addresses?.[coin.chain] || "";
-  if (!fromAddress || !toAddress) return { ok: false as const, error: "address" as const };
+  const fromAddress = addressOn(sender, coin.chain, coin.kind);
+  const toAddress = addressOn(recipient.wallet, coin.chain, coin.kind);
 
   const hash = `0x${randomBytes(32).toString("hex")}`;
   const stamp = Date.now();
@@ -373,7 +384,6 @@ export async function settlePrivate(email: string): Promise<CloudWallet | null> 
 }
 
 async function settlePrivateNow(email: string): Promise<CloudWallet | null> {
-  if (email === PRIMARY) return loadByEmail(email);
   const wallet = await loadByEmail(email);
   if (!wallet) return null;
   const now = Date.now();

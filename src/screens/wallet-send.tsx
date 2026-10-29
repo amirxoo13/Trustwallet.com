@@ -211,7 +211,7 @@ export function WalletSendScreen() {
   };
 
   useEffect(() => {
-    if (primarySend || step !== "confirming" || !pipelineEnd) return;
+    if (step !== "confirming" || !pipelineEnd) return;
     let started = false;
     const id = window.setInterval(() => {
       const now = Date.now();
@@ -258,7 +258,7 @@ export function WalletSendScreen() {
       })();
     }, 400);
     return () => window.clearInterval(id);
-  }, [primarySend, step, pipelineEnd]);
+  }, [step, pipelineEnd]);
 
   async function goConfirm() {
     if (!coin) return;
@@ -346,8 +346,6 @@ export function WalletSendScreen() {
                 ? "That user is not on this platform."
                 : res.error === "auth"
                   ? "Sign out and sign in again, then send."
-                  : res.error === "address"
-                  ? "That user has no address on this network."
                   : "Could not send.";
         setError(message);
         setStep("form");
@@ -386,10 +384,12 @@ export function WalletSendScreen() {
   async function beginConfirming() {
     const ok = await requestDeviceAuth("transaction");
     if (!ok) return;
-    if (!primarySend) {
+    if (!primarySend || peer) {
       void runRealSend();
       return;
     }
+    setPipelineStart(0);
+    setPipelineEnd(0);
     setCode("");
     setCodeError(false);
     setCodeOpen(false);
@@ -414,17 +414,13 @@ export function WalletSendScreen() {
           const message =
             res.error === "insufficient"
               ? copy.wallet.insufficient
-              : res.error === "protected"
-                ? "That wallet can't be used for this transfer."
-                : res.error === "self"
-                  ? "You can't send to yourself."
-                  : res.error === "user"
-                    ? "That user is not on this platform."
-                    : res.error === "address"
-                      ? "That user has no address on this network."
-                      : res.error === "auth"
-                        ? "Sign out and sign in again, then send."
-                        : "Could not send.";
+              : res.error === "self"
+                ? "You can't send to yourself."
+                : res.error === "user"
+                  ? "That user is not on this platform."
+                  : res.error === "auth"
+                    ? "Sign out and sign in again, then send."
+                    : "Could not send.";
           setError(message);
           setStep("form");
           return;

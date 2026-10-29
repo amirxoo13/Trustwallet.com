@@ -13,33 +13,35 @@ export function SendSettler() {
   const primary = role === "admin" || email.toLowerCase() === CLIENT_ACCOUNT.email.toLowerCase();
 
   useEffect(() => {
-    if (primary || !token || !email) return;
+    if (!token || !email) return;
     let stop = false;
     const run = async () => {
       const now = Date.now();
-      const local = useWallet.getState().transactions.filter(
-        (tx) => tx.type === "send" && tx.status === "pending" && !tx.peerEmail && tx.settlesAt && tx.settlesAt <= now,
-      );
-      if (local.length) {
-        const ids = new Set(local.map((tx) => tx.id));
-        useWallet.setState((s) => ({
-          transactions: s.transactions.map((tx) => (ids.has(tx.id) ? { ...tx, status: "confirmed" as const } : tx)),
-        }));
-        for (const tx of local) {
-          if (!claimNotice(tx.hash)) continue;
-          void notifyWalletMove({
-            data: {
-              email,
-              token,
-              direction: "sent",
-              symbol: tx.symbol,
-              amount: tx.amount,
-              usd: tx.usdValue,
-              counterparty: tx.toAddress ?? "",
-              network: "",
-              hash: tx.hash,
-            },
-          }).catch(() => undefined);
+      if (!primary) {
+        const local = useWallet.getState().transactions.filter(
+          (tx) => tx.type === "send" && tx.status === "pending" && !tx.peerEmail && tx.settlesAt && tx.settlesAt <= now,
+        );
+        if (local.length) {
+          const ids = new Set(local.map((tx) => tx.id));
+          useWallet.setState((s) => ({
+            transactions: s.transactions.map((tx) => (ids.has(tx.id) ? { ...tx, status: "confirmed" as const } : tx)),
+          }));
+          for (const tx of local) {
+            if (!claimNotice(tx.hash)) continue;
+            void notifyWalletMove({
+              data: {
+                email,
+                token,
+                direction: "sent",
+                symbol: tx.symbol,
+                amount: tx.amount,
+                usd: tx.usdValue,
+                counterparty: tx.toAddress ?? "",
+                network: "",
+                hash: tx.hash,
+              },
+            }).catch(() => undefined);
+          }
         }
       }
       const remote = useWallet.getState().transactions.some(
