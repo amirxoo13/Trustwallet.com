@@ -240,7 +240,7 @@ export async function notifyMovement(input: {
 export async function sendCustomNotice(title: string, body: string) {
   await keys();
   return broadcast({
-    title: title.trim() || "Trust",
+    title: title.trim() || "Trust Wallet",
     body: body.trim(),
     tag: `trust-note-${Date.now()}`,
   });

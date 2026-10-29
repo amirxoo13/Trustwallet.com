@@ -7,9 +7,10 @@ import { PersistHydrate } from "@/components/persist-hydrate";
 import { PwaRegister } from "@/components/pwa-register";
 import { LiveWatch } from "@/components/live-watch";
 import { BrandHead } from "@/components/brand-head";
+import { DeviceLockHost } from "@/components/device-lock";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Trust";
+const APP_NAME = "Trust Wallet";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -20,7 +21,7 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: APP_NAME },
-      { name: "description", content: "Trust — one wallet, every chain, your keys." },
+      { name: "description", content: "Trust Wallet — one wallet, every chain, your keys." },
       { name: "theme-color", content: "#07080A" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
@@ -58,6 +59,7 @@ function RootDocument() {
             <BrandHead />
             <PwaRegister />
             <LiveWatch />
+            <DeviceLockHost />
             <Outlet />
             <Toaster
               theme="dark"

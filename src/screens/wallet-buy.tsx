@@ -11,6 +11,7 @@ import { COINS, getCoin, usdPrice } from "@/lib/coins";
 import { formatAmount, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { useWallet } from "@/lib/store";
+import { requestDeviceAuth } from "@/lib/device-lock";
 import { track } from "@/lib/live";
 
 export function WalletBuyScreen() {
@@ -30,8 +31,10 @@ export function WalletBuyScreen() {
   const spend = Number(usd) || 0;
   const receive = price > 0 ? (spend * 0.9851) / price : 0;
 
-  function confirm() {
+  async function confirm() {
     if (spend < 10 || receive <= 0) return;
+    const ok = await requestDeviceAuth("transaction");
+    if (!ok) return;
     const res = buy({ coinId, amount: receive, usdValue: spend });
     if (!res.ok) return;
     track(

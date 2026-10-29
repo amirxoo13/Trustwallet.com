@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Trust",
-  "short_name": "Trust",
+  "name": "Trust Wallet",
+  "short_name": "Trust Wallet",
   "description": "Self-custody crypto wallet. Send, receive, and swap on 100+ chains.",
   "start_url": "./",
   "scope": "./",

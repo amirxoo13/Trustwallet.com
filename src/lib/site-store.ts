@@ -88,11 +88,12 @@ export function renameAurexToTrust<T>(value: T): T {
     const item = out[key];
     if (typeof item === "string" && item.includes("Aurex")) out[key] = item.replaceAll("Aurex", "Trust");
   }
+  if (out.brandName === "Trust" || out.brandName === "Aurex") out.brandName = "Trust Wallet";
   return out as T;
 }
 
 export const SITE_DEFAULTS: SiteContent = {
-  brandName: "Trust",
+  brandName: "Trust Wallet",
   tagline: "One wallet. Every chain. Your keys.",
   logo: null,
   heroKicker: "Self-custody · 100+ blockchains",

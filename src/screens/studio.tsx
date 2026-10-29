@@ -478,7 +478,7 @@ export function StudioScreen() {
 }
 
 function NotifyComposer() {
-  const [title, setTitle] = useState("Trust");
+  const [title, setTitle] = useState("Trust Wallet");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
 

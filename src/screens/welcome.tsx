@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
+import { enrollFingerprint, hasFingerprint, verifyFingerprint } from "@/lib/device-lock";
 
 const PASSCODE_KEY = "trust-passcode";
 
@@ -41,17 +42,16 @@ export function WelcomeScreen() {
   }
 
   async function fingerprint() {
-    const supported = window.PublicKeyCredential?.isUserVerifyingPlatformAuthenticatorAvailable;
-    if (!supported) {
-      toast.error("This phone has no fingerprint unlock.");
-      return;
+    try {
+      const ok = hasFingerprint() ? await verifyFingerprint() : await enrollFingerprint();
+      if (!ok) {
+        toast.error("Fingerprint was not accepted.");
+        return;
+      }
+      toast.success(hasFingerprint() ? "Fingerprint is ready." : "Fingerprint saved on this phone.");
+    } catch {
+      toast.error("This phone has no fingerprint unlock. Use the 6-digit passcode.");
     }
-    const available = await supported.call(window.PublicKeyCredential).catch(() => false);
-    if (!available) {
-      toast.error("This phone has no fingerprint unlock.");
-      return;
-    }
-    toast.message("Create the 6-digit passcode first. Fingerprint can unlock it after the wallet exists.");
   }
 
   if (step === "home") {

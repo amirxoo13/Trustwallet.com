@@ -10,6 +10,7 @@ import { COIN_BY_ID, COINS, swapFeeRate, usdPrice } from "@/lib/coins";
 import { formatAmount, formatDuration, formatUsdFull } from "@/lib/format";
 import { t } from "@/lib/i18n";
 import { ETH_BTC_SWAP_MS, holdingAmount, useWallet } from "@/lib/store";
+import { requestDeviceAuth } from "@/lib/device-lock";
 import { track } from "@/lib/live";
 import { SwapMarkets } from "@/screens/swap-markets";
 
@@ -83,11 +84,13 @@ export function WalletSwapScreen() {
     setAmount("");
   }
 
-  function confirm() {
+  async function confirm() {
     if (!canSwap) {
       setError(copy.wallet.insufficient);
       return;
     }
+    const ok = await requestDeviceAuth("transaction");
+    if (!ok) return;
     const res = swap({ fromId, toId, fromAmount: pay, toAmount: receive, usdValue: usd });
     if (!res.ok) {
       track("action", "Swap failed: not enough balance");

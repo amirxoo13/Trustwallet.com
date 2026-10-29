@@ -13,6 +13,7 @@ import { Toaster } from "sonner";
 import { AdminGate } from "@/components/admin-gate";
 import { AuthGate } from "@/components/auth-gate";
 import { BrandHead } from "@/components/brand-head";
+import { DeviceLockHost } from "@/components/device-lock";
 import { PersistHydrate } from "@/components/persist-hydrate";
 import { PwaRegister } from "@/components/pwa-register";
 import { WalletShell } from "@/components/wallet-shell";
@@ -44,6 +45,7 @@ const rootRoute = createRootRoute({
       <PersistHydrate />
       <BrandHead />
       <PwaRegister />
+      <DeviceLockHost />
       <Outlet />
       <Toaster
         theme="dark"

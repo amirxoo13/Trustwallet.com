@@ -21,6 +21,7 @@ import { lookupPlatformUser, settlePlatformSend, startPlatformSend, transferToUs
 import { SEND_PIPELINE_MS, SEND_STEPS, claimNotice, sendStepIndex } from "@/lib/send-pipeline";
 import { notifyWalletMove } from "@/lib/push";
 import { setHoldPush } from "@/lib/cloud-sync";
+import { requestDeviceAuth } from "@/lib/device-lock";
 import { track } from "@/lib/live";
 
 function confirmMinutes(raw: string): number {
@@ -382,7 +383,9 @@ export function WalletSendScreen() {
     }
   }
 
-  function beginConfirming() {
+  async function beginConfirming() {
+    const ok = await requestDeviceAuth("transaction");
+    if (!ok) return;
     if (!primarySend) {
       void runRealSend();
       return;

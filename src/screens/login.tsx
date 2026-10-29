@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff } from "lucide-react";
 import { MarketingShell } from "@/components/marketing-shell";
@@ -10,6 +10,7 @@ import { useSite } from "@/lib/site-store";
 import { useWallet } from "@/lib/store";
 import { refreshCloud, setHoldPush } from "@/lib/cloud-sync";
 import { registerAccount } from "@/lib/accounts";
+import { clearSavedLogin, getPasscode, getSavedLogin, markSessionUnlocked, requestDeviceAuth, saveLogin } from "@/lib/device-lock";
 import { track } from "@/lib/live";
 
 export function LoginScreen() {
@@ -22,6 +23,8 @@ export function LoginScreen() {
   const [mode, setMode] = useState<"signin" | "signup">(() =>
     typeof sessionStorage !== "undefined" && sessionStorage.getItem("trust-after-passcode") === "1" ? "signup" : "signin",
   );
+  const [emailMode, setEmailMode] = useState(true);
+  const [remembered, setRemembered] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -29,9 +32,50 @@ export function LoginScreen() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const started = useRef(false);
+
   useEffect(() => {
     sessionStorage.removeItem("trust-after-passcode");
-  }, []);
+    const stored = getSavedLogin();
+    if (stored) {
+      setEmail(stored.email);
+      setPassword(stored.password);
+      setRemembered(true);
+    }
+    if (started.current) return;
+    if (sessionStorage.getItem("trust-email-login") === "1") {
+      sessionStorage.removeItem("trust-email-login");
+      return;
+    }
+    if (!stored) return;
+    started.current = true;
+    setEmailMode(false);
+    void requestDeviceAuth("unlock").then(async (ok) => {
+      if (!ok) {
+        setEmailMode(true);
+        return;
+      }
+      setBusy(true);
+      setHoldPush(true);
+      try {
+        const res = await login(stored.email, stored.password);
+        if (!res.ok) {
+          setEmailMode(true);
+          setError(copy.login.error);
+          return;
+        }
+        markSessionUnlocked();
+        await refreshCloud();
+        void navigate({ to: "/wallet" });
+      } catch {
+        setEmailMode(true);
+        setError("Could not reach the server. Try again.");
+      } finally {
+        setHoldPush(false);
+        setBusy(false);
+      }
+    });
+  }, [login, copy.login.error, navigate]);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -71,6 +115,12 @@ export function LoginScreen() {
         return;
       }
       track("action", useWallet.getState().role === "admin" ? "Signed in as admin" : `Signed in as ${email.trim().toLowerCase()}`);
+      saveLogin(email, password);
+      if (!getPasscode()) {
+        const ready = await requestDeviceAuth("setup");
+        if (!ready) return;
+      }
+      markSessionUnlocked();
       await refreshCloud();
       void navigate({ to: "/wallet" });
     } catch {
@@ -156,6 +206,21 @@ export function LoginScreen() {
         >
           {mode === "signup" ? "Already have an account? Sign in" : "Create an account with another email"}
         </button>
+        {remembered ? (
+          <button
+            type="button"
+            className="mt-3 text-sm text-muted hover:text-foreground"
+            onClick={() => {
+              clearSavedLogin();
+              setRemembered(false);
+              setEmail("");
+              setPassword("");
+              setError("");
+            }}
+          >
+            Forget saved email and password
+          </button>
+        ) : null}
         <p className="mt-6 text-center text-sm text-muted">
           <Link to="/" className="hover:text-foreground">
             ← {brandName}

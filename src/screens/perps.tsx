@@ -9,6 +9,7 @@ import { formatPct, formatUsd, formatUsdFull } from "@/lib/format";
 import { loadPerpMarkets, loadPerpMids, type PerpMarket } from "@/lib/perps-feed";
 import { PERP_FEE, positionPnl, usePerps } from "@/lib/perps-store";
 import { holdingAmount, useWallet } from "@/lib/store";
+import { requestDeviceAuth } from "@/lib/device-lock";
 import { cn } from "@/lib/utils";
 
 type View = "list" | "history" | "settings";
@@ -102,8 +103,10 @@ export function PerpsScreen() {
     setTicket({ market, side });
   }
 
-  function submitDeposit() {
+  async function submitDeposit() {
     const n = Number(amount);
+    const ok = await requestDeviceAuth("transaction");
+    if (!ok) return;
     const res = deposit(n);
     if (!res.ok) {
       setError(res.error === "insufficient" ? "Not enough USDT in the wallet." : "Enter an amount.");
@@ -114,8 +117,10 @@ export function PerpsScreen() {
     setError("");
   }
 
-  function submitWithdraw() {
+  async function submitWithdraw() {
     const n = Number(amount);
+    const ok = await requestDeviceAuth("transaction");
+    if (!ok) return;
     const res = withdraw(n);
     if (!res.ok) {
       setError(res.error === "insufficient" ? "Not enough free margin." : "Enter an amount.");
@@ -125,8 +130,10 @@ export function PerpsScreen() {
     setError("");
   }
 
-  function submitOrder() {
+  async function submitOrder() {
     if (!ticket) return;
+    const ok = await requestDeviceAuth("transaction");
+    if (!ok) return;
     const price = live(ticket.market.coin, ticket.market.mark);
     const res = open({
       coin: ticket.market.coin,
@@ -211,7 +218,18 @@ export function PerpsScreen() {
                     Entry {formatUsd(p.entry, true)} · {p.status === "open" ? `Mark ${formatUsd(price, true)}` : p.reason === "liquidated" ? "Liquidated" : "Closed"}
                   </p>
                   {p.status === "open" ? (
-                    <Button type="button" variant="outline" className="mt-3 w-full" onClick={() => close(p.id, price)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="mt-3 w-full"
+                      onClick={() =>
+                        void (async () => {
+                          const ok = await requestDeviceAuth("transaction");
+                          if (!ok) return;
+                          close(p.id, price);
+                        })()
+                      }
+                    >
                       Close
                     </Button>
                   ) : null}

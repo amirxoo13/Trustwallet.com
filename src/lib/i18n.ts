@@ -1,5 +1,5 @@
 export const copy = {
-  brand: "Trust",
+  brand: "Trust Wallet",
   tagline: "One wallet. Every chain. Your keys.",
   nav: {
     markets: "Markets",
