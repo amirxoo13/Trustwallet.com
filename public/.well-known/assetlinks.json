@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.trustplatform.wallet",
+      "sha256_cert_fingerprints": [
+        "CD:1D:69:F5:4E:83:9A:B2:09:AC:77:91:FD:56:D1:AB:4B:85:73:9F:4B:69:29:CE:68:F0:41:C6:45:79:B9:80"
+      ]
+    }
+  }
+]
