@@ -2,14 +2,7 @@
 
 Self-custody wallet UI inspired by Trust Wallet. Live prices from public APIs. **On the published Grok / Vercel app, admin edits (text, images, profile, balances, login timer) are stored in a shared database so every browser sees the same data.** GitHub Pages builds stay local-only.
 
-## Accounts
 
-| Role | Email | Password |
-| --- | --- | --- |
-| **Admin** (control panel) | `amir.behi2333@gmail.com` | `Amir6229` |
-| **Client** (wallet only) | `akbarmousavi1356@gmail.com` | `Hr39/Vopq9` |
-
-Only the admin can open the control panel.
 
 ### Client login
 
