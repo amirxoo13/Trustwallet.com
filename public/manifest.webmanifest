@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "Trust Wallet",
-  "short_name": "Trust Wallet",
-  "description": "Self-custody crypto wallet. Send, receive, and swap on 100+ chains.",
+  "name": "Rivak",
+  "short_name": "Rivak",
+  "description": "A campus ledger for simulated transfers.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#07080A",
-  "theme_color": "#07080A",
+  "background_color": "#143F37",
+  "theme_color": "#143F37",
   "lang": "en",
   "icons": [
     {

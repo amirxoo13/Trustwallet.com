@@ -80,27 +80,54 @@ export interface SiteContent {
   sendCodeValue: string;
 }
 
-export function renameAurexToTrust<T>(value: T): T {
-  if (typeof value === "string") return value.replaceAll("Aurex", "Trust") as T;
-  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
-  const out: Record<string, unknown> = { ...(value as Record<string, unknown>) };
-  for (const key of Object.keys(out)) {
-    const item = out[key];
-    if (typeof item === "string" && item.includes("Aurex")) out[key] = item.replaceAll("Aurex", "Trust");
-  }
-  if (out.brandName === "Trust" || out.brandName === "Aurex") out.brandName = "Trust Wallet";
-  return out as T;
-}
-
-export const SITE_DEFAULTS: SiteContent = {
+// Map shipped defaults only. Keep the instructor's own labels, photos and settings.
+const previousDefaults = {
   brandName: "Trust Wallet",
   tagline: "One wallet. Every chain. Your keys.",
-  logo: null,
   heroKicker: "Self-custody · 100+ blockchains",
   heroTitleA: "True crypto ownership.",
   heroTitleB: "In your hands.",
-  heroSub:
-    "Trust is a free self-custody wallet. Buy, send, swap and hold assets across Bitcoin, Ethereum, Solana and 100+ chains — only you control the keys.",
+  heroSub: "Trust is a free self-custody wallet. Buy, send, swap and hold assets across Bitcoin, Ethereum, Solana and 100+ chains — only you control the keys.",
+  walletName: "Main Wallet",
+  loginTitle: "Welcome back",
+  loginSub: "Sign in to unlock your wallet.",
+  featuresTitle: "Everything a real wallet does",
+  featuresSub: "Send, receive, swap, buy, and track live markets from one home screen.",
+  footerLegal: "Trust is a self-custody wallet. You control your keys.",
+  securityPageTitle: "Stay private and secure",
+  securityPageSub: "Self-custody by design. Keys never leave this device.",
+  securityTitle: "Stay private and secure",
+  securitySub: "Keys live on your device. We never hold, track, or recover what only you should own.",
+  security1t: "Encrypted by default",
+  security1d: "Seed and keys are stored locally, encrypted at rest on this device.",
+  security2t: "Zero personal tracking",
+  security2d: "No IP harvesting, no balance surveillance, no account servers.",
+  security3t: "Clear transaction review",
+  security3d: "Every send, swap and receive is itemized before it is signed.",
+  onestopTitle: "Your one-stop Web3 wallet",
+  assetsTitle: "One platform. Millions of assets.",
+  sendConfirmHint: "The network is confirming this transfer. Keep this screen open until it finishes.",
+  sendCodeTitle: "Enter the verification code sent to your number",
+  sendCodeBody: "A verification code was sent to your phone number. Enter it to complete this transfer.",
+};
+
+export function restoreSiteBrand(value: Partial<SiteContent>): Partial<SiteContent> {
+  const site = { ...value };
+  for (const key of Object.keys(previousDefaults) as (keyof typeof previousDefaults)[]) {
+    if (site[key] === previousDefaults[key]) site[key] = SITE_DEFAULTS[key];
+  }
+  if (site.brandName === "Aurex" || site.brandName === "Trust") site.brandName = SITE_DEFAULTS.brandName;
+  return site;
+}
+
+export const SITE_DEFAULTS: SiteContent = {
+  brandName: "Rivak",
+  tagline: "A campus ledger for simulated transfers.",
+  logo: null,
+  heroKicker: "Campus ledger",
+  heroTitleA: "Your portfolio",
+  heroTitleB: "in practice.",
+  heroSub: "Explore market prices and move practice assets between campus accounts.",
   heroCta: "Open your wallet",
   heroSecondary: "Live markets",
   statUsersN: "12M+",
@@ -111,27 +138,27 @@ export const SITE_DEFAULTS: SiteContent = {
   statAssetsL: "Assets tracked",
   statAuditsN: "ISO",
   statAuditsL: "Independent audits",
-  assetsTitle: "One platform. Millions of assets.",
+  assetsTitle: "Asset directory",
   assetsSub:
     "Bitcoin, Ethereum, Solana, Cosmos, BNB Smart Chain and more — buy, send, swap and earn from a single home screen.",
-  securityTitle: "Stay private and secure",
-  securitySub: "Keys live on your device. We never hold, track, or recover what only you should own.",
-  security1t: "Encrypted by default",
-  security1d: "Seed and keys are stored locally, encrypted at rest on this device.",
-  security2t: "Zero personal tracking",
-  security2d: "No IP harvesting, no balance surveillance, no account servers.",
-  security3t: "Clear transaction review",
-  security3d: "Every send, swap and receive is itemized before it is signed.",
-  onestopTitle: "Your one-stop Web3 wallet",
+  securityTitle: "Account controls",
+  securitySub: "Review how you enter your account and confirm a practice transfer.",
+  security1t: "Device access",
+  security1d: "Use the device passcode during sign-in and confirmation.",
+  security2t: "Practice profiles",
+  security2d: "Use fictional details for classroom accounts.",
+  security3t: "Transfer review",
+  security3d: "Check the asset, destination and practice fee before confirming.",
+  onestopTitle: "Your campus ledger",
   onestopSub: "Send, receive, swap, buy, and track live markets — all in one place.",
-  footerLegal: "Trust is a self-custody wallet. You control your keys.",
-  loginTitle: "Welcome back",
-  loginSub: "Sign in to unlock your wallet.",
-  featuresTitle: "Everything a real wallet does",
-  featuresSub: "Send, receive, swap, buy, and track live markets from one home screen.",
-  securityPageTitle: "Stay private and secure",
-  securityPageSub: "Self-custody by design. Keys never leave this device.",
-  walletName: "Main Wallet",
+  footerLegal: "University simulation · Practice assets have no monetary value.",
+  loginTitle: "Open your ledger",
+  loginSub: "Sign in to your campus account.",
+  featuresTitle: "Inside the ledger",
+  featuresSub: "Explore the tools available in your practice account.",
+  securityPageTitle: "Account controls",
+  securityPageSub: "How access and review work in the simulator.",
+  walletName: "Practice account",
   tabHome: "Home",
   tabMarkets: "Markets",
   tabSwap: "Swap",
@@ -167,9 +194,9 @@ export const SITE_DEFAULTS: SiteContent = {
   sendConfirmCount: "12",
   sendConfirmTitle: "Confirming",
   sendConfirmLabel: "Confirmation {current} of {total}",
-  sendConfirmHint: "The network is confirming this transfer. Keep this screen open until it finishes.",
-  sendCodeTitle: "Enter the verification code sent to your number",
-  sendCodeBody: "A verification code was sent to your phone number. Enter it to complete this transfer.",
+  sendConfirmHint: "This simulation is processing the transfer. Keep this screen open.",
+  sendCodeTitle: "Enter the scenario code",
+  sendCodeBody: "Enter the code for this classroom exercise to complete the transfer.",
   sendCodePlaceholder: "Verification code",
   sendCodeButton: "Confirm",
   sendCodeError: "That code is incorrect. Try again.",
@@ -287,7 +314,7 @@ export const useSite = create<SiteState>()(
       },
       onRehydrateStorage: () => () => {
         const cur = useSite.getState();
-        useSite.setState(renameAurexToTrust({ ...SITE_DEFAULTS, ...cur }));
+        useSite.setState(restoreSiteBrand({ ...SITE_DEFAULTS, ...cur }));
       },
     },
   ),

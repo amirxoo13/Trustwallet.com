@@ -566,11 +566,15 @@ export function WalletSendScreen() {
         </DialogContent>
       </Dialog>
       {scanStream ? <QrScan stream={scanStream} onClose={stopScan} onResult={applyScan} /> : null}
-      <div className="mx-auto w-full max-w-md px-4 py-8">
-        <h1 className="font-display text-xl font-semibold">{copy.wallet.send}</h1>
+      <div className="rv-transfer">
+        <header className="rv-transfer-head"><span className="rv-kicker">Internal transfer</span><h1>Transfer slip</h1>
+          <ol aria-label="Transfer progress" className="rv-progress">{["Details", "Review", "Receipt"].map((label, i) => (
+            <li key={label} aria-current={i === (step === "form" ? 0 : step === "done" ? 2 : 1) ? "step" : undefined}>{label}</li>
+          ))}</ol>
+        </header><section className="rv-slip">
 
         {step === "form" ? (
-          <div className="mt-6 flex flex-col gap-5">
+          <div className="rv-slip-form">
             <div className="flex flex-col gap-2">
               <Label>Asset</Label>
               <select
@@ -685,7 +689,7 @@ export function WalletSendScreen() {
         {step === "confirming" && !primarySend ? (
           <div className="mt-8">
             <h2 className="font-display text-xl font-semibold">Sending</h2>
-            <p className="mt-2 text-sm text-muted">The transfer is moving through the network. Each step is saved.</p>
+            <p className="mt-2 text-sm text-muted">Follow the progress of this practice transfer.</p>
             <ol className="mt-6 flex flex-col gap-3">
               {SEND_STEPS.map((label, index) => {
                 const current = sendStepIndex(pipelineStart, pipelineEnd, pipelineNow || Date.now());
@@ -724,11 +728,11 @@ export function WalletSendScreen() {
         ) : null}
 
         {step === "done" ? (
-          <div className="mt-10 flex flex-col items-center text-center">
+          <div className="rv-receipt flex flex-col items-center text-center">
             <span className="flex size-16 items-center justify-center rounded-full bg-success/15 text-success">
               <Check className="size-7" />
             </span>
-            <h2 className="mt-5 font-display text-xl font-semibold">{copy.wallet.success}</h2>
+            <h2 className="mt-5 font-display text-xl font-semibold">{copy.wallet.success}</h2><p className="rv-caption">Rivak · Simulation receipt · No monetary value</p>
             <p className="mt-2 max-w-xs break-all font-mono text-xs text-muted">{hash}</p>
             <Button asChild variant="solid" className="mt-8 w-full">
               <Link to="/wallet">{copy.wallet.done}</Link>
@@ -738,6 +742,7 @@ export function WalletSendScreen() {
             </button>
           </div>
         ) : null}
+        </section>
       </div>
     </WalletShell>
   );

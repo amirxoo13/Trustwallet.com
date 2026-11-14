@@ -179,7 +179,7 @@ export function WalletSettingsScreen() {
 
   return (
     <WalletShell title={copy.wallet.settings}>
-      <div className="mx-auto w-full max-w-lg px-4 py-8">
+      <div className="rv-sheet rv-settings">
         <h1 className="font-display text-xl font-semibold">{copy.wallet.settings}</h1>
 
         <VercelUpdate />

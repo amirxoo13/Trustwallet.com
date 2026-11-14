@@ -17,7 +17,7 @@ export function LogoMark({ className, size = 28 }: { className?: string; size?: 
   }
   return (
     <img
-      src="/logo.png"
+      src={import.meta.env.BASE_URL + "logo.png"}
       alt=""
       width={size}
       height={size}

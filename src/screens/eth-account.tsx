@@ -20,7 +20,7 @@ export function EthAccountScreen() {
   if (!allowed) {
     return (
       <WalletShell title="Ethereum">
-        <div className="mx-auto w-full max-w-lg px-4 py-8">
+        <div className="rv-sheet rv-account">
           <h1 className="font-display text-2xl font-semibold">Ethereum</h1>
           <p className="mt-3 text-sm text-muted">This account is empty.</p>
           <Button asChild variant="outline" className="mt-6">
@@ -44,7 +44,7 @@ export function EthAccountScreen() {
 
   return (
     <WalletShell title="Ethereum">
-      <div className="mx-auto w-full max-w-lg px-4 py-8">
+      <div className="rv-sheet rv-account">
         <p className="text-xs font-medium tracking-wide text-muted uppercase">Second account</p>
         <h1 className="mt-1 font-display text-2xl font-semibold">Ethereum</h1>
 

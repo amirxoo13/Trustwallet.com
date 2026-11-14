@@ -135,8 +135,8 @@ export function LoginScreen() {
 
   return (
     <MarketingShell>
-      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16">
-        <p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">{brandName}</p>
+      <div className="rv-login">
+        <header><p className="text-xs font-medium tracking-[0.18em] text-primary uppercase">{brandName}</p>
         <h1 className="mt-3 font-display text-2xl font-semibold tracking-tight">
           {mode === "signup" ? "Create account" : loginTitle}
         </h1>
@@ -144,7 +144,7 @@ export function LoginScreen() {
           {mode === "signup" ? "Use any email. No code is required." : loginSub}
         </p>
 
-        <form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
+        </header><section><form onSubmit={onSubmit} className="mt-8 flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="email">{copy.login.email}</Label>
             <Input
@@ -228,6 +228,7 @@ export function LoginScreen() {
             ← {brandName}
           </Link>
         </p>
+        </section>
       </div>
     </MarketingShell>
   );

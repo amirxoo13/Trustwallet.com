@@ -73,7 +73,7 @@ function Spark({ points, up }: { points: number[]; up: boolean }) {
     .join(" ");
   return (
     <svg viewBox="0 0 64 32" className="h-7 w-12 shrink-0" aria-hidden>
-      <path d={d} fill="none" stroke={up ? "#3dd68c" : "#ef5b6a"} strokeWidth="2" strokeLinejoin="round" />
+      <path d={d} fill="none" stroke={up ? "#287253" : "#a83d34"} strokeWidth="2" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -167,7 +167,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
   const networkLabel = NETWORKS.find((n) => n.id === network)?.label ?? "Network";
 
   return (
-    <div className="mx-auto w-full max-w-md overflow-x-clip px-4 pt-3 pb-36">
+    <div className="rv-sheet rv-exchange">
       <div className="flex items-center justify-between">
         <div className="size-11" />
         <h1 className="font-display text-xl font-semibold">Markets</h1>
@@ -273,7 +273,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
             }}
             className={cn(
               "h-10 shrink-0 rounded-full bg-card px-4 text-sm",
-              board === item.id && "bg-[#3a3f72] text-foreground",
+              board === item.id && "bg-accent-soft text-foreground",
             )}
           >
             {item.label}
@@ -425,7 +425,7 @@ export function SwapMarkets({ onSwap }: { onSwap: () => void }) {
         <button
           type="button"
           onClick={onSwap}
-          className="mx-auto block h-12 w-full max-w-md rounded-full bg-[#5b4dff] text-sm font-semibold text-white"
+          className="mx-auto block h-12 w-full max-w-md rounded-full bg-primary text-sm font-semibold text-white"
         >
           Swap
         </button>

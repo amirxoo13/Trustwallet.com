@@ -2,17 +2,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowDown,
-  ArrowUpRight,
+
+
   ChevronRight,
-  DollarSign,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  Repeat2,
+  TicketPlus,
   Eye,
   EyeOff,
   History,
-  Info,
+
   LogOut,
-  Plus,
-  RefreshCw,
+
+
   Scan,
   Settings,
   SlidersHorizontal,
@@ -156,10 +159,10 @@ export function WalletHomeScreen() {
   const balanceText = hide ? "••••" : q.isLoading && total === 0 ? "—" : formatUsdFull(total);
 
   const actions = [
-    { to: "/wallet/send", icon: ArrowUpRight, label: site.actionSend, hot: false },
-    { to: "/wallet/receive", icon: ArrowDown, label: site.actionReceive, hot: false },
-    { to: "/wallet/swap", icon: RefreshCw, label: site.tabSwap, hot: true },
-    { to: "/wallet/buy", icon: Plus, label: site.actionBuy, hot: false },
+    { to: "/wallet/send", icon: ArrowUpFromLine, label: site.actionSend, hot: false },
+    { to: "/wallet/receive", icon: ArrowDownToLine, label: site.actionReceive, hot: false },
+    { to: "/wallet/swap", icon: Repeat2, label: site.tabSwap, hot: true },
+    { to: "/wallet/buy", icon: TicketPlus, label: site.actionBuy, hot: false },
   ] as const;
 
   function ask() {
@@ -205,20 +208,20 @@ export function WalletHomeScreen() {
 
   return (
     <WalletShell home>
-      <div className="mx-auto w-full max-w-md overflow-x-clip px-4 pt-3 pb-6">
-        <div className="flex items-center justify-between gap-2">
+      <div className="rv-dashboard">
+        <section className="rv-book"><div className="rv-book-top flex items-center justify-between gap-2">
           <div className="relative min-w-0">
             <button
               type="button"
               onClick={() => setMenu((v) => !v)}
-              className="flex h-11 max-w-full items-center gap-2 rounded-full bg-[#1a1d24] ps-1 pe-3.5"
+              className="flex h-11 max-w-full items-center gap-2 rounded-full bg-card-elevated ps-1 pe-3.5"
               aria-expanded={menu}
               aria-label={`${walletLabel} ${balanceText}`}
             >
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#ff5d5d] text-white">
+              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-white">
                 <Wallet className="size-4" strokeWidth={2.2} />
               </span>
-              <span className="truncate text-sm font-semibold tabular">{balanceText}</span>
+              <span className="truncate text-sm font-semibold">{walletLabel}</span>
             </button>
             {menu ? (
               <>
@@ -259,40 +262,25 @@ export function WalletHomeScreen() {
             ) : null}
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <Link to="/wallet/activity" aria-label={copy.wallet.activity} className="flex size-11 items-center justify-center rounded-full bg-[#1a1d24]">
+            <Link to="/wallet/activity" aria-label={copy.wallet.activity} className="flex size-11 items-center justify-center rounded-full bg-card-elevated">
               <History className="size-5" strokeWidth={1.75} />
             </Link>
-            <Link to="/wallet/receive" aria-label={site.actionReceive} className="flex size-11 items-center justify-center rounded-full bg-[#1a1d24]">
+            <Link to="/wallet/receive" aria-label={site.actionReceive} className="flex size-11 items-center justify-center rounded-full bg-card-elevated">
               <Scan className="size-5" strokeWidth={1.75} />
             </Link>
           </div>
         </div>
 
-        <Link to="/wallet/swap" className="mt-4 flex items-center gap-3 rounded-2xl border border-white/10 px-3 py-2.5">
-          <Info className="size-4 shrink-0 text-muted" />
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#143226] text-success">
-            <DollarSign className="size-4" />
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold">0% swap fees on selected stables</span>
-            <span className="block truncate text-xs text-muted">Applicable to same-chain swaps only</span>
-          </span>
-        </Link>
+        <div className="rv-balance">
+          <p className="rv-kicker">{copy.wallet.balance}</p>
+          <h1 className="tabular">{balanceText}</h1>
+          <p className="rv-movement">{hide ? "••" : formatHeaderMove(changeUsd, changePct)} <span> / 24h</span></p>
+        </div></section>
 
-        <p className="mt-6 max-w-full overflow-hidden text-[clamp(2.1rem,11vw,2.8rem)] leading-none font-bold tracking-tight text-ellipsis tabular">
-          {balanceText}
-        </p>
-        <p className="mt-2 max-w-full truncate text-base text-muted tabular">{hide ? "" : formatHeaderMove(changeUsd, changePct)}</p>
-
-        <div className="mt-6 grid grid-cols-4 gap-2.5">
+        <div className="rv-actions">
           {actions.map((a) => (
-            <Link key={a.to} to={a.to} className="flex min-w-0 flex-col items-center gap-2">
-              <span
-                className={cn(
-                  "flex aspect-square w-full items-center justify-center rounded-2xl",
-                  a.hot ? "bg-[#5b57f5] text-white" : "bg-[#1a1d24] text-foreground",
-                )}
-              >
+            <Link key={a.to} to={a.to} className="rv-action">
+              <span className="rv-action-icon">
                 <a.icon className="size-6" strokeWidth={2.1} />
               </span>
               <span className="max-w-full truncate text-sm">{a.label}</span>
@@ -300,8 +288,9 @@ export function WalletHomeScreen() {
           ))}
         </div>
 
-        <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-7 flex items-center gap-1 text-lg font-semibold">
-          Tokens
+        <Link className="rv-fee-note" to="/wallet/swap">Same-chain stablecoin swaps · 0% fee ↗</Link>
+        <section className="rv-inventory"><button type="button" onClick={() => setShowAll((v) => !v)} className="mt-7 flex items-center gap-1 text-lg font-semibold">
+          Asset register
           <ChevronRight className="size-5" />
         </button>
 
@@ -311,18 +300,18 @@ export function WalletHomeScreen() {
             value={qtext}
             onChange={(e) => setQtext(e.target.value)}
             placeholder={copy.wallet.search}
-            className="mt-3 h-11 w-full rounded-full bg-[#1a1d24] px-4 text-sm outline-none placeholder:text-muted"
+            className="mt-3 h-11 w-full rounded-full bg-card-elevated px-4 text-sm outline-none placeholder:text-muted"
           />
         ) : null}
 
-        <div className="mt-2">
+        <div className="rv-token-grid">
           {visible.length === 0 ? (
             <p className="py-10 text-center text-sm text-muted">{copy.wallet.empty}</p>
           ) : (
             visible.map((r) => {
               const move = formatMove(r.delta);
               return (
-                <Link key={r.id} to="/wallet/asset/$id" params={{ id: r.id }} className="flex min-w-0 items-center gap-3 py-2.5">
+                <Link key={r.id} to="/wallet/asset/$id" params={{ id: r.id }} className="rv-token-card">
                   <CoinIcon id={r.id} symbol={r.meta!.symbol} image={r.image} size={42} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-semibold">{rowTitle(r.id, r.meta!.name)}</p>
@@ -343,36 +332,36 @@ export function WalletHomeScreen() {
         </div>
 
         {!query && !showAll && filtered.length > 4 ? (
-          <button type="button" onClick={() => setShowAll(true)} className="mt-2 inline-flex h-11 items-center gap-1 rounded-full bg-[#1a1d24] px-4 text-sm font-medium">
+          <button type="button" onClick={() => setShowAll(true)} className="mt-2 inline-flex h-11 items-center gap-1 rounded-full bg-card-elevated px-4 text-sm font-medium">
             View all
             <ChevronRight className="size-4" />
           </button>
         ) : null}
 
-        <Link to="/wallet/perps" className="mt-8 flex items-center gap-1 text-lg font-semibold">
+        </section><section className="rv-marketstrip"><Link to="/wallet/perps" className="mt-8 flex items-center gap-1 text-lg font-semibold">
           Perps
           <ChevronRight className="size-5" />
         </Link>
         <div className="scroll-x mt-3 flex gap-3 pb-1">
           {(perps.data ?? []).slice(0, 8).map((m) => (
-            <Link key={m.coin} to="/wallet/perps" className="w-[9.25rem] shrink-0 rounded-2xl bg-[#1a1d24] p-3">
+            <Link key={m.coin} to="/wallet/perps" className="w-[9.25rem] shrink-0 rounded-2xl bg-card-elevated p-3">
               <CoinIcon symbol={m.symbol} size={36} />
               <p className="mt-3 flex items-center gap-1.5">
                 <span className="font-semibold">{m.symbol}</span>
-                <span className="rounded-full bg-black/30 px-1.5 py-0.5 text-[11px] text-muted">{m.maxLeverage}x</span>
+                <span className="rounded-full bg-accent-soft px-1.5 py-0.5 text-[11px] text-muted">{m.maxLeverage}x</span>
               </p>
               <p className="mt-1 text-xs text-muted">{formatUsd(m.volume)} Vol</p>
             </Link>
           ))}
         </div>
 
-        <button type="button" onClick={() => setAskOpen(true)} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-[#1a1d24] p-2 pe-2">
+        </section><section className="rv-watch"><button type="button" onClick={() => setAskOpen(true)} className="mt-4 flex w-full items-center gap-3 rounded-2xl bg-card-elevated p-2 pe-2">
           <span className="flex min-w-0 flex-1 items-center gap-2 px-2 text-sm font-semibold">
             <Sparkles className="size-4 shrink-0" />
-            <span className="truncate">Trust Wallet AI</span>
+            <span className="truncate">Ledger guide</span>
           </span>
-          <span className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-[#12141a] px-4 text-sm">
-            Ask anything
+          <span className="flex h-10 shrink-0 items-center gap-1 rounded-full bg-input px-4 text-sm">
+            Ask a question
             <ChevronRight className="size-4" />
           </span>
         </button>
@@ -406,17 +395,18 @@ export function WalletHomeScreen() {
           })}
         </div>
         <div className="mt-3 flex justify-center">
-          <button type="button" onClick={() => setEditingWatch(true)} className="inline-flex h-11 items-center gap-2 rounded-full bg-[#1a1d24] px-5 text-sm font-medium">
+          <button type="button" onClick={() => setEditingWatch(true)} className="inline-flex h-11 items-center gap-2 rounded-full bg-card-elevated px-5 text-sm font-medium">
             <SlidersHorizontal className="size-4" />
             Customize
           </button>
         </div>
+        </section>
       </div>
 
       {askOpen ? (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/50 px-4 pb-8" onClick={() => setAskOpen(false)}>
           <div className="w-full max-w-md rounded-2xl bg-card p-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-semibold">Trust Wallet AI</h3>
+            <h3 className="font-semibold">Ledger guide</h3>
             <p className="mt-1 text-sm text-muted">Answers use this wallet and live prices.</p>
             <form
               className="mt-3 flex gap-2"
@@ -428,10 +418,10 @@ export function WalletHomeScreen() {
               <input
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ask anything"
-                className="h-11 min-w-0 flex-1 rounded-full bg-[#12141a] px-4 text-sm outline-none"
+                placeholder="Ask a question"
+                className="h-11 min-w-0 flex-1 rounded-full bg-input px-4 text-sm outline-none"
               />
-              <button type="submit" className="h-11 shrink-0 rounded-full bg-[#5b57f5] px-4 text-sm font-semibold text-white">
+              <button type="submit" className="h-11 shrink-0 rounded-full bg-primary px-4 text-sm font-semibold text-white">
                 Ask
               </button>
             </form>
@@ -456,7 +446,7 @@ export function WalletHomeScreen() {
                 );
               })}
             </div>
-            <button type="button" onClick={() => setEditingWatch(false)} className="mt-3 h-11 w-full rounded-full bg-[#5b57f5] text-sm font-semibold text-white">
+            <button type="button" onClick={() => setEditingWatch(false)} className="mt-3 h-11 w-full rounded-full bg-primary text-sm font-semibold text-white">
               Done
             </button>
           </div>

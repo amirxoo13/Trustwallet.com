@@ -51,7 +51,7 @@ export function WalletBuyScreen() {
 
   return (
     <WalletShell title={copy.wallet.buy}>
-      <div className="mx-auto w-full max-w-md px-4 py-8">
+      <div className="rv-sheet rv-buy">
         <h1 className="font-display text-xl font-semibold">{copy.wallet.buyTitle}</h1>
         <p className="mt-1 text-sm text-muted">{copy.wallet.buySub}</p>
         {step === "form" ? (

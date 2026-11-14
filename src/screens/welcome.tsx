@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
+import { ArrowUpRight, ChevronLeft, Fingerprint as FingerprintIcon } from "lucide-react";
+import { LogoWord } from "@/components/logo";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { enrollFingerprint, hasFingerprint, verifyFingerprint } from "@/lib/device-lock";
 
@@ -56,53 +58,21 @@ export function WelcomeScreen() {
 
   if (step === "home") {
     return (
-      <main
-        className="flex min-h-dvh flex-col px-6 text-white"
-        style={{
-          background: "linear-gradient(180deg, #07184f 0%, #0c2478 42%, #0a1c62 100%)",
-          paddingTop: "calc(var(--safe-top) + 12px)",
-          paddingBottom: "calc(var(--safe-bottom) + 18px)",
-        }}
-      >
-        <img src="/welcome-cube.jpg" alt="" className="mx-auto mt-6 w-full max-w-[22rem] object-contain" />
-        <div className="mt-auto">
-          <h1 className="max-w-[18rem] text-[2.05rem] leading-[1.12] font-semibold tracking-tight">
-            Your one-stop
-            <br />
-            Web3 wallet
-          </h1>
-          <button
-            type="button"
-            className="mt-8 h-14 w-full rounded-full text-[17px] font-semibold"
-            style={{ background: "linear-gradient(180deg, #4b7dff 0%, #2f62f6 100%)" }}
-            onClick={() => {
-              setStep("create");
-              setCode("");
-              setFirst("");
-            }}
-          >
-            Create a wallet
-          </button>
-          <button
-            type="button"
-            className="mt-3 h-14 w-full rounded-full text-[17px] font-semibold"
-            style={{ background: "#1d3f9e" }}
-            onClick={() => void navigate({ to: "/login" })}
-          >
-            I already have a wallet
-          </button>
-          <p className="mt-4 text-center text-[13px] leading-relaxed text-white/80">
-            By tapping any button, you agree and consent to our{" "}
-            <a href="/security" className="text-[#8eb0ff]">
-              Terms of Service
-            </a>{" "}
-            and{" "}
-            <a href="/security" className="text-[#8eb0ff]">
-              Privacy Policy
-            </a>
-            .
-          </p>
+      <main className="rv-intro">
+        <header><LogoWord /><Link to="/security">Account controls <ArrowUpRight size={15} /></Link></header>
+        <div className="rv-cover">
+          <div className="rv-cover-art" aria-hidden="true"><img src={import.meta.env.BASE_URL + "rivak-engraving.svg"} alt="" /></div>
+          <div className="rv-cover-text">
+            <span className="rv-kicker">Campus wallet simulator</span>
+            <h1>The practice<br /><em>ledger.</em></h1>
+            <p>Move practice assets between accounts and follow each transfer through your campus ledger.</p>
+            <div className="rv-cover-actions">
+              <button onClick={() => { setStep("create"); setCode(""); setFirst(""); }}>Create a wallet <ArrowUpRight size={19} /></button>
+              <button onClick={() => void navigate({ to: "/login" })}>Sign in</button>
+            </div>
+          </div>
         </div>
+        <footer><span>Internal transfers · Practice assets only</span><Link to="/markets">Market directory ↗</Link></footer>
       </main>
     );
   }
@@ -115,9 +85,9 @@ export function WelcomeScreen() {
 
   return (
     <main
-      className="flex min-h-dvh flex-col text-white"
+      className="rv-pin flex min-h-dvh flex-col"
       style={{
-        background: "linear-gradient(180deg, #08184f 0%, #0d267c 50%, #0a1d68 100%)",
+        background: "var(--color-background)",
         paddingTop: "calc(var(--safe-top) + 8px)",
         paddingBottom: "calc(var(--safe-bottom) + 16px)",
       }}
@@ -133,7 +103,7 @@ export function WelcomeScreen() {
           <span
             key={i}
             className="flex size-12 items-center justify-center rounded-lg border text-xl font-semibold"
-            style={{ borderColor: "rgb(170 198 255 / 0.85)" }}
+            style={{ borderColor: "var(--color-border-strong)" }}
           >
             {code[i] ? "•" : ""}
           </span>
@@ -147,30 +117,17 @@ export function WelcomeScreen() {
           </button>
         ))}
         <button type="button" className="flex h-16 items-center justify-center" onClick={() => void fingerprint()} aria-label="Fingerprint">
-          <Fingerprint />
+          <FingerprintIcon size={28} />
         </button>
         <button type="button" className="h-16" style={{ textShadow: "0 0 12px rgb(255 255 255 / 0.55)" }} onClick={() => press("0")}>
           0
         </button>
         <button type="button" className="flex h-16 items-center justify-center" onClick={() => setCode((c) => c.slice(0, -1))} aria-label="Delete">
-          <span className="flex h-10 w-14 items-center justify-center rounded-md text-lg" style={{ background: "#3d6dff" }}>
+          <span className="flex h-10 w-14 items-center justify-center rounded-md text-lg" style={{ background: "var(--color-accent-soft)" }}>
             ⌫
           </span>
         </button>
       </div>
     </main>
-  );
-}
-
-function Fingerprint() {
-  return (
-    <svg viewBox="0 0 48 48" className="size-10" fill="none" stroke="#7eb0ff" strokeWidth="2.2">
-      <path d="M16 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
-      <path d="M14 24c.4 6 2.2 10 4.6 13" />
-      <path d="M24 18v14c0 3.2-1.2 6.2-2.6 8" />
-      <path d="M30 20c1 6 .2 11-2 16" />
-      <path d="M20 24c.3 5 .2 9-1.2 13" />
-      <path d="M18 16c1.6-2.2 4-3.4 6.6-3.4 4.6 0 8.4 3.6 8.4 8.2 0 4.2-.6 7.4-1.8 11" />
-    </svg>
   );
 }

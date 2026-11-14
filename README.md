@@ -1,6 +1,6 @@
-# Trust — Crypto Wallet (student project)
+# Rivak — Campus Ledger
 
-Self-custody wallet UI inspired by Trust Wallet. Live prices from public APIs. **On the published Grok / Vercel app, admin edits (text, images, profile, balances, login timer) are stored in a shared database so every browser sees the same data.** GitHub Pages builds stay local-only.
+University wallet simulator for internal practice transfers. Live prices from public APIs. **On the published Grok / Vercel app, admin edits (text, images, profile, balances, login timer) are stored in a shared database so every browser sees the same data.** GitHub Pages builds stay local-only.
 
 
 

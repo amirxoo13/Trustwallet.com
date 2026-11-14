@@ -47,8 +47,8 @@ export function WalletReceiveScreen() {
 
   return (
     <WalletShell title={copy.wallet.receive}>
-      <div className="mx-auto w-full max-w-md px-4 py-8">
-        <h1 className="font-display text-xl font-semibold">{copy.wallet.receive}</h1>
+      <div className="rv-receive">
+        <header><span className="rv-kicker">Internal address</span><h1>{copy.wallet.receive}</h1>
         <label className="mt-6 block">
           <span className="text-xs font-medium text-muted">Network</span>
           <select
@@ -62,9 +62,9 @@ export function WalletReceiveScreen() {
               </option>
             ))}
           </select>
-        </label>
+        </label><p className="rv-caption">Use only with practice accounts inside Rivak.</p></header>
 
-        <div className="mt-8 flex flex-col items-center rounded-xl bg-card px-5 py-8 shadow-border">
+        <div className="rv-qr-card flex flex-col items-center">
           <div className="mb-4 flex items-center gap-2 text-sm">
             <CoinIcon id={coin.id} symbol={coin.symbol} size={24} />
             {coin.chainName}

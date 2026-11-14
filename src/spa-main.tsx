@@ -48,12 +48,12 @@ const rootRoute = createRootRoute({
       <DeviceLockHost />
       <Outlet />
       <Toaster
-        theme="dark"
+        theme="light"
         position="top-center"
         toastOptions={{
           style: {
-            background: "#181b22",
-            color: "#f4f6f8",
+            background: "var(--color-card)",
+            color: "var(--color-foreground)",
             border: "1px solid rgb(244 246 248 / 0.1)",
           },
         }}
