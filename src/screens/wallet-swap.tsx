@@ -130,7 +130,7 @@ export function WalletSwapScreen() {
 
   return (
     <WalletShell title={copy.wallet.swap}>
-      <div className="mx-auto w-full max-w-md px-4 py-8">
+      <div className="rv-sheet rv-swap">
         <button type="button" onClick={() => setView("markets")} className="text-sm text-muted">
           Markets
         </button>

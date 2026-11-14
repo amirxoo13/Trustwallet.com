@@ -108,11 +108,11 @@ export async function enrollFingerprint() {
   const cred = await navigator.credentials.create({
     publicKey: {
       challenge: crypto.getRandomValues(new Uint8Array(32)),
-      rp: { name: "Trust Wallet" },
+      rp: { name: "Rivak" },
       user: {
         id: crypto.getRandomValues(new Uint8Array(16)),
         name: "trust-wallet",
-        displayName: "Trust Wallet",
+        displayName: "Rivak",
       },
       pubKeyCredParams: [
         { type: "public-key", alg: -7 },

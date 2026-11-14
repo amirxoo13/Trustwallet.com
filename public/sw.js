@@ -1,4 +1,4 @@
-const CACHE = "trust-shell-v5";
+const CACHE = "rivak-shell-v6";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -58,7 +58,7 @@ self.addEventListener("push", (event) => {
   } catch {
     data = {};
   }
-  const title = typeof data.title === "string" && data.title ? data.title : "Trust";
+  const title = typeof data.title === "string" && data.title ? data.title : "Rivak";
   const body = typeof data.body === "string" ? data.body : "";
   const tag = typeof data.tag === "string" ? data.tag : "trust";
   const url = typeof data.url === "string" ? data.url : "./wallet";

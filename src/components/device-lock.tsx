@@ -94,27 +94,27 @@ export function DeviceLockHost() {
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex flex-col text-white"
+      className="rv-pin fixed inset-0 z-[80] flex flex-col"
       style={{
-        background: "linear-gradient(180deg, #08184f 0%, #0d267c 50%, #0a1d68 100%)",
+        background: "var(--color-background)",
         paddingTop: "calc(var(--safe-top) + 18px)",
         paddingBottom: "calc(var(--safe-bottom) + 16px)",
       }}
     >
-      <p className="text-center text-xs font-medium tracking-[0.16em] text-white/70 uppercase">Trust Wallet</p>
+      <p className="text-center text-xs font-medium tracking-[0.16em] text-muted uppercase">Rivak</p>
       <h1 className="mt-8 text-center text-[1.55rem] font-semibold tracking-tight">{title}</h1>
       <div className={`mt-8 flex justify-center gap-2 px-4 ${shake ? "animate-pulse" : ""}`}>
         {Array.from({ length: 6 }, (_, i) => (
           <span
             key={i}
             className="flex size-11 items-center justify-center rounded-lg border text-xl font-semibold"
-            style={{ borderColor: "rgb(170 198 255 / 0.85)" }}
+            style={{ borderColor: "var(--color-border-strong)" }}
           >
             {code[i] ? "•" : ""}
           </span>
         ))}
       </div>
-      <p className="mx-auto mt-6 max-w-[18rem] text-center text-sm leading-snug text-white/85">{hint}</p>
+      <p className="mx-auto mt-6 max-w-[18rem] text-center text-sm leading-snug text-muted">{hint}</p>
       <div className="mt-auto grid grid-cols-3 gap-y-2 px-6 text-center text-[1.8rem] font-medium">
         {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((digit) => (
           <button key={digit} type="button" className="h-14" onClick={() => press(digit)}>
@@ -122,7 +122,7 @@ export function DeviceLockHost() {
           </button>
         ))}
         <button type="button" className="flex h-14 items-center justify-center" onClick={() => void fingerprint()} aria-label="Fingerprint">
-          <svg viewBox="0 0 48 48" className="size-9" fill="none" stroke="#7eb0ff" strokeWidth="2.2">
+          <svg viewBox="0 0 48 48" className="size-9" fill="none" stroke="var(--color-primary)" strokeWidth="2.2">
             <path d="M16 20c0-4.4 3.6-8 8-8s8 3.6 8 8" />
             <path d="M14 24c.4 6 2.2 10 4.6 13" />
             <path d="M24 18v14c0 3.2-1.2 6.2-2.6 8" />
@@ -135,17 +135,17 @@ export function DeviceLockHost() {
           0
         </button>
         <button type="button" className="flex h-14 items-center justify-center" onClick={() => setCode((c) => c.slice(0, -1))} aria-label="Delete">
-          <span className="flex h-9 w-12 items-center justify-center rounded-md text-base" style={{ background: "#3d6dff" }}>
+          <span className="flex h-9 w-12 items-center justify-center rounded-md text-base" style={{ background: "var(--color-accent-soft)" }}>
             ⌫
           </span>
         </button>
       </div>
       {pending.purpose === "transaction" ? (
-        <button type="button" className="mt-3 text-sm text-white/75" onClick={() => finish(false)}>
+        <button type="button" className="mt-3 text-sm text-muted" onClick={() => finish(false)}>
           Cancel
         </button>
       ) : pending.purpose === "unlock" ? (
-        <button type="button" className="mt-3 text-sm text-white/75" onClick={() => finish(false)}>
+        <button type="button" className="mt-3 text-sm text-muted" onClick={() => finish(false)}>
           Switch account
         </button>
       ) : (

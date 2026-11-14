@@ -190,7 +190,7 @@ export function StudioScreen() {
   const pageGroups = ["Homepage hero", "Stats", "Assets + security + footer", "Login + inner pages"];
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="rv-studio min-h-dvh bg-background text-foreground">
       <header className="sticky top-[var(--safe-top)] z-20 flex h-14 items-center justify-between border-b border-border bg-background/95 px-4 backdrop-blur-md">
         <div className="flex items-center gap-3">
           <PageBack to="/wallet" />
@@ -478,7 +478,7 @@ export function StudioScreen() {
 }
 
 function NotifyComposer() {
-  const [title, setTitle] = useState("Trust Wallet");
+  const [title, setTitle] = useState("Rivak");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
 

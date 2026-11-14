@@ -9,7 +9,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
   const showBack = path !== "/" && path !== "";
 
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="rv-public min-h-dvh bg-background text-foreground">
       <SiteHeader />
       {showBack ? (
         <div className="mx-auto max-w-6xl px-4 pt-3">

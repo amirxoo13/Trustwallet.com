@@ -28,7 +28,7 @@ function Spark({ points, up }: { points: number[]; up: boolean }) {
       return `${i === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`;
     })
     .join(" ");
-  const color = up ? "#3dcf8e" : "#ef5b6a";
+  const color = up ? "#3dcf8e" : "#a83d34";
   return (
     <svg viewBox="0 0 64 32" className="h-7 w-12 shrink-0" aria-hidden>
       <path d={`${d} L64 32 L0 32 Z`} fill={color} opacity="0.18" />
@@ -42,9 +42,9 @@ function InfinityMark() {
     <svg viewBox="0 0 88 48" className="h-11 w-16 shrink-0" aria-hidden>
       <defs>
         <linearGradient id="perp-inf" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#8ec5ff" />
-          <stop offset="55%" stopColor="#3b6bff" />
-          <stop offset="100%" stopColor="#6d4dff" />
+          <stop offset="0%" stopColor="#c5e5bf" />
+          <stop offset="55%" stopColor="#29715a" />
+          <stop offset="100%" stopColor="#dd866a" />
         </linearGradient>
       </defs>
       <path
@@ -164,7 +164,7 @@ export function PerpsScreen() {
 
   return (
     <WalletShell home>
-      <div className="mx-auto w-full max-w-md overflow-x-clip px-4 pt-3 pb-36">
+      <div className="rv-sheet rv-perps">
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
             <button type="button" aria-label="History" onClick={() => setView(view === "history" ? "list" : "history")} className="flex size-11 items-center justify-center rounded-full bg-card">
@@ -262,7 +262,7 @@ export function PerpsScreen() {
               </h2>
               <InfinityMark />
             </div>
-            <button type="button" onClick={() => { setDepositOpen(true); setAmount(""); setError(""); }} className="mt-4 h-12 w-full rounded-full bg-[#5b4dff] text-sm font-semibold text-white">
+            <button type="button" onClick={() => { setDepositOpen(true); setAmount(""); setError(""); }} className="mt-4 h-12 w-full rounded-full bg-primary text-sm font-semibold text-white">
               Deposit
             </button>
 
@@ -319,7 +319,7 @@ export function PerpsScreen() {
             <button type="button" onClick={() => start("long")} className="h-12 flex-1 rounded-full bg-[#3dcf8e] text-sm font-semibold text-[#062116]">
               Long ↗
             </button>
-            <button type="button" onClick={() => start("short")} className="h-12 flex-1 rounded-full bg-[#ef5b6a] text-sm font-semibold text-white">
+            <button type="button" onClick={() => start("short")} className="h-12 flex-1 rounded-full bg-[#a83d34] text-sm font-semibold text-white">
               Short ↘
             </button>
           </div>

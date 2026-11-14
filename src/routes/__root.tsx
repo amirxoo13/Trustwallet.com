@@ -10,7 +10,7 @@ import { BrandHead } from "@/components/brand-head";
 import { DeviceLockHost } from "@/components/device-lock";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Trust Wallet";
+const APP_NAME = "Rivak";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
@@ -21,8 +21,8 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { title: APP_NAME },
-      { name: "description", content: "Trust Wallet — one wallet, every chain, your keys." },
-      { name: "theme-color", content: "#07080A" },
+      { name: "description", content: "A campus ledger for simulated transfers." },
+      { name: "theme-color", content: "#143F37" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
@@ -38,7 +38,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap",
       },
     ],
   }),
@@ -62,13 +62,13 @@ function RootDocument() {
             <DeviceLockHost />
             <Outlet />
             <Toaster
-              theme="dark"
+              theme="light"
               position="top-center"
               offset={{ top: "calc(var(--safe-top) + 12px)" }}
               toastOptions={{
                 style: {
-                  background: "#181b22",
-                  color: "#f4f6f8",
+                  background: "var(--color-card)",
+                  color: "var(--color-foreground)",
                   border: "1px solid rgb(244 246 248 / 0.1)",
                 },
               }}

@@ -57,17 +57,17 @@ export function WalletAssetScreen({ id }: { id: string }) {
   if (!coin && market) {
     return (
       <WalletShell title={market.symbol}>
-        <div className="mx-auto w-full max-w-xl px-4 py-8">
-          <div className="flex items-center gap-3">
+        <div className="rv-asset">
+          <header className="rv-asset-head">
             <CoinIcon id={market.id} symbol={market.symbol} image={market.image} size={48} />
             <div>
               <h1 className="font-display text-xl font-semibold">{market.name}</h1>
               <p className="text-sm text-muted">{market.symbol}</p>
             </div>
-          </div>
+          </header>
           <p className="mt-5 max-w-full overflow-hidden font-display text-[clamp(1.5rem,7vw,1.75rem)] font-semibold text-ellipsis tabular">{formatUsdFull(market.price)}</p>
           <p className={cn("mt-1 text-sm tabular", up ? "text-success" : "text-danger")}>{formatPct(market.change24h)}</p>
-          <div className="mt-6">
+          <section className="rv-chart"><h2>Price history</h2>
             {chart.isLoading ? (
               <div className="h-56 animate-pulse rounded-xl bg-card" />
             ) : points.length ? (
@@ -75,7 +75,7 @@ export function WalletAssetScreen({ id }: { id: string }) {
             ) : (
               <p className="py-10 text-center text-sm text-muted">No chart data.</p>
             )}
-          </div>
+          </section>
           <dl className="mt-6 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-xl bg-card p-4 shadow-border">
               <dt className="text-xs text-muted">{copy.markets.cap}</dt>
@@ -99,20 +99,20 @@ export function WalletAssetScreen({ id }: { id: string }) {
 
   return (
     <WalletShell title={coin.symbol}>
-      <div className="mx-auto w-full max-w-xl px-4 py-8">
-        <div className="flex items-center gap-3">
+      <div className="rv-asset">
+        <header className="rv-asset-head">
           <CoinIcon id={coin.id} symbol={coin.symbol} image={market?.image} size={48} />
           <div>
             <h1 className="font-display text-xl font-semibold">{coin.name}</h1>
             <p className="text-sm text-muted">{coin.chainName}</p>
           </div>
-        </div>
+        </header>
         <p className="mt-5 max-w-full overflow-hidden font-display text-[clamp(1.5rem,7vw,1.75rem)] font-semibold text-ellipsis tabular">{price ? formatUsdFull(price) : "—"}</p>
         <p className={cn("mt-1 text-sm tabular", up ? "text-success" : "text-danger")}>
           {formatPct(market?.change24h ?? 0)}
         </p>
 
-        <div className="mt-6">
+        <section className="rv-chart"><h2>Price history</h2>
           {chart.isLoading ? (
             <div className="h-56 animate-pulse rounded-xl bg-card" />
           ) : points.length ? (
@@ -141,9 +141,9 @@ export function WalletAssetScreen({ id }: { id: string }) {
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
-        <div className="mt-8 rounded-xl bg-card p-4 shadow-border">
+        <div className="rv-position rounded-xl bg-card p-4 shadow-border">
           <p className="text-xs text-muted">{copy.asset.hold}</p>
           <p className="mt-1 text-lg font-medium tabular">
             {formatAmount(amount)} {coin.symbol}
@@ -164,7 +164,7 @@ export function WalletAssetScreen({ id }: { id: string }) {
           </dl>
         ) : null}
 
-        <div className="mt-8 grid grid-cols-2 gap-3">
+        <div className="rv-asset-actions grid grid-cols-2 gap-3">
           <Button asChild variant="solid">
             <Link to="/wallet/send">{copy.wallet.send}</Link>
           </Button>
@@ -175,7 +175,7 @@ export function WalletAssetScreen({ id }: { id: string }) {
             </Link>
           </Button>
         </div>
-        <p className="mt-6 text-center">
+        <p className="rv-asset-back text-center">
           <Link to="/wallet" className="text-sm text-muted hover:text-foreground">
             ← {copy.wallet.home}
           </Link>
